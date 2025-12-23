@@ -1,0 +1,38 @@
+# Agent Logging
+
+## 2025-12-23
+
+### DB-001: Database Schema Design
+**Status**: not tested
+**Time**: 2025-12-23
+
+#### Actions Taken:
+1. Installed Prisma 7.2.0 and @prisma/client
+2. Created `prisma/schema.prisma` with:
+   - `Conversation` model (id, title, createdAt, updatedAt)
+   - `MessageNode` model with adjacency list pattern (id, conversationId, parentId, role, content, createdAt)
+   - `Role` enum (SYSTEM, USER, ASSISTANT)
+3. Created `prisma.config.mjs` for Prisma 7 configuration
+   - Uses dotenv to load DATABASE_URL from .env
+4. Created `src/lib/prisma.ts` - Prisma client singleton
+   - Uses pg Pool with adapter for Prisma 7
+5. Generated Prisma Client successfully
+
+#### Files Created/Modified:
+- `prisma/schema.prisma` - Database schema
+- `prisma.config.mjs` - Prisma configuration
+- `src/lib/prisma.ts` - Prisma client utility
+- `.env` - Added DATABASE_URL placeholder
+- `package.json` - Added dependencies: @prisma/client, prisma, pg, dotenv
+
+#### Note:
+Migration file NOT created yet - requires running PostgreSQL database.
+To apply migration when database is available:
+```bash
+npx prisma migrate dev --name init
+```
+
+#### Database Setup Options:
+1. Local PostgreSQL: Install and start PostgreSQL service
+2. Docker: `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16`
+3. Cloud: Use Neon, Supabase, or Railway for hosted PostgreSQL

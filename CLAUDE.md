@@ -97,3 +97,9 @@ See `docs/design/product_requirements_document.md` for detailed UX specification
 2. record your working progress in `AGENT_LOGGING` in a log format
 3. if you start a work on a feature, you should check `git log` and `AGENT_LOGGING` to get the insight of current project.
 4. the `FEATURE_LIST` `state` field is in enum ["complete", "todo", "tested", "not tested"]. YOU SHOULD NOT SET THE `state` to "complete". you can set `tested` or `not tested` instead accoring to your progress.
+5. YOU SHOULD NOT DEVELOP AT main/master branch. you should create a new branch for each feature you work on. you should commit your changes to the new branch.
+
+## Git Conventions
+
+- **Branch naming**: start with ["feat","chore","fix","ci","docs"] followed by a slash and the feature name
+- **Commit messages**: Follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) spec

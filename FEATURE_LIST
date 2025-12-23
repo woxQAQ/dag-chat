@@ -3,7 +3,7 @@
     "id": "DB-001",
     "name": "数据库架构设计 (Database Schema)",
     "description": "设计 PostgreSQL 数据库模型，使用 Prisma ORM 定义 Schema。核心包含 Conversations 和 MessageNodes 表，采用邻接表（Adjacency List）模式。",
-    "status": "未开发",
+    "status": "complete",
     "priority": "P0",
     "dependencies": []
   },
