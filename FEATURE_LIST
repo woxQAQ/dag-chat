@@ -99,7 +99,7 @@
     "id": "TEST-001",
     "name": "测试环境配置 (Testing Infrastructure)",
     "description": "配置 Vitest (单元测试), Playwright (E2E), React Testing Library。设置 CI 流水线。",
-    "status": "未开发",
+    "status": "complete",
     "priority": "P0",
     "dependencies": ["UI-001", "DB-001"]
   },
