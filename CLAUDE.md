@@ -96,8 +96,8 @@ See `docs/design/product_requirements_document.md` for detailed UX specification
 1. select a feature from `FEATURE_LIST` by their priority and dependencies.
 2. record your working progress in `AGENT_LOGGING` in a log format
 3. if you start a work on a feature, you should check `git log` and `AGENT_LOGGING` to get the insight of current project.
-4. the `FEATURE_LIST` `state` field is in enum ["complete", "todo", "tested", "not tested"]. YOU SHOULD NOT SET THE `state` to "complete". you can set `tested` or `not tested` instead accoring to your progress.
-5. YOU SHOULD NOT DEVELOP AT main/master branch. you should create a new branch for each feature you work on. you should commit your changes to the new branch.
+4. the `FEATURE_LIST` `state` field is in enum ["complete", "todo", "tested", "not tested"]. `FEATURE_LIST` is READONLY for you.
+5. YOU SHOULD NOT DEVELOP AT main/master branch. you should create a new branch for each feature you work on. After you finish the feature, you need to commit your changes to the new branch.
 
 ## Git Conventions
 

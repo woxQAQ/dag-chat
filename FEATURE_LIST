@@ -94,5 +94,29 @@
     "status": "未开发",
     "priority": "P1",
     "dependencies": ["UI-001", "API-001"]
+  },
+  {
+    "id": "TEST-001",
+    "name": "测试环境配置 (Testing Infrastructure)",
+    "description": "配置 Vitest (单元测试), Playwright (E2E), React Testing Library。设置 CI 流水线。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["UI-001", "DB-001"]
+  },
+  {
+    "id": "TEST-002",
+    "name": "核心算法单元测试 (Core Algo Tests)",
+    "description": "为树构建、路径查找、分叉逻辑编写高覆盖率的单元测试。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["TEST-001", "API-003"]
+  },
+  {
+    "id": "TEST-003",
+    "name": "关键路径 E2E 测试 (Critical Path E2E)",
+    "description": "编写 E2E 脚本：创建会话 -> 发送消息 -> 编辑分叉 -> 验证侧边栏更新。",
+    "status": "未开发",
+    "priority": "P1",
+    "dependencies": ["TEST-001", "UI-005"]
   }
 ]
