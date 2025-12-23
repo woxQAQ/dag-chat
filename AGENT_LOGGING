@@ -2,6 +2,57 @@
 
 ## 2025-12-24
 
+### API-002: Tree Retrieval Endpoint
+**Status**: complete (not tested)
+**Time**: 2025-12-24
+**Branch**: feat/api-002-tree-retrieval
+
+#### Actions Taken:
+1. Created feature branch `feat/api-002-tree-retrieval`
+2. Installed `@prisma/adapter-pg` for Prisma 7 PostgreSQL support
+3. Updated Prisma client configuration with PostgreSQL adapter
+4. Implemented GET /api/tree endpoint with tree building logic:
+   - Validates conversationId parameter
+   - Verifies conversation exists
+   - Fetches all nodes via raw SQL query
+   - Builds nested tree structure in memory using adjacency list pattern
+5. Created TypeScript types for tree structures
+6. Verified build passes successfully
+
+#### Files Created/Modified:
+- `src/app/api/tree/route.ts` - Tree retrieval API endpoint
+- `src/types/tree.ts` - TypeScript types for MessageNode, TreeResponse, TreeErrorResponse
+- `src/lib/prisma.ts` - Added PostgreSQL adapter configuration
+- `package.json` - Added @prisma/adapter-pg dependency
+
+#### API Usage:
+```
+GET /api/tree?conversationId={uuid}
+```
+
+Response:
+```json
+{
+  "conversationId": "uuid",
+  "tree": [
+    {
+      "id": "uuid",
+      "parentId": null,
+      "role": "USER",
+      "content": "message",
+      "createdAt": "2025-12-24T...",
+      "children": [...]
+    }
+  ],
+  "nodeCount": 10
+}
+```
+
+#### Next Steps:
+- UI-002: Sidebar Tree View (depends on API-002) ✅ ready
+- UI-003: Context Path Highlighting (depends on UI-002)
+- UI-004: Main chat flow (depends on AI-001)
+
 ### UI-001: Application Layout Framework
 **Status**: complete (not tested)
 **Time**: 2025-12-24
