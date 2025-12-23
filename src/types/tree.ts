@@ -2,7 +2,7 @@
  * Type definitions for conversation tree structures
  */
 
-export type MessageRole = "SYSTEM" | "USER" | "ASSISTANT";
+export type MessageRole = "system" | "user" | "assistant";
 
 /**
  * Represents a single node in the conversation tree

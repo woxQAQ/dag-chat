@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { MessageNode } from "@/types/tree";
 
 type RawMessageNode = {
 	id: string;
@@ -32,6 +33,16 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
+		// Validate UUID format
+		const uuidRegex =
+			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+		if (!uuidRegex.test(conversationId)) {
+			return NextResponse.json(
+				{ error: "Invalid conversationId format" },
+				{ status: 400 },
+			);
+		}
+
 		// Verify conversation exists
 		const conversation = await prisma.conversation.findUnique({
 			where: { id: conversationId },
@@ -54,24 +65,15 @@ export async function GET(request: NextRequest) {
 			 ORDER BY "created_at" ASC`;
 
 		// Build tree structure using adjacency list pattern
-		type TreeNode = {
-			id: string;
-			parentId: string | null;
-			role: string;
-			content: string;
-			createdAt: Date;
-			children: TreeNode[];
-		};
-
-		const nodeMap = new Map<string, TreeNode>();
-		const rootNodes: TreeNode[] = [];
+		const nodeMap = new Map<string, MessageNode>();
+		const rootNodes: MessageNode[] = [];
 
 		// First pass: create node map
 		for (const node of nodes) {
 			nodeMap.set(node.id, {
 				id: node.id,
 				parentId: node.parent_id,
-				role: node.role,
+				role: node.role as "system" | "user" | "assistant",
 				content: node.content,
 				createdAt: node.created_at,
 				children: [],
