@@ -1,0 +1,98 @@
+[
+  {
+    "id": "DB-001",
+    "name": "数据库架构设计 (Database Schema)",
+    "description": "设计 PostgreSQL 数据库模型，使用 Prisma ORM 定义 Schema。核心包含 Conversations 和 MessageNodes 表，采用邻接表（Adjacency List）模式。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": []
+  },
+  {
+    "id": "API-001",
+    "name": "Server Actions: 会话管理",
+    "description": "使用 Next.js Server Actions 实现创建会话、获取列表、删除会话的逻辑。利用 Server Components 直接读取数据。",
+    "status": "未开发",
+    "priority": "P1",
+    "dependencies": ["DB-001"]
+  },
+  {
+    "id": "API-002",
+    "name": "API: 树结构获取 (Tree Retrieval)",
+    "description": "实现 Next.js API Route 或 Server Action，高效获取指定会话的完整节点树结构，供客户端组件渲染。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["DB-001"]
+  },
+  {
+    "id": "API-003",
+    "name": "API: 节点创建与分叉 (Node Forking)",
+    "description": "实现节点插入逻辑。若父节点已有子节点，自动处理分叉逻辑。使用 Prisma 的事务能力确保数据一致性。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["DB-001"]
+  },
+  {
+    "id": "SVC-001",
+    "name": "上下文构建服务 (Context Builder)",
+    "description": "在 Server 端实现基于 CTE (Common Table Expressions) 的递归查询（通过 Prisma 的 $queryRaw），构建从 Root 到当前节点的完整对话历史。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["DB-001"]
+  },
+  {
+    "id": "AI-001",
+    "name": "AI流式集成 (Vercel AI SDK)",
+    "description": "集成 Vercel AI SDK (useChat/StreamData)，实现标准化的流式响应。后端使用 Route Handlers 处理 Edge/Node.js Runtime 的流式输出。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["SVC-001"]
+  },
+  {
+    "id": "UI-001",
+    "name": "应用布局框架 (Next.js Layout)",
+    "description": "搭建 Next.js App Router 结构，实现双栏布局。配置 Tailwind CSS 和全局状态管理（如 Jotai/Zustand，如果需要）。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": []
+  },
+  {
+    "id": "UI-002",
+    "name": "侧边栏: 树状可视化 (Sidebar Tree View)",
+    "description": "客户端组件。接收后端传来的树状数据，使用 D3.js 或 SVG 渲染节点和贝塞尔曲线。实现 Git Graph 风格的交互。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["UI-001", "API-002"]
+  },
+  {
+    "id": "UI-003",
+    "name": "交互: 上下文路径高亮",
+    "description": "实现交互逻辑：当悬停或选中某节点时，高亮显示从 Root 到该节点的路径，并置灰其他无关分支。",
+    "status": "未开发",
+    "priority": "P1",
+    "dependencies": ["UI-002"]
+  },
+  {
+    "id": "UI-004",
+    "name": "主视图: 线性对话流",
+    "description": "客户端组件。利用 Vercel AI SDK 的 `useChat` 钩子渲染当前对话流。支持 Markdown 和代码高亮。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["UI-001", "AI-001"]
+  },
+  {
+    "id": "UI-005",
+    "name": "交互: 编辑与分叉 (Edit & Fork)",
+    "description": "集成编辑功能。用户修改历史消息时，调用 API-003 创建新分支，并自动切换当前视图上下文。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["UI-004", "API-003"]
+  },
+  {
+    "id": "UI-006",
+    "name": "侧边栏: 会话列表",
+    "description": "实现侧边栏的一级视图，利用 Server Components 预渲染会话列表。",
+    "status": "未开发",
+    "priority": "P1",
+    "dependencies": ["UI-001", "API-001"]
+  }
+]
