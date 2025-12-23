@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindFlow Prototype</title>
+    <style>
+        :root {
+            --bg-sidebar: #1e1e1e;
+            --bg-main: #ffffff;
+            --text-sidebar: #cccccc;
+            --text-main: #333333;
+            --accent: #3b82f6;
+            --node-active: #3b82f6;
+            --node-inactive: #555555;
+            --line-active: #3b82f6;
+            --line-inactive: #444444;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styling */
+        #sidebar {
+            width: 300px;
+            background-color: var(--bg-sidebar);
+            color: var(--text-sidebar);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        /* Sidebar Header */
+        #sidebar-header {
+            height: 50px;
+            padding: 0 16px;
+            font-weight: bold;
+            border-bottom: 1px solid #333;
+            font-size: 1em;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        #btn-back {
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 8px;
+            border-radius: 4px;
+            color: #888;
+            display: none; /* Hidden by default in list view */
+        }
+        
+        #btn-back:hover {
+            background: #333;
+            color: white;
+        }
+
+        /* Sidebar Views */
+        #view-session-list {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .session-item {
+            padding: 16px;
+            border-bottom: 1px solid #2d2d2d;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .session-item:hover {
+            background: #2d2d2d;
+        }
+
+        .session-title {
+            color: #e5e7eb;
+            font-size: 14px;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .session-meta {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        #view-tree {
+            display: none; /* Hidden by default */
+            flex: 1;
+            position: relative;
+            padding: 20px;
+            overflow: hidden; /* SVG handles scroll if needed, or container */
+        }
+
+        #tree-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Tree Nodes */
+        .node {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .node-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--node-inactive);
+            border: 2px solid var(--bg-sidebar);
+            transition: background-color 0.3s;
+        }
+
+        .node-label {
+            margin-left: 10px;
+            font-size: 12px;
+            color: #888;
+            background: #2d2d2d;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.3s;
+        }
+
+        .node.active .node-dot {
+            background-color: var(--node-active);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+        }
+
+        .node.active .node-label {
+            color: white;
+            background: #3b82f6;
+        }
+
+        .node:hover .node-label {
+            color: white;
+        }
+
+        /* SVG Lines */
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        path {
+            fill: none;
+            stroke-width: 2;
+            transition: stroke 0.3s;
+        }
+
+        /* Main Chat Area */
+        #main-area {
+            flex: 1;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #chat-stream {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message.user .bubble {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            border-bottom-right-radius: 2px;
+        }
+
+        .message.ai .bubble {
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            border-bottom-left-radius: 2px;
+        }
+
+        .meta {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 4px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-edit {
+            cursor: pointer;
+            color: #3b82f6;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message:hover .btn-edit {
+            opacity: 1;
+        }
+
+        #input-area {
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: center;
+            background: #fff;
+        }
+
+        #input-box {
+            width: 100%;
+            max-width: 800px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        #input-box:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fork-badge {
+            font-size: 10px;
+            background: #e0f2fe;
+            color: #0284c7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <div id="sidebar-header">
+        <div style="display:flex; align-items:center;">
+            <span id="btn-back" onclick="goBackToSessions()">❮</span>
+            <span id="header-title">All Chats</span>
+        </div>
+        <div style="font-size:12px; color:#666; cursor:pointer;">+ New</div>
+    </div>
+
+    <!-- View 1: Session List -->
+    <div id="view-session-list">
+        <div class="session-item" onclick="openSession('demo')">
+            <div class="session-title">React Component Demo</div>
+            <div class="session-meta">Just now • 6 messages</div>
+        </div>
+        <div class="session-item" onclick="alert('This is just a demo item')">
+            <div class="session-title">Python Data Analysis</div>
+            <div class="session-meta">Yesterday • 12 messages</div>
+        </div>
+        <div class="session-item" onclick="alert('This is just a demo item')">
+            <div class="session-title">Travel Plan to Japan</div>
+            <div class="session-meta">2 days ago • 4 messages</div>
+        </div>
+    </div>
+
+    <!-- View 2: Tree -->
+    <div id="view-tree">
+        <div id="tree-container">
+            <svg id="tree-lines"></svg>
+            <!-- Nodes will be injected here via JS -->
+        </div>
+    </div>
+</div>
+
+<div id="main-area">
+    <div id="chat-stream">
+        <!-- Messages will be injected here via JS -->
+    </div>
+    <div id="input-area">
+        <input type="text" id="input-box" placeholder="Type a message or edit previous questions..." disabled>
+    </div>
+</div>
+
+<script>
+    // --- Data Structure ---
+    // Simple tree implementation
+    const nodes = {
+        'root': { id: 'root', content: 'Start', type: 'root', parentId: null, children: ['q1'] },
+        'q1': { id: 'q1', content: 'How to create a React component?', type: 'user', parentId: 'root', children: ['a1'] },
+        'a1': { id: 'a1', content: 'You can define it as a function or class.', type: 'ai', parentId: 'q1', children: ['q2a', 'q2b'] },
+        
+        // Branch A (Original)
+        'q2a': { id: 'q2a', content: 'Show me a class example.', type: 'user', parentId: 'a1', children: ['a2a'] },
+        'a2a': { id: 'a2a', content: 'class MyComp extends React.Component { ... }', type: 'ai', parentId: 'q2a', children: [] },
+        
+        // Branch B (Forked)
+        'q2b': { id: 'q2b', content: 'I prefer functional components.', type: 'user', parentId: 'a1', children: ['a2b'] },
+        'a2b': { id: 'a2b', content: 'const MyComp = () => { ... }', type: 'ai', parentId: 'q2b', children: [] }
+    };
+
+    // State
+    let currentLeafId = 'a2b'; // Start at the forked branch
+    let currentView = 'list'; // 'list' or 'tree'
+
+    // --- Logic ---
+
+    function openSession(sessionId) {
+        if (sessionId === 'demo') {
+            currentView = 'tree';
+            updateView();
+            // In a real app, this would fetch data for 'demo'
+            render();
+        }
+    }
+
+    function goBackToSessions() {
+        currentView = 'list';
+        updateView();
+    }
+
+    function updateView() {
+        const listEl = document.getElementById('view-session-list');
+        const treeEl = document.getElementById('view-tree');
+        const backBtn = document.getElementById('btn-back');
+        const titleEl = document.getElementById('header-title');
+
+        if (currentView === 'list') {
+            listEl.style.display = 'flex';
+            treeEl.style.display = 'none';
+            backBtn.style.display = 'none';
+            titleEl.innerText = 'All Chats';
+            // Clear main area or show welcome screen
+            document.getElementById('chat-stream').innerHTML = '<div style="text-align:center; color:#999; margin-top:40%;">Select a chat to start</div>';
+            document.getElementById('input-box').disabled = true;
+        } else {
+            listEl.style.display = 'none';
+            treeEl.style.display = 'block'; // Or flex
+            backBtn.style.display = 'block';
+            titleEl.innerText = 'React Demo';
+            document.getElementById('input-box').disabled = false;
+        }
+    }
+
+    function getPath(leafId) {
+        const path = [];
+        let curr = nodes[leafId];
+        while (curr) {
+            path.unshift(curr);
+            curr = nodes[curr.parentId];
+        }
+        return path;
+    }
+
+    function getAllNodes() {
+        return Object.values(nodes);
+    }
+
+    function setActiveNode(nodeId) {
+        // If clicking a non-leaf node, find the latest leaf in that branch (simplified: just use the node itself if it's user/ai)
+        // For this prototype, clicking any node sets it as "current context view"
+        currentLeafId = nodeId;
+        render();
+    }
+
+    // --- Rendering ---
+
+    const treeContainer = document.getElementById('tree-container');
+    const svgLines = document.getElementById('tree-lines');
+    const chatStream = document.getElementById('chat-stream');
+
+    function render() {
+        renderTree();
+        renderChat();
+    }
+
+    function renderTree() {
+        // Clear existing nodes (except svg)
+        const existingNodes = document.querySelectorAll('.node');
+        existingNodes.forEach(n => n.remove());
+        svgLines.innerHTML = '';
+
+        const activePath = getPath(currentLeafId).map(n => n.id);
+        const allNodes = getAllNodes();
+
+        // Calculate positions (Simple visual layout)
+        // Depth (Y axis) and Branch (X axis)
+        // This is a hardcoded layout for the prototype demo
+        const layout = {
+            'root': { x: 20, y: 20 },
+            'q1':   { x: 20, y: 80 },
+            'a1':   { x: 20, y: 140 },
+            
+            'q2a':  { x: 20, y: 220 },
+            'a2a':  { x: 20, y: 280 },
+            
+            'q2b':  { x: 80, y: 220 }, // Shifted right
+            'a2b':  { x: 80, y: 280 }
+        };
+
+        // Draw Lines
+        allNodes.forEach(node => {
+            if (node.parentId) {
+                const start = layout[node.parentId];
+                const end = layout[node.id];
+                if (start && end) {
+                    const isActiveLine = activePath.includes(node.id) && activePath.includes(node.parentId);
+                    const color = isActiveLine ? 'var(--line-active)' : 'var(--line-inactive)';
+                    
+                    // Bezier curve
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const d = `M ${start.x + 6} ${start.y + 12} C ${start.x + 6} ${start.y + 40}, ${end.x + 6} ${end.y - 20}, ${end.x + 6} ${end.y}`;
+                    path.setAttribute('d', d);
+                    path.setAttribute('stroke', color);
+                    svgLines.appendChild(path);
+                }
+            }
+        });
+
+        // Draw Nodes
+        allNodes.forEach(node => {
+            const pos = layout[node.id];
+            if (!pos) return;
+
+            const el = document.createElement('div');
+            el.className = `node ${activePath.includes(node.id) ? 'active' : ''}`;
+            el.style.left = pos.x + 'px';
+            el.style.top = pos.y + 'px';
+            
+            el.innerHTML = `
+                <div class="node-dot"></div>
+                ${node.type === 'user' ? `<div class="node-label">${node.content}</div>` : ''}
+            `;
+            
+            el.onclick = () => setActiveNode(node.id);
+            treeContainer.appendChild(el);
+        });
+    }
+
+    function renderChat() {
+        chatStream.innerHTML = '';
+        const path = getPath(currentLeafId);
+
+        path.forEach(node => {
+            if (node.id === 'root') return; // Don't show root
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${node.type}`;
+            
+            const isForked = node.id === 'q2b'; // Demo flag
+
+            msgDiv.innerHTML = `
+                <div class="meta">
+                    ${node.type === 'user' ? 'User' : 'MindFlow AI'}
+                    ${isForked ? '<span class="fork-badge">Forked</span>' : ''}
+                    ${node.type === 'user' ? `<span class="btn-edit" onclick="alert('In a real app, this would open edit mode and fork a new branch!')">✎ Edit</span>` : ''}
+                </div>
+                <div class="bubble">${node.content}</div>
+            `;
+            chatStream.appendChild(msgDiv);
+        });
+        
+        // Auto scroll to bottom
+        chatStream.scrollTop = chatStream.scrollHeight;
+    }
+
+    // Initial Render
+    updateView(); // Start in list view
+
+</script>
+</body>
+</html>
