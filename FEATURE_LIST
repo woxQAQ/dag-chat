@@ -51,7 +51,7 @@
     "id": "UI-001",
     "name": "应用布局框架 (Next.js Layout)",
     "description": "搭建 Next.js App Router 结构，实现双栏布局。配置 Tailwind CSS 和全局状态管理（如 Jotai/Zustand，如果需要）。",
-    "status": "未开发",
+    "status": "non tested",
     "priority": "P0",
     "dependencies": []
   },
