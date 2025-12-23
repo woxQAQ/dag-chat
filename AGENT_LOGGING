@@ -1,5 +1,48 @@
 # Agent Logging
 
+## 2025-12-24
+
+### UI-001: Application Layout Framework
+**Status**: complete (not tested)
+**Time**: 2025-12-24
+**Branch**: feat/ui-001-layout
+
+#### Actions Taken:
+1. Created feature branch `feat/ui-001-layout`
+2. Updated root layout metadata with MindFlow branding
+3. Created dual-column layout structure:
+   - `src/components/app-layout.tsx` - Main layout wrapper
+   - `src/components/sidebar.tsx` - Sidebar for conversation list and tree view
+   - `src/components/chat-area.tsx` - Main chat area with header, messages, and input
+4. Updated home page to use new AppLayout component
+5. Fixed Prisma client configuration (removed incorrect adapter setup)
+6. Verified build passes successfully
+
+#### Files Created/Modified:
+- `src/app/layout.tsx` - Updated metadata
+- `src/app/page.tsx` - Replaced with AppLayout
+- `src/components/app-layout.tsx` - New layout wrapper
+- `src/components/sidebar.tsx` - Sidebar component (320px width)
+- `src/components/chat-area.tsx` - Main chat area component
+- `src/lib/prisma.ts` - Fixed Prisma client configuration
+
+#### Layout Structure:
+```
+┌─────────────────────────────────────────────────┐
+│  Sidebar (320px)  │  Main Chat Area (flex-1)    │
+│                   │                              │
+│  - Header         │  - Header (conversation)    │
+│  - Conversations  │  - Messages (scrollable)    │
+│  - Tree View      │  - Input area               │
+│                   │                              │
+└─────────────────────────────────────────────────┘
+```
+
+#### Next Steps:
+- UI-002: Sidebar Tree View (requires API-002)
+- UI-006: Conversation List (requires API-001)
+- UI-004: Main chat flow with Vercel AI SDK (requires AI-001)
+
 ## 2025-12-23
 
 ### DB-001: Database Schema Design
@@ -15,7 +58,7 @@
 3. Created `prisma.config.mjs` for Prisma 7 configuration
    - Uses dotenv to load DATABASE_URL from .env
 4. Created `src/lib/prisma.ts` - Prisma client singleton
-   - Uses pg Pool with adapter for Prisma 7
+   - Simplified configuration (removed adapter)
 5. Generated Prisma Client successfully
 
 #### Files Created/Modified:
