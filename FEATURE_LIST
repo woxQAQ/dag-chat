@@ -43,7 +43,7 @@
     "id": "AI-001",
     "name": "AI流式集成 (Vercel AI SDK)",
     "description": "集成 Vercel AI SDK。后端 Route Handler 接收上下文，流式返回 AI 回复。支持将流式数据实时更新到画布上的 AI Node。",
-    "status": "未开发",
+    "status": "tested",
     "priority": "P0",
     "dependencies": ["SVC-001"]
   },
