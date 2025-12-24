@@ -2,6 +2,50 @@
 
 ## 2024-12-25
 
+### [SVC-001] Context Builder Service - COMPLETED
+**Branch:** feat/svc-001-context-builder
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Context Builder Service** (`src/lib/context-builder.ts`)
+   - `buildConversationContext()`: Builds linear conversation history from root to target node using recursive CTE
+   - `buildConversationContextBatch()`: Batch processing for multiple nodes with parallel execution
+   - `truncateContextByTokens()`: Truncates context to fit token budget for LLM constraints
+   - `formatContextForAI()`: Formats context for Vercel AI SDK consumption
+   - UUID validation, node existence checks, error handling
+
+2. **Type Definitions**
+   - `ContextMessage`: Individual message with id, role, content, positionInChain
+   - `ContextResult`: Result object with messages array, totalTokens, pathLength
+
+3. **Tests** (`src/lib/context-builder.test.ts`)
+   - 25 comprehensive tests covering:
+     - UUID validation
+     - Node existence checks
+     - Recursive CTE path traversal
+     - Token calculation
+     - Batch processing
+     - Context truncation
+     - AI SDK formatting
+     - Error handling
+   - ✅ All tests passing
+
+4. **Configuration Updates**
+   - `package.json`: Added `test:coverage` script
+
+#### Technical Details:
+- Uses PostgreSQL `WITH RECURSIVE` CTE for efficient tree traversal
+- Builds path from target node → root, then reverses for chronological order
+- Approximate token count: ~4 chars per token
+- Keeps most recent messages when truncating
+
+#### Next Steps:
+- Feature SVC-001 is complete. Ready to proceed with dependent features:
+  - AI-001: AI Streaming Integration (Vercel AI SDK)
+
+---
+
 ### [DB-001] Database Schema Design - COMPLETED
 **Branch:** feat/db-001-database-schema
 **Status:** ✅ Complete
@@ -40,10 +84,3 @@
 
 #### Migration History:
 - `20251224193322_init` - Initial schema migration
-
-#### Next Steps:
-- Feature DB-001 is complete. Ready to proceed with dependent features:
-  - API-001: Server Actions - Project Management
-  - API-002: API - Graph Retrieval
-  - API-003: API - Node Operations
-  - SVC-001: Context Builder Service
