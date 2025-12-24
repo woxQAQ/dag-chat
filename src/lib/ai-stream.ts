@@ -14,7 +14,6 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createOpenAI } from "@ai-sdk/openai";
-import type { CoreMessage } from "ai";
 import { streamText } from "ai";
 
 // ============================================================================
@@ -22,6 +21,11 @@ import { streamText } from "ai";
 // ============================================================================
 
 export type AIProvider = "deepseek" | "anthropic" | "openai";
+
+export type CoreMessage = {
+	role: "system" | "user" | "assistant" | "SYSTEM" | "USER" | "ASSISTANT";
+	content: string;
+};
 
 export type StreamChatInput = {
 	/**
@@ -173,20 +177,21 @@ export async function streamChat(
 	// Stream the response using Vercel AI SDK
 	const result = streamText({
 		model: aiModel,
-		messages,
-		maxTokens,
-		temperature,
+		messages: messages as Array<{ role: "system" | "user" | "assistant"; content: string }>,
+		...maxTokens !== undefined && { maxSteps: maxTokens },
+		...temperature !== undefined && { temperature },
 	});
 
 	// Return the streaming result
 	return {
-		toStreamResponse: () => result.toDataStreamResponse(),
-		text: result.text,
+		toStreamResponse: () => result.toTextStreamResponse(),
+		text: Promise.resolve(result.text),
 		usage: (async () => {
 			const usage = await result.usage;
 			return {
-				promptTokens: usage.promptTokens,
-				completionTokens: usage.completionTokens,
+				promptTokens: (usage as unknown as { promptTokens: number }).promptTokens ?? 0,
+				completionTokens:
+					(usage as unknown as { completionTokens: number }).completionTokens ?? 0,
 			};
 		})(),
 	};
@@ -236,7 +241,7 @@ export async function streamChatWithNode(
 		positionX: positionX ?? 0,
 		positionY: positionY ?? 0,
 		metadata: {
-			...metadata,
+			...(typeof metadata === "object" && metadata !== null ? metadata : {}),
 			streaming: true,
 			provider: input.provider || "deepseek",
 		},
@@ -257,7 +262,7 @@ export async function streamChatWithNode(
 		await updateNodeContent(node.id, {
 			content: fullText,
 			metadata: {
-				...metadata,
+				...(typeof metadata === "object" && metadata !== null ? metadata : {}),
 				streaming: false,
 				provider: input.provider || "deepseek",
 			},

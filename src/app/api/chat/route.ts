@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
 			positionX,
 			positionY,
 			metadata: {
-				...metadata,
+				...(typeof metadata === "object" && metadata !== null ? metadata : {}),
 				contextLength: context.pathLength,
 				contextTokens: context.totalTokens,
 			},

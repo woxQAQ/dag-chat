@@ -7,6 +7,7 @@
  * This is used to provide LLM context for AI responses.
  */
 
+import type { CoreMessage } from "./ai-stream";
 import { prisma } from "./prisma";
 
 export type ContextMessage = {
@@ -221,9 +222,7 @@ export function truncateContextByTokens(
  * @param context - The context result to format
  * @returns Array of messages in AI SDK format
  */
-export function formatContextForAI(
-	context: ContextResult,
-): Array<{ role: string; content: string }> {
+export function formatContextForAI(context: ContextResult): CoreMessage[] {
 	return context.messages.map((msg) => ({
 		role: msg.role.toLowerCase() as "system" | "user" | "assistant",
 		content: msg.content,

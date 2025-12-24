@@ -258,10 +258,10 @@ export async function updateNode(
 	const node = await prisma.node.update({
 		where: { id: nodeId },
 		data: {
-			...(input.content !== undefined && { content: input.content }),
-			...(input.positionX !== undefined && { positionX: input.positionX }),
-			...(input.positionY !== undefined && { positionY: input.positionY }),
-			...(input.metadata !== undefined && { metadata: input.metadata }),
+			...(input.content !== undefined ? { content: input.content } : {}),
+			...(input.positionX !== undefined ? { positionX: input.positionX } : {}),
+			...(input.positionY !== undefined ? { positionY: input.positionY } : {}),
+			...(input.metadata !== undefined ? { metadata: input.metadata as any } : {}),
 		},
 	});
 
@@ -352,7 +352,7 @@ export async function updateNodeContent(
 		where: { id: nodeId },
 		data: {
 			content: input.content,
-			...(input.metadata !== undefined && { metadata: input.metadata }),
+			...(input.metadata !== undefined ? { metadata: input.metadata as any } : {}),
 		},
 	});
 

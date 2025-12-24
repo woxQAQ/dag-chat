@@ -349,7 +349,7 @@ export async function getProjectGraphStats(projectId: string): Promise<{
 			maxDepth = row.depth;
 		}
 
-		if (row.child_count === 0n) {
+		if (row.child_count === BigInt(0)) {
 			leafNodeCount++;
 		}
 	}

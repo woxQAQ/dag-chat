@@ -2,6 +2,124 @@
 
 ## 2024-12-25
 
+### [UI-001] Application Layout Framework - COMPLETED
+**Branch:** feat/ui-001-app-layout
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Layout Components** (`src/components/layout/`)
+   - `CanvasLayout.tsx`: Full-screen canvas layout wrapper with grid background
+   - `TopHeader.tsx`: Minimal top navigation bar (48-60px height)
+   - `FloatingToolbar.tsx`: Bottom center floating toolbar with glassmorphism effect
+   - `InspectorPanel.tsx`: Right slide-out panel with Thread/Properties tabs
+   - `index.ts`: Barrel export file for easy imports
+
+2. **Styling Approach**
+   - Uses Tailwind CSS v4 utility classes (no CSS modules)
+   - Responsive design with mobile breakpoints
+   - Slate color palette (#f8fafc background, #1e293b text)
+   - Primary blue color (#2563eb / #3b82f6) for active states
+   - Glassmorphism effect with backdrop-blur on toolbar/header
+
+3. **Component Features**
+
+   **CanvasLayout**:
+   - Full-screen viewport container (100vw x 100vh)
+   - Dot pattern grid background (24px spacing)
+   - Positioned slots: header (top), toolbar (bottom-center), inspector (right)
+   - Inspector panel with smooth slide-in/slide-out animation
+   - Responsive inspector width (400px desktop, 100% mobile)
+
+   **TopHeader**:
+   - Left: Back button + breadcrumb navigation
+   - Center: Save status indicator (Saving.../Saved/Unsaved)
+   - Right: Share, Export, Settings action buttons
+   - Transparent background with subtle blur
+   - Custom content slots for left/right sections
+
+   **FloatingToolbar**:
+   - Tool modes: Select (V), Hand (H), Connect (L)
+   - Add Node button (primary action, N shortcut)
+   - Auto Layout button
+   - Glassmorphism capsule design
+   - Active state highlighting with blue background
+   - Custom children support for extensibility
+
+   **InspectorPanel**:
+   - Two tabs: Thread (linear conversation) and Properties (metadata)
+   - Smooth slide-in animation from right
+   - Close button
+   - Empty state messages
+   - Custom content slots for both tabs
+
+4. **Workspace Page** (`src/app/workspace/page.tsx`)
+   - Demo page showing all layout components integrated
+   - State management for tool mode and inspector panel
+   - Placeholder for canvas content (UI-002)
+
+5. **Tests** (`src/components/layout/CanvasLayout.test.tsx`)
+   - 29 comprehensive tests covering:
+     - CanvasLayout rendering with grid background
+     - Header/toolbar/inspector slots
+     - TopHeader: project name, back button, save status, action buttons
+     - FloatingToolbar: all tool buttons, mode highlighting
+     - InspectorPanel: tabs, empty states, content rendering
+     - Full layout integration test
+   - ✅ All tests passing (29/29)
+
+#### Technical Details:
+- Built with React 19.2.3 and TypeScript strict mode
+- Uses Next.js 16.1.1 App Router
+- Tailwind CSS v4 for styling (inline theme configuration)
+- No external CSS files needed
+- Component composition pattern for flexibility
+- Proper TypeScript types exported for all props
+
+#### Visual Design:
+- **Canvas Background**: #F8FAFC (Slate 50) with dot pattern grid
+- **Primary Color**: #2563EB (Royal Blue) for active states
+- **Header Height**: 56px (h-14)
+- **Inspector Width**: 400px (responsive: 100% on mobile)
+- **Grid Pattern**: 24px spacing with #cbd5e1 dots at 40% opacity
+- **Shadows**: Subtle shadows for depth (toolbar, inspector)
+- **Transitions**: 120-250ms duration with cubic-bezier easing
+
+#### File Structure:
+```
+src/components/layout/
+├── CanvasLayout.tsx
+├── TopHeader.tsx
+├── FloatingToolbar.tsx
+├── InspectorPanel.tsx
+├── index.ts
+└── CanvasLayout.test.tsx
+
+src/app/
+├── page.tsx (updated with link to workspace)
+└── workspace/
+    └── page.tsx (demo page)
+```
+
+#### Important Notes:
+- Inspector panel is hidden by default (`inspectorOpen=false`)
+- Toolbar buttons use SVG icons (inline, no external icon library)
+- Save status color changes: blue (saving), green (saved), amber (unsaved)
+- Back button only renders when `onBack` handler is provided
+- Custom content can be injected via props for maximum flexibility
+
+#### Next Steps:
+- Feature UI-001 is complete. The application layout framework is now functional.
+- Dependent features can now proceed:
+  - UI-002: Infinite Canvas (React Flow integration for canvas content area)
+  - UI-003: Node Components (UserNode, AINode to render in canvas)
+  - UI-004: Inspector Panel Thread View (linear conversation display)
+  - UI-005: Path Highlighting (canvas visual feedback)
+  - UI-006: Enhanced Floating Toolbar (connect to actual functionality)
+  - UI-007: Dashboard (project list view)
+
+---
+
 ### [AI-001] AI Streaming Integration - COMPLETED
 **Branch:** feat/ai-001-streaming
 **Status:** ✅ Complete
