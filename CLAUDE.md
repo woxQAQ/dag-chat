@@ -94,6 +94,67 @@ See `docs/design/product_requirements_document.md` for detailed UX specification
 ## important hints
 
 1. select a feature from `FEATURE_LIST` by their priority and dependencies.
-2. record your working progress in `AGENT_LOGGING` in a log format
+2. You MUST record your working progress in `AGENT_LOGGING` in a log format
 3. if you start a work on a feature, you should check `git log` and `AGENT_LOGGING` to get the insight of current project.
-4. the `FEATURE_LIST` `state` field is in enum ["complete", "todo", "tested", "not tested"]. YOU SHOULD NOT SET THE `state` to "complete". you can set `tested` or `not tested` instead accoring to your progress.
+4. the `FEATURE_LIST` `state` field is in enum ["complete", "todo", "tested", "not tested"]. `FEATURE_LIST` is READONLY for you.
+5. YOU SHOULD NOT DEVELOP AT main/master branch. you should create a new branch for each feature you work on. 
+6. After you finish the feature, you need to commit your changes to the new branch.
+7. You SHOULD write comprehensive test cases for each feature you develop.
+
+## Testing Guidelines
+### Framework
+
+Unit Testing: Vitest
+Coverage: 80% minimum
+
+### Commands
+```bash
+pnpm test              # Run all tests
+pnpm test:watch        # Watch mode
+pnpm test:coverage     # Check coverage
+```
+### TDD Workflow
+
+- **Write test first (should fail)**
+- Write minimal code to pass
+- Refactor if needed
+
+### Rules
+
+MUST write tests for new features
+MUST write tests for bug fixes
+MUST pass all tests before commit
+Co-locate tests with source files: *.test.ts
+
+### Test Structure
+```ts
+typescriptdescribe('FeatureName', () => {
+  it('should do something when condition', () => {
+    // Arrange
+    const input = setupData();
+    
+    // Act
+    const result = doSomething(input);
+    
+    // Assert
+    expect(result).toBe(expected);
+  });
+});
+```
+### Best Practices
+
+- Test behavior, not implementation
+- Keep tests simple and independent
+- Mock external dependencies (APIs, databases)
+- Test edge cases and errors
+- Use descriptive test names (e.g., `shouldReturnErrorWhenInvalidInput`)
+
+### Before Commit
+
+- All tests pass
+- Coverage meets 80%
+
+## Git Conventions
+
+- **Branch naming**: start with ["feat","chore","fix","ci","docs"] followed by a slash and the feature name
+- **Commit messages**: Follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) spec

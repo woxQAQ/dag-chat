@@ -1,5 +1,5 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
+.review
 # dependencies
 /node_modules
 /.pnp
@@ -31,8 +31,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
-
+.env.*
+!.env.example
 # vercel
 .vercel
 
