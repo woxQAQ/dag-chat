@@ -261,7 +261,9 @@ export async function updateNode(
 			...(input.content !== undefined ? { content: input.content } : {}),
 			...(input.positionX !== undefined ? { positionX: input.positionX } : {}),
 			...(input.positionY !== undefined ? { positionY: input.positionY } : {}),
-			...(input.metadata !== undefined ? { metadata: input.metadata as any } : {}),
+			...(input.metadata !== undefined
+				? { metadata: input.metadata as any }
+				: {}),
 		},
 	});
 
@@ -352,7 +354,9 @@ export async function updateNodeContent(
 		where: { id: nodeId },
 		data: {
 			content: input.content,
-			...(input.metadata !== undefined ? { metadata: input.metadata as any } : {}),
+			...(input.metadata !== undefined
+				? { metadata: input.metadata as any }
+				: {}),
 		},
 	});
 

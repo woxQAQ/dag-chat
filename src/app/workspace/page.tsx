@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { InfiniteCanvas } from "@/components/canvas";
 import {
 	CanvasLayout,
 	FloatingToolbar,
@@ -9,7 +10,6 @@ import {
 	type ToolMode,
 	TopHeader,
 } from "@/components/layout";
-import { InfiniteCanvas } from "@/components/canvas";
 
 export default function WorkspacePage() {
 	const [toolMode, setToolMode] = useState<ToolMode>("select");

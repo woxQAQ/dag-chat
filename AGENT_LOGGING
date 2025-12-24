@@ -2,6 +2,143 @@
 
 ## 2024-12-25
 
+### [UI-003] Node Components - COMPLETED
+**Branch:** feat/ui-003-node-components
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Node Components** (`src/components/nodes/`)
+   - `UserNode.tsx`: User input message node component
+   - `AINode.tsx`: AI assistant response node component with markdown support
+   - `types.ts`: TypeScript type definitions for node data and props
+   - `index.ts`: Barrel exports and nodeTypes configuration for React Flow
+   - `nodes.test.tsx`: Comprehensive test suite for all node components
+
+2. **Component Features**
+
+   **UserNode**:
+   - Light gray background (#f1f5f9) with subtle border
+   - User avatar icon with "You" label
+   - Edit mode with textarea (double-click to toggle)
+   - Keyboard shortcuts: Cmd/Ctrl+Enter to save, Escape to cancel
+   - Empty state message when content is missing
+   - Connection handles (top/bottom) visible on hover
+   - Edit hint tooltip on hover
+   - Selected state with blue border highlight
+
+   **AINode**:
+   - White background with shadow for elevation
+   - AI avatar icon with provider/model name display
+   - Full markdown rendering support (via react-markdown)
+   - Code syntax highlighting (via rehype-highlight)
+   - GitHub Flavored Markdown support (tables, strikethrough, etc.)
+   - Streaming indicator with animated pulse
+   - Action bar on hover: Copy button, Regenerate button
+   - Custom styling for code blocks and inline code
+   - Links open in new tab with security attributes
+   - Selected state with blue border and enhanced shadow
+
+3. **Type Definitions**
+   - `NodeRole`: "SYSTEM" | "USER" | "ASSISTANT"
+   - `MindFlowNodeData`: id, role, content, isEditing, isStreaming, createdAt, metadata
+   - `MindFlowNode`: Extended React Flow Node type
+   - `BaseNodeProps`, `UserNodeProps`, `AINodeProps`: Component prop interfaces
+
+4. **nodeTypes Export**
+   - Pre-configured mapping of node types to components
+   - `user` → UserNode
+   - `assistant` → AINode
+   - `system` → AINode (can be customized later)
+
+5. **Tests** (`src/components/nodes/nodes.test.tsx`)
+   - 38 comprehensive tests covering:
+     - UserNode rendering (content, empty state, labels)
+     - UserNode interactions (edit mode, double-click, content change)
+     - UserNode styles (selected, hover states)
+     - AINode rendering (markdown, headings, bold text)
+     - AINode metadata display (provider, model)
+     - AINode streaming indicator
+     - AINode markdown features (code blocks, inline code, links, lists, tables, blockquotes)
+     - AINode interactions (copy, regenerate, double-click)
+     - nodeTypes export verification
+     - Edge cases (long content, special characters, null metadata)
+   - ✅ All tests passing (38/38)
+
+#### Technical Details:
+- Built with React 19.2.3 and TypeScript strict mode
+- Uses `@xyflow/react` v12.10.0 Handle component for connections
+- Markdown rendering via `react-markdown` v10.1.0
+- Syntax highlighting via `rehype-highlight` v7.0.2
+- GFM support via `remark-gfm` v4.0.1
+- Tailwind CSS v4 for all styling
+- React Flow Handle component mocked in tests to avoid Zustand dependency
+
+#### Visual Design:
+- **UserNode**: Background #f1f5f9 (slate-100), Border #e2e8f0 (slate-200), Selected #2563EB (blue-500)
+- **AINode**: Background #ffffff (white), Border #e2e8f0 (slate-200), Selected #2563EB (blue-500)
+- **Border Radius**: 12px (rounded-xl)
+- **Shadows**: Default 0 1px 3px, Hover 0 4px 6px, Selected 0 0 0 2px + 0 10px 15px
+- **Min Width**: UserNode 280px, AINode 320px
+- **Max Width**: UserNode 400px, AINode 500px
+- **Font**: System sans-serif for UI, monospace for code
+
+#### File Structure:
+```
+src/components/nodes/
+├── UserNode.tsx
+├── AINode.tsx
+├── types.ts
+├── index.ts
+└── nodes.test.tsx
+```
+
+#### Important Notes:
+- Both nodes are client components ("use client" directive)
+- Connection handles only appear when hovered to reduce visual clutter
+- Edit mode in UserNode is controlled via `isEditing` flag in data
+- Streaming state in AINode shows animated pulse indicator
+- Markdown in AINode supports: headings, bold, italic, code blocks, inline code, lists, tables, blockquotes, links
+- Code blocks have custom gray background (#f1f5f9) with rounded corners
+- All links automatically get `target="_blank"` and `rel="noopener noreferrer"`
+
+#### Usage Example:
+```tsx
+import { nodeTypes, type MindFlowNode } from "@/components/nodes";
+
+// In your canvas component
+const nodes: MindFlowNode[] = [
+  {
+    id: "user-1",
+    type: "user",
+    position: { x: 100, y: 100 },
+    data: { id: "user-1", role: "USER", content: "Hello!" }
+  },
+  {
+    id: "ai-1",
+    type: "assistant",
+    position: { x: 100, y: 300 },
+    data: {
+      id: "ai-1",
+      role: "ASSISTANT",
+      content: "## Hello\n\nThis is **markdown**!",
+      metadata: { provider: "deepseek", model: "deepseek-chat" }
+    }
+  }
+];
+
+<InfiniteCanvas nodes={nodes} nodeTypes={nodeTypes} />
+```
+
+#### Next Steps:
+- Feature UI-003 is complete. Canvas can now render conversation nodes with proper styling.
+- Dependent features can now proceed:
+  - UI-004: Inspector Panel Thread View (uses node data for linear conversation display)
+  - UI-005: Path Highlighting (uses node selection state)
+  - UI-006: Enhanced Floating Toolbar (connect to node creation/editing)
+
+---
+
 ### [UI-002] Infinite Canvas - COMPLETED
 **Branch:** feat/ui-002-infinite-canvas
 **Status:** ✅ Complete

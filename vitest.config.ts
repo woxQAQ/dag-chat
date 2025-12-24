@@ -19,7 +19,7 @@ export default defineConfig({
 				__dirname,
 				"./src/__mocks__/empty.ts",
 			),
-			"@xyflow/react/style.css": path.resolve(
+			"@xyflow/react/dist/style.css": path.resolve(
 				__dirname,
 				"./src/__mocks__/empty.ts",
 			),

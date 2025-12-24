@@ -3,16 +3,23 @@
 import {
 	Background,
 	type BackgroundProps,
+	BackgroundVariant,
 	Controls,
 	type Edge,
 	type Node,
 	ReactFlow,
 	type ReactFlowProps,
 } from "@xyflow/react";
-import "@xyflow/react/style.css";
+import "@xyflow/react/dist/style.css";
 
 // Re-export common types from React Flow for external use
 export type { Edge, Node };
+export { BackgroundVariant };
+
+/**
+ * Union type for background variant options
+ */
+export type CanvasBackgroundVariant = "dots" | "lines" | "cross";
 
 /**
  * Props for InfiniteCanvas component
@@ -55,7 +62,7 @@ export interface InfiniteCanvasProps
 	/**
 	 * Background variant (dots, lines, or cross)
 	 */
-	backgroundVariant?: BackgroundProps["variant"];
+	backgroundVariant?: CanvasBackgroundVariant;
 
 	/**
 	 * Background gap size in pixels (default: 24)
@@ -132,7 +139,7 @@ export function InfiniteCanvas({
 			{...restProps}
 		>
 			<Background
-				variant={backgroundVariant}
+				variant={backgroundVariant as BackgroundVariant}
 				gap={backgroundGap}
 				size={1}
 				color="#cbd5e1"

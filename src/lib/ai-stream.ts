@@ -177,9 +177,12 @@ export async function streamChat(
 	// Stream the response using Vercel AI SDK
 	const result = streamText({
 		model: aiModel,
-		messages: messages as Array<{ role: "system" | "user" | "assistant"; content: string }>,
-		...maxTokens !== undefined && { maxSteps: maxTokens },
-		...temperature !== undefined && { temperature },
+		messages: messages as Array<{
+			role: "system" | "user" | "assistant";
+			content: string;
+		}>,
+		...(maxTokens !== undefined && { maxSteps: maxTokens }),
+		...(temperature !== undefined && { temperature }),
 	});
 
 	// Return the streaming result
@@ -189,9 +192,11 @@ export async function streamChat(
 		usage: (async () => {
 			const usage = await result.usage;
 			return {
-				promptTokens: (usage as unknown as { promptTokens: number }).promptTokens ?? 0,
+				promptTokens:
+					(usage as unknown as { promptTokens: number }).promptTokens ?? 0,
 				completionTokens:
-					(usage as unknown as { completionTokens: number }).completionTokens ?? 0,
+					(usage as unknown as { completionTokens: number }).completionTokens ??
+					0,
 			};
 		})(),
 	};

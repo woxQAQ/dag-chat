@@ -2,18 +2,22 @@
  * Tests for InfiniteCanvas component
  */
 
-import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import type { Edge, Node } from "@xyflow/react";
+import { describe, expect, it, vi } from "vitest";
 import { InfiniteCanvas } from "./InfiniteCanvas";
-import type { Node, Edge } from "@xyflow/react";
 
 // Mock the CSS import
-vi.mock("@xyflow/react/style.css", () => ({}));
+vi.mock("@xyflow/react/dist/style.css", () => ({}));
 
 // Mock @xyflow/react module
 vi.mock("@xyflow/react", () => ({
 	ReactFlow: ({ children, nodes, edges, ...props }: any) => (
-		<div data-testid="react-flow" data-nodes={nodes?.length} data-edges={edges?.length}>
+		<div
+			data-testid="react-flow"
+			data-nodes={nodes?.length}
+			data-edges={edges?.length}
+		>
 			{children}
 		</div>
 	),
@@ -45,8 +49,18 @@ describe("InfiniteCanvas", () => {
 
 		it("should render with provided nodes", () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: { label: "Node 1" } },
-				{ id: "2", type: "default", position: { x: 100, y: 100 }, data: { label: "Node 2" } },
+				{
+					id: "1",
+					type: "default",
+					position: { x: 0, y: 0 },
+					data: { label: "Node 1" },
+				},
+				{
+					id: "2",
+					type: "default",
+					position: { x: 100, y: 100 },
+					data: { label: "Node 2" },
+				},
 			];
 			render(<InfiniteCanvas nodes={nodes} />);
 			const canvas = screen.getByTestId("react-flow");
@@ -140,7 +154,12 @@ describe("InfiniteCanvas", () => {
 	describe("Integration", () => {
 		it("should render with all props configured", () => {
 			const nodes: Node[] = [
-				{ id: "1", type: "default", position: { x: 0, y: 0 }, data: { label: "Node 1" } },
+				{
+					id: "1",
+					type: "default",
+					position: { x: 0, y: 0 },
+					data: { label: "Node 1" },
+				},
 			];
 			const edges: Edge[] = [{ id: "e1-2", source: "1", target: "2" }];
 
@@ -159,10 +178,22 @@ describe("InfiniteCanvas", () => {
 				/>,
 			);
 
-			expect(screen.getByTestId("react-flow")).toHaveAttribute("data-nodes", "1");
-			expect(screen.getByTestId("react-flow")).toHaveAttribute("data-edges", "1");
-			expect(screen.getByTestId("background")).toHaveAttribute("data-variant", "cross");
-			expect(screen.getByTestId("background")).toHaveAttribute("data-gap", "32");
+			expect(screen.getByTestId("react-flow")).toHaveAttribute(
+				"data-nodes",
+				"1",
+			);
+			expect(screen.getByTestId("react-flow")).toHaveAttribute(
+				"data-edges",
+				"1",
+			);
+			expect(screen.getByTestId("background")).toHaveAttribute(
+				"data-variant",
+				"cross",
+			);
+			expect(screen.getByTestId("background")).toHaveAttribute(
+				"data-gap",
+				"32",
+			);
 			expect(screen.getByTestId("controls")).toBeInTheDocument();
 		});
 	});

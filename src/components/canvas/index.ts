@@ -4,5 +4,5 @@
  * Provides infinite canvas functionality with pan and zoom support.
  */
 
-export type { InfiniteCanvasProps } from "./InfiniteCanvas";
-export { InfiniteCanvas } from "./InfiniteCanvas";
+export type { InfiniteCanvasProps, CanvasBackgroundVariant } from "./InfiniteCanvas";
+export { InfiniteCanvas, BackgroundVariant } from "./InfiniteCanvas";
