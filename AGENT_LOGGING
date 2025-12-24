@@ -2,6 +2,137 @@
 
 ## 2024-12-25
 
+### [UI-004] Inspector Panel Thread View - COMPLETED
+**Branch:** feat/ui-004-inspector-thread-view
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Thread View Components** (`src/components/thread/`)
+   - `ThreadView.tsx`: Main container with message list and input area
+   - `ThreadMessage.tsx`: Individual message display with role-based styling
+   - `ThreadInput.tsx`: Message input area with auto-growing textarea
+   - `types.ts`: TypeScript type definitions for thread components
+   - `index.ts`: Barrel export file for easy imports
+   - `ThreadView.test.tsx`: Comprehensive test suite (36 tests)
+
+2. **Component Features**
+
+   **ThreadView**:
+   - Fetches conversation context using `buildConversationContext()`
+   - Displays messages in chronological order (root → selected node)
+   - Auto-scroll to bottom on new messages
+   - Loading, error, and empty states
+   - Input area to continue conversation
+   - Message action callbacks (copy, regenerate)
+   - Supports both controlled (props) and internal state modes
+
+   **ThreadMessage**:
+   - **USER messages**: Right-aligned, blue background (#3b82f6), "You" label
+   - **ASSISTANT messages**: Left-aligned, white background, markdown rendering
+   - **SYSTEM messages**: Centered, muted text (#64748b)
+   - Streaming indicator with animated pulse for AI responses
+   - Provider/model name display from metadata
+   - Copy and regenerate buttons (visible on hover)
+   - Custom markdown styling (code blocks, inline code, links)
+   - Whitespace preservation for user messages
+
+   **ThreadInput**:
+   - Auto-growing textarea (48px to 200px max height)
+   - Character count display (4000 max, warning at 90%)
+   - Keyboard shortcuts: Cmd/Ctrl+Enter to send, Escape to clear
+   - Loading state with spinner
+   - Disabled state handling
+   - Error recovery (restores message on failure)
+   - Send button with proper disabled states
+
+3. **Type Definitions**
+   - `ThreadMessageRole`: "SYSTEM" | "USER" | "ASSISTANT"
+   - `ThreadMessage`: Extended ContextMessage with isStreaming and metadata
+   - `ThreadViewProps`: Complete props interface for ThreadView
+   - `ThreadMessageProps`, `ThreadInputProps`: Component prop interfaces
+   - Re-exports `ContextMessage`, `ContextResult` from context-builder
+
+4. **Tests** (`src/components/thread/ThreadView.test.tsx`)
+   - 36 comprehensive tests covering:
+     - ThreadMessage: USER/ASSISTANT/SYSTEM role rendering
+     - ThreadMessage: Empty states, metadata display, streaming indicator
+     - ThreadMessage: Copy and regenerate button interactions
+     - ThreadInput: Rendering, disabled states, typing behavior
+     - ThreadInput: Send button, keyboard shortcuts, character count
+     - ThreadView: Empty/loading/error states
+     - ThreadView: Message display with props
+     - ThreadView: Send message integration
+     - ThreadView: Message actions (copy, regenerate)
+   - ✅ All tests passing (36/36)
+
+#### Technical Details:
+- Built with React 19.2.3 and TypeScript strict mode
+- Uses `buildConversationContext()` from SVC-001 for linear path extraction
+- Markdown rendering via `react-markdown` v10.1.0
+- Syntax highlighting via `rehype-highlight` v7.0.2
+- GFM support via `remark-gfm` v4.0.1
+- Tailwind CSS v4 for all styling
+- Auto-scroll using React ref + scrollIntoView with smooth behavior
+- Cancel flag in useEffect to prevent state updates on unmount
+
+#### Visual Design:
+- **USER messages**: Background #3b82f6 (blue-500), white text, rounded-2xl
+- **ASSISTANT messages**: Background #ffffff (white), border #e2e8f0 (slate-200)
+- **SYSTEM messages**: Background #f1f5f9 (slate-100), centered, rounded-full
+- **Input area**: Border-top #e2e8f0 (slate-200), background #f8fafc (slate-50)
+- **Code blocks**: Background #f1f5f9, rounded corners, monospace font
+- **Streaming indicator**: Animated ping + static dot in blue
+- **Message spacing**: 12px vertical gap (my-3)
+
+#### File Structure:
+```
+src/components/thread/
+├── ThreadView.tsx
+├── ThreadMessage.tsx
+├── ThreadInput.tsx
+├── types.ts
+├── index.ts
+└── ThreadView.test.tsx
+```
+
+#### Important Notes:
+- ThreadView fetches context automatically when `nodeId` prop changes
+- Messages can be provided via `messages` prop to bypass internal fetching
+- Copy button uses `navigator.clipboard.writeText()` by default
+- Regenerate button only shown for ASSISTANT messages when not streaming
+- Markdown supports: headings, bold, italic, code blocks, inline code, lists, tables, blockquotes, links
+- All links automatically get `target="_blank"` and `rel="noopener noreferrer"`
+
+#### Usage Example:
+```tsx
+import { ThreadView } from "@/components/thread";
+
+// In your InspectorPanel component
+<ThreadView
+  nodeId={selectedNodeId}
+  projectId={activeProjectId}
+  onSendMessage={async (message, parentNodeId) => {
+    await sendMessageToAI(message, parentNodeId);
+  }}
+  onMessageCopy={(messageId, content) => {
+    copyToClipboard(content);
+  }}
+  onMessageRegenerate={(messageId) => {
+    regenerateResponse(messageId);
+  }}
+/>
+```
+
+#### Next Steps:
+- Feature UI-004 is complete. Users can now view and continue conversations from the inspector panel.
+- Dependent features can now proceed:
+  - UI-005: Path Highlighting (canvas visual feedback for selected paths)
+  - UI-006: Enhanced Floating Toolbar (connect to actual functionality)
+  - Frontend integration with streaming API for real-time message updates
+
+---
+
 ### [UI-003] Node Components - COMPLETED
 **Branch:** feat/ui-003-node-components
 **Status:** ✅ Complete
