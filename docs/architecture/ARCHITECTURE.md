@@ -2,127 +2,157 @@
 
 ## 1. 概览与愿景 (Executive Summary)
 
-MindFlow 旨在打造一款基于“树状思维流”的 AI 交互工具。与传统线性 Chatbot 不同，MindFlow 的核心复杂度在于**多维度的上下文管理**与**非线性的对话拓扑结构**。
+MindFlow 旨在打造一款**AI 原生的可视化思维空间 (AI-Native Visual Workspace)**。
+与传统的 Chatbot 不同，MindFlow 采用**Canvas First** 的交互模式，将“图 (Graph)”作为第一公民，支持非线性的、项目制的深度思考与创作。
 
 本架构设计的核心目标是：
-1.  **高响应力**：确保在复杂的树状结构中，上下文切换和 LLM 流式响应依然流畅。
-2.  **开发效率 (Velocity)**：利用现代全栈框架 (Next.js) 的能力，统一前后端语言，快速迭代 MVP。
-3.  **数据完整性**：保证在高并发的分叉（Fork）操作下，对话树的拓扑结构不被破坏。
+1.  **交互流畅性**: 确保无限画布上的节点拖拽、缩放和实时渲染达到 60fps 流畅度。
+2.  **数据一致性**: 在复杂的图编辑（分叉、合并、移动）操作下，保证数据结构的完整性。
+3.  **全栈效率**: 利用 Next.js + Supabase 快速构建高性能、可扩展的现代 Web 应用。
 
 ---
 
-## 2. 约束分析 (Constraint Analysis)
-
-### 2.1 核心约束
-| 维度 | 约束条件 | 类型 | 影响 |
-| :--- | :--- | :--- | :--- |
-| **技术** | 必须支持 LLM 流式输出 (SSE/WebSocket) | Hard | 后端框架必须支持 Streaming Response。 |
-| **数据** | 对话结构为 DAG (有向无环图) 或 Tree | Hard | 关系型数据库需要特殊的表结构设计 (Recursive Queries)。 |
-| **体验** | 侧边栏渲染需实时感知拓扑变化 | Hard | API 需要高效返回完整的树结构数据，且前端能快速重绘。 |
-| **团队** | 追求全栈开发体验 | Soft | 选择 TypeScript 全栈可减少上下文切换成本。 |
-
-### 2.2 长期可持续性评估
-*   **技术成熟度**：Next.js + React 拥有庞大的社区支持和成熟的生态系统，提供了从 UI 组件、路由管理到全栈部署的完整解决方案，是构建此类全栈应用的稳健选择。
-*   **依赖风险评估**：使用 Vercel AI SDK 虽然引入了对 Vercel 生态的依赖（Vendor Lock-in），但其优秀的抽象层屏蔽了底层 LLM 差异（支持 OpenAI, Anthropic 等），在开发效率与架构灵活性之间取得了合理的平衡。若未来需要脱离 Vercel 生态，核心业务逻辑可迁移至标准 Fetch/SSE 实现。
-
----
-
-## 3. 核心架构决策 (Architecture Decision Records - ADRs)
+## 2. 核心架构决策 (Architecture Decision Records - ADRs)
 
 ### ADR-001: 采用 Next.js 全栈架构 (Fullstack Next.js)
-*   **决策**：使用 Next.js (App Router) 构建单体全栈应用。前端组件与后端逻辑（Server Actions / Route Handlers）共存。
-*   **权衡分析**：
-    *   **Pros (利)**：
-        *   **类型安全**: 端到端 TypeScript，从 DB 到 UI 无缝衔接。
-        *   **Server Components**: 直接在组件中读取数据库，大幅减少传统的 "Fetch API" 样板代码。
-        *   **部署便捷**: 一键部署至 Vercel 或 Docker 容器。
-    *   **Cons (弊)**：
-        *   重计算任务（如复杂的 Graph 算法）在 Node.js 中性能可能不如 Go/Rust（但当前场景下足够）。
-    *   **缓解**：对于极少数计算密集型任务，未来可拆分微服务。
+*   **决策**：使用 Next.js 14+ (App Router) 构建应用。
+*   **理由**：
+    *   **Server Actions**: 简化前后端数据交互，直接在组件中调用后端逻辑。
+    *   **React Server Components (RSC)**: 优化首屏加载性能。
+    *   **Unified Type System**: 前后端共享 TypeScript 类型定义。
 
-### ADR-002: 数据结构存储采用“邻接表 (Adjacency List)”
-*   **决策**：在 `MessageNode` 模型中使用 `parentId` 字段存储树结构。
-*   **实现细节**：利用 PostgreSQL 的 `WITH RECURSIVE` (CTE) 进行查询。虽然 Prisma 原生不支持递归查询，但可以通过 `$queryRaw` 执行原生 SQL 来解决。
-*   **权衡分析**：
-    *   **Pros**: 插入节点 O(1) 极快（核心需求），数据结构简单直观。
-    *   **Cons**: 获取整树或路径需要递归查询。
+### ADR-002: 可视化引擎采用 React Flow
+*   **决策**：使用 `@xyflow/react` (原 React Flow) 作为核心画布引擎。
+*   **理由**：
+    *   **React Native**: 专为 React 设计，状态管理直观。
+    *   **Customizability**: 极强的节点和连线定制能力，易于实现自定义的 AI 节点 UI。
+    *   **Performance**: 处理数百个节点依然保持流畅。
 
-### ADR-003: 集成 Vercel AI SDK
-*   **决策**：使用 Vercel AI SDK (`ai` package) 处理流式响应和对话状态管理。
-*   **权衡分析**：
-    *   **Pros**: 提供了 `useChat`, `StreamData` 等高级 Hook，极大简化了 SSE (Server-Sent Events) 的处理逻辑。支持 Edge Runtime，延迟极低。
-    *   **Cons**: 对 Vercel 生态有一定依赖（虽然也可以自托管）。
+### ADR-003: 后端服务采用 Supabase (BaaS)
+*   **决策**：使用 Supabase 替代传统的自建后端 + 数据库。
+*   **理由**：
+    *   **Auth**: 开箱即用的用户认证系统。
+    *   **Database**: 托管的 PostgreSQL，支持 pgvector (为未来 RAG 做准备)。
+    *   **Realtime**: 支持多人协作（未来规划）。
+    *   **RPC**: 通过 PostgreSQL Functions 处理复杂的图算法（如递归查询路径），性能优于应用层递归。
+
+### ADR-004: 数据结构设计 - 混合邻接表与路径枚举
+*   **决策**：使用 `parent_id` 维护基础树结构，配合 Supabase RPC (Recursive CTE) 进行高效查询。
+*   **理由**：兼顾写入性能（O(1) 插入）和读取性能（快速重建上下文）。
 
 ---
 
-## 4. 数据模型设计 (Data Model - Prisma Schema Style)
+## 3. 系统架构图 (System Architecture)
 
-```prisma
-model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  conversations Conversation[]
-  createdAt     DateTime       @default(now())
-}
+```mermaid
+graph TD
+    Client[Client (Browser)]
+    Next[Next.js Server (Vercel)]
+    DB[(Supabase PostgreSQL)]
+    LLM[LLM Provider (OpenAI/Anthropic)]
 
-model Conversation {
-  id        String        @id @default(uuid())
-  title     String
-  userId    String
-  user      User          @relation(fields: [userId], references: [id])
-  nodes     MessageNode[]
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-}
+    subgraph Frontend
+        Canvas[Infinite Canvas (React Flow)]
+        Panel[Auxiliary Panel (Chat/Details)]
+        State[Zustand Store]
+    end
 
-enum Role {
-  system
-  user
-  assistant
-}
-
-model MessageNode {
-  id             String       @id @default(uuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  
-  // Adjacency List Pattern
-  parentId       String?
-  parent         MessageNode? @relation("TreeStructure", fields: [parentId], references: [id])
-  children       MessageNode[] @relation("TreeStructure")
-
-  role           Role
-  content        String       @db.Text
-  
-  createdAt      DateTime     @default(now())
-
-  @@index([conversationId])
-  @@index([parentId])
-}
+    Client -->|User Action| Canvas
+    Canvas -->|Update State| State
+    State -->|Sync| Next
+    
+    Next -->|Server Action / API| DB
+    Next -->|Stream Response| LLM
+    
+    DB -->|RPC: get_context_path| Next
 ```
 
 ---
 
-## 5. 演进路径规划 (Evolution Path)
+## 4. 数据模型设计 (Data Model)
 
-### Phase 1: MVP (当前)
-*   **技术栈**: Next.js 14+ (App Router), PostgreSQL (Supabase/Neon), Prisma, Tailwind CSS.
-*   **目标**: 跑通核心的 Tree Chat 交互，验证产品价值。
+基于 Supabase PostgreSQL Schema。
 
-### Phase 2: 增强 (3-6 个月)
-*   **RAG 集成**: 使用 LangChain.js + pgvector 实现文档问答。
-*   **协作功能**: 利用 Next.js 的 SSR 优势，实现生成静态分享页 (OG Image)。
+### 4.1 Projects (项目)
+顶层组织单元，替代传统的 "Session"。
+```sql
+CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  title TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
-### Phase 3: 规模化 (12+ 个月)
-*   **性能优化**: 引入 Redis 缓存热点会话树。
-*   **多模型路由**: 根据任务复杂度自动路由到不同成本的模型 (GPT-4 vs Haiku)。
+### 4.2 Nodes (节点)
+画布上的基本元素。
+```sql
+CREATE TABLE nodes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  parent_id UUID REFERENCES nodes(id), -- Adjacency List
+  
+  -- Content
+  type TEXT NOT NULL, -- 'user' | 'ai' | 'note'
+  content TEXT,
+  
+  -- Canvas Layout
+  position_x FLOAT NOT NULL DEFAULT 0,
+  position_y FLOAT NOT NULL DEFAULT 0,
+  
+  -- Meta
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  metadata JSONB -- For extensible attributes (e.g. model config)
+);
+```
 
 ---
 
-## 6. 风险管理 (Risk Management)
+## 5. 关键交互流程 (Key Interactions)
 
-| 风险点 | 可能性 | 影响 | 缓解策略 |
-| :--- | :--- | :--- | :--- |
-| **Vercel AI SDK 限制** | 低 | 中 | 该 SDK 开源且抽象层设计良好，若遇瓶颈可退回至标准 Fetch/SSE 实现。 |
-| **Prisma 性能问题** | 中 | 中 | 在复杂递归查询场景下，绕过 Prisma 直接使用 SQL (`$queryRaw`)；或迁移至 Kysely 等更轻量的 Query Builder。 |
-| **Serverless 冷启动** | 中 | 低 | 既然是生产力工具，用户容忍度稍高；或使用 Edge Functions 减少冷启动时间。 |
+### 5.1 节点生长 (Node Growth)
+1.  用户在 Canvas 双击 -> 创建 `User Node` (Pending)。
+2.  输入 Prompt 并提交。
+3.  **Frontend**: 
+    *   调用 `createNode` Server Action 写入 DB。
+    *   调用 `generateResponse` Server Action。
+4.  **Backend**:
+    *   调用 Supabase RPC `get_context_path(node_id)` 获取从 Root 到当前节点的完整历史。
+    *   组装 Prompt 发送给 LLM。
+    *   流式返回结果。
+5.  **Frontend**:
+    *   创建 `AI Node` 并连接到 `User Node`。
+    *   实时将 SSE 数据流渲染到 `AI Node` 内容中。
+
+### 5.2 分支创建 (Branching)
+1.  用户从现有的 `AI Node A` 拖拽连线 -> 创建新的 `User Node B`。
+2.  系统记录 `B.parent_id = A.id`。
+3.  视觉上形成分叉，上下文路径自动变更为 `Root -> ... -> A -> B`。
+
+---
+
+## 6. 技术栈清单 (Tech Stack)
+
+*   **Frontend**: React, Next.js, Tailwind CSS, React Flow (@xyflow/react), Zustand, Lucide React
+*   **Backend**: Next.js Server Actions, Vercel AI SDK
+*   **Database**: Supabase (PostgreSQL)
+*   **Deployment**: Vercel
+
+---
+
+## 7. 演进规划 (Roadmap)
+
+### Phase 1: MVP (Single Player Canvas)
+*   核心画布交互（增删改查节点）。
+*   基本的流式对话。
+*   项目管理。
+
+### Phase 2: Knowledge & RAG
+*   支持上传文档作为节点（File Node）。
+*   RAG: AI 回答时自动引用相关文档节点。
+
+### Phase 3: Collaboration
+*   多人实时协作编辑画布 (Supabase Realtime)。
+*   分享项目链接。

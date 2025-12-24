@@ -1,0 +1,71 @@
+// MindFlow Database Schema
+// Tree-structured conversation model using adjacency list pattern
+
+generator client {
+	provider        = "prisma-client-js"
+	previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+	provider = "postgresql"
+}
+
+// Project represents a conversation session/workspace
+model Project {
+	id          String   @id @default(uuid())
+	name        String   @default("Untitled Project")
+	description String?  @db.Text
+	createdAt   DateTime @default(now())
+	updatedAt   DateTime @updatedAt
+
+	// Root node of the conversation tree
+	rootNodeId String?
+
+	nodes      Node[]  @relation("ProjectNodes")
+
+	@@index([createdAt])
+	@@index([updatedAt])
+	@@map("projects")
+}
+
+// Node represents a message in the conversation tree
+// Uses adjacency list pattern for tree structure (parentId -> children[])
+model Node {
+	id           String   @id @default(uuid())
+	projectId    String
+	parentId     String?  // Adjacency list pattern
+
+	// Message content
+	role         Role     // system | user | assistant
+	content      String   @db.Text
+
+	// Layout position on canvas (for UI rendering)
+	positionX    Float    @default(0)
+	positionY    Float    @default(0)
+
+	// Metadata (JSONB for flexibility)
+	metadata     Json?    @default("{}")
+
+	// Timestamps
+	createdAt    DateTime @default(now())
+	updatedAt    DateTime @updatedAt
+
+	// Relations
+	project      Project  @relation("ProjectNodes", fields: [projectId], references: [id], onDelete: Cascade)
+
+	// Adjacency list: parent-child relationship
+	parent       Node?    @relation("TreeStructure", fields: [parentId], references: [id], onDelete: Cascade)
+	children     Node[]   @relation("TreeStructure")
+
+	@@index([projectId])
+	@@index([parentId])
+	@@index([createdAt])
+	@@map("nodes")
+}
+
+// Role enum for message types
+enum Role {
+	SYSTEM
+	USER
+	ASSISTANT
+}
