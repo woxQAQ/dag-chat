@@ -1,7 +1,7 @@
 // Test setup file for Vitest
 // This file is loaded before all tests run
 
-import { beforeAll, afterAll } from "vitest";
+import { afterAll, beforeAll } from "vitest";
 import { prisma } from "./lib/prisma";
 
 // Setup Prisma for testing

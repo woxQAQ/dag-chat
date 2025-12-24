@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
 
 describe("Database Schema - Project", () => {
@@ -401,9 +401,7 @@ describe("Database Schema - Tree Traversal", () => {
 			},
 		});
 
-		const path = await prisma.$queryRaw<
-			{ id: string; content: string }[]
-		>`
+		const path = await prisma.$queryRaw<{ id: string; content: string }[]>`
 			WITH RECURSIVE path AS (
 				SELECT id, content, "parentId"
 				FROM nodes

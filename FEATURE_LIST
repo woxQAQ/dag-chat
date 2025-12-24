@@ -2,31 +2,31 @@
   {
     "id": "DB-001",
     "name": "数据库架构设计 (Database Schema)",
-    "description": "设计 PostgreSQL 数据库模型，使用 Prisma ORM 定义 Schema。核心包含 Conversations 和 MessageNodes 表，采用邻接表（Adjacency List）模式。",
+    "description": "设计 PostgreSQL 数据库模型，使用 Prisma ORM。核心包含 Projects (原 Sessions) 和 Nodes 表。Nodes 表需包含布局信息 (x, y coordinates) 和 JSONB 类型的 data 字段。",
     "status": "未开发",
     "priority": "P0",
     "dependencies": []
   },
   {
     "id": "API-001",
-    "name": "Server Actions: 会话管理",
-    "description": "使用 Next.js Server Actions 实现创建会话、获取列表、删除会话的逻辑。利用 Server Components 直接读取数据。",
+    "name": "Server Actions: 项目管理",
+    "description": "实现项目的创建、获取列表、重命名、删除。支持基于 Server Components 的数据读取。",
     "status": "未开发",
     "priority": "P1",
     "dependencies": ["DB-001"]
   },
   {
     "id": "API-002",
-    "name": "API: 树结构获取 (Tree Retrieval)",
-    "description": "实现 Next.js API Route 或 Server Action，高效获取指定会话的完整节点树结构，供客户端组件渲染。",
+    "name": "API: 图数据获取 (Graph Retrieval)",
+    "description": "获取指定项目的完整节点图结构（包含节点内容、位置信息、连线关系）。",
     "status": "未开发",
     "priority": "P0",
     "dependencies": ["DB-001"]
   },
   {
     "id": "API-003",
-    "name": "API: 节点创建与分叉 (Node Forking)",
-    "description": "实现节点插入逻辑。若父节点已有子节点，自动处理分叉逻辑。使用 Prisma 的事务能力确保数据一致性。",
+    "name": "API: 节点操作 (CRUD & Layout)",
+    "description": "实现节点的创建、更新（内容/位置）、删除。支持拖拽后的位置持久化保存。",
     "status": "未开发",
     "priority": "P0",
     "dependencies": ["DB-001"]
@@ -34,7 +34,7 @@
   {
     "id": "SVC-001",
     "name": "上下文构建服务 (Context Builder)",
-    "description": "在 Server 端实现基于 CTE (Common Table Expressions) 的递归查询（通过 Prisma 的 $queryRaw），构建从 Root 到当前节点的完整对话历史。",
+    "description": "在 Server 端实现基于 CTE 的递归查询，从 Root 到指定节点构建线性对话历史，作为 LLM 的 Context。",
     "status": "未开发",
     "priority": "P0",
     "dependencies": ["DB-001"]
@@ -42,55 +42,63 @@
   {
     "id": "AI-001",
     "name": "AI流式集成 (Vercel AI SDK)",
-    "description": "集成 Vercel AI SDK (useChat/StreamData)，实现标准化的流式响应。后端使用 Route Handlers 处理 Edge/Node.js Runtime 的流式输出。",
+    "description": "集成 Vercel AI SDK。后端 Route Handler 接收上下文，流式返回 AI 回复。支持将流式数据实时更新到画布上的 AI Node。",
     "status": "未开发",
     "priority": "P0",
     "dependencies": ["SVC-001"]
   },
   {
     "id": "UI-001",
-    "name": "应用布局框架 (Next.js Layout)",
-    "description": "搭建 Next.js App Router 结构，实现双栏布局。配置 Tailwind CSS 和全局状态管理（如 Jotai/Zustand，如果需要）。",
+    "name": "应用布局框架 (Canvas Layout)",
+    "description": "实现全屏画布布局。包含 Top Header (透明/极简), Floating Toolbar (底部悬浮), Inspector Panel (右侧侧滑)。",
     "status": "未开发",
     "priority": "P0",
     "dependencies": []
   },
   {
     "id": "UI-002",
-    "name": "侧边栏: 树状可视化 (Sidebar Tree View)",
-    "description": "客户端组件。接收后端传来的树状数据，使用 D3.js 或 SVG 渲染节点和贝塞尔曲线。实现 Git Graph 风格的交互。",
+    "name": "核心组件: 无限画布 (Infinite Canvas)",
+    "description": "集成 React Flow 或类似库。实现画布的平移 (Pan)、缩放 (Zoom)、背景网格 (Background)。",
     "status": "未开发",
     "priority": "P0",
-    "dependencies": ["UI-001", "API-002"]
+    "dependencies": ["UI-001"]
   },
   {
     "id": "UI-003",
-    "name": "交互: 上下文路径高亮",
-    "description": "实现交互逻辑：当悬停或选中某节点时，高亮显示从 Root 到该节点的路径，并置灰其他无关分支。",
+    "name": "核心组件: 节点 (Node Components)",
+    "description": "开发自定义节点组件：UserNode (输入框样式) 和 AINode (Markdown 展示样式)。实现节点的选中、悬停交互。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["UI-002"]
+  },
+  {
+    "id": "UI-004",
+    "name": "辅助视图: 线性对话流 (Inspector Panel)",
+    "description": "右侧面板组件。当选中节点时，显示从 Root 到该节点的线性对话流 (Thread View)。支持在此处继续追问。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["UI-001", "SVC-001"]
+  },
+  {
+    "id": "UI-005",
+    "name": "交互: 路径高亮 (Path Highlighting)",
+    "description": "当选中节点时，在画布上高亮显示从 Root 到该节点的连线路径，并将无关分支置灰 (Dimmed)。",
     "status": "未开发",
     "priority": "P1",
     "dependencies": ["UI-002"]
   },
   {
-    "id": "UI-004",
-    "name": "主视图: 线性对话流",
-    "description": "客户端组件。利用 Vercel AI SDK 的 `useChat` 钩子渲染当前对话流。支持 Markdown 和代码高亮。",
-    "status": "未开发",
-    "priority": "P0",
-    "dependencies": ["UI-001", "AI-001"]
-  },
-  {
-    "id": "UI-005",
-    "name": "交互: 编辑与分叉 (Edit & Fork)",
-    "description": "集成编辑功能。用户修改历史消息时，调用 API-003 创建新分支，并自动切换当前视图上下文。",
-    "status": "未开发",
-    "priority": "P0",
-    "dependencies": ["UI-004", "API-003"]
-  },
-  {
     "id": "UI-006",
-    "name": "侧边栏: 会话列表",
-    "description": "实现侧边栏的一级视图，利用 Server Components 预渲染会话列表。",
+    "name": "交互: 底部工具栏 (Floating Toolbar)",
+    "description": "实现底部悬浮工具栏。功能：添加节点、切换手型/指针、自动布局。",
+    "status": "未开发",
+    "priority": "P1",
+    "dependencies": ["UI-001"]
+  },
+  {
+    "id": "UI-007",
+    "name": "Dashboard: 项目列表",
+    "description": "首页项目管理视图。网格布局展示 Project Cards，支持创建新项目。",
     "status": "未开发",
     "priority": "P1",
     "dependencies": ["UI-001", "API-001"]
