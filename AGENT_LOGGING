@@ -2,6 +2,74 @@
 
 ## 2024-12-25
 
+### [API-003] Node CRUD Service - COMPLETED
+**Branch:** feat/api-003-node-crud
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Node CRUD Service** (`src/lib/node-crud.ts`)
+   - `createNode()`: Create a new node with parent-child relationship support
+   - `getNode()`: Retrieve a single node by ID
+   - `updateNode()`: Update node content and/or position
+   - `updateNodePosition()`: Optimized position-only update (for drag operations)
+   - `updateNodeContent()`: Optimized content-only update (for edit operations)
+   - `deleteNode()`: Delete node with cascade delete for children
+   - `batchCreateNodes()`: Create multiple nodes in a single transaction
+   - `batchUpdatePositions()`: Update multiple node positions (for auto-layout)
+   - UUID validation, project/node existence checks, parent validation
+
+2. **Type Definitions**
+   - `CreateNodeInput`: projectId, role, content, parentId (optional), positionX/Y (optional), metadata (optional)
+   - `UpdateNodeInput`: Partial update with content, positionX/Y, metadata
+   - `UpdateNodePositionInput`: positionX, positionY only
+   - `UpdateNodeContentInput`: content, metadata only
+   - `BatchUpdatePositionInput`: Array of { nodeId, positionX, positionY }
+   - `NodeResult`: Complete node data with timestamps
+   - `BatchOperationResult`: { success, nodeId, error? }
+
+3. **Tests** (`src/lib/node-crud.test.ts`)
+   - 37 comprehensive tests covering:
+     - UUID validation for all operations
+     - Project existence validation
+     - Parent node validation (existence + project ownership)
+     - Node creation with minimal/all fields
+     - Parent-child relationship creation
+     - Root node auto-assignment
+     - All role types (SYSTEM, USER, ASSISTANT)
+     - Single/multiple field updates
+     - Position-only updates (drag operations)
+     - Content-only updates (edit operations)
+     - Cascade delete for subtree
+     - Root node deletion handling
+     - Batch create operations
+     - Batch position updates with partial failure handling
+   - ✅ All tests passing (37/37)
+
+#### Technical Details:
+- Uses Prisma Client ORM for all operations (no raw SQL needed for CRUD)
+- Transaction-based batch operations for atomicity
+- Automatic `rootNodeId` assignment for first node in project
+- Cascade delete configured via Prisma schema (`onDelete: Cascade`)
+- Position updates are independent of content updates (optimized for drag-drop)
+- Metadata stored as JSONB for flexibility
+
+#### Important Notes:
+- First node created in a project automatically becomes `rootNodeId`
+- Deleting root node clears `project.rootNodeId` to null
+- Parent nodes must belong to the same project as child nodes
+- Batch operations use Prisma transactions for atomicity
+- Partial failures in batch operations return error details per item
+
+#### Next Steps:
+- Feature API-003 is complete. This enables full node manipulation for the frontend.
+- Dependent features can now proceed:
+  - UI-003: Node Components (can now create/update/delete nodes)
+  - UI-005: Path Highlighting (uses node operations)
+  - API-001: Project Management (follows similar patterns)
+
+---
+
 ### [API-002] Graph Retrieval Service - COMPLETED
 **Branch:** feat/api-002-graph-retrieval
 **Status:** ✅ Complete
