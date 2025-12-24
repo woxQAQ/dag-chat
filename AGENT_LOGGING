@@ -2,6 +2,125 @@
 
 ## 2024-12-25
 
+### [API-001] Server Actions: Project Management - COMPLETED
+**Branch:** feat/api-001-project-management
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Project CRUD Service** (`src/lib/project-crud.ts`)
+   - `createProject()`: Create a new project with optional name and description
+   - `getProject()`: Retrieve a single project by ID with optional stats
+   - `listProjects()`: List all projects with pagination and sorting
+   - `updateProject()`: Update project name and/or description
+   - `deleteProject()`: Delete project with cascade delete for all nodes
+   - `getProjectStats()`: Get detailed statistics (node counts, depth, leaf nodes)
+   - `listProjectsWithStats()`: Convenience function for projects with node counts
+
+2. **Server Actions** (`src/app/projects/actions.ts`)
+   - `createProject()`: Server Action for creating projects (form-compatible)
+   - `getProject()`: Server Action for fetching project data
+   - `listProjects()`: Server Action for listing projects with pagination
+   - `listProjectsWithStats()`: Server Action for listing with node counts
+   - `updateProject()`: Server Action for updating projects (form-compatible)
+   - `deleteProject()`: Server Action for deleting projects
+   - `getProjectStats()`: Server Action for fetching project statistics
+
+3. **Type Definitions**
+   - `CreateProjectInput`: name, description
+   - `UpdateProjectInput`: name, description
+   - `ListProjectsOptions`: skip, take, orderBy, orderDirection
+   - `ProjectResult`: Complete project data with timestamps
+   - `ProjectListResult`: Projects array with total count and hasMore flag
+   - `ProjectStats`: totalNodes, userNodes, assistantNodes, systemNodes, maxDepth, leafNodes
+   - `ActionState<T>`: success flag, data, error for Server Actions
+
+4. **Tests** (`src/lib/project-crud.test.ts`)
+   - 44 comprehensive tests covering:
+     - Create: default/custom name, description, whitespace trimming, validation
+     - Get: single project, with stats, UUID validation, error handling
+     - List: pagination, sorting (createdAt/updatedAt, asc/desc), hasMore flag
+     - Update: name/description, empty description to null, validation
+     - Delete: single project, cascade delete of nodes
+     - Stats: zero stats, role counting, max depth, leaf node counting
+     - List with stats: node counts per project, pagination
+   - ✅ All tests passing (44/44)
+
+#### Technical Details:
+- Uses Prisma Client ORM for all operations
+- UUID validation for all ID parameters
+- Name validation: non-empty, max 100 characters
+- Description validation: max 1000 characters, empty string converts to null
+- Cascade delete configured via Prisma schema (`onDelete: Cascade`)
+- Recursive CTE for max depth calculation in stats
+- Pagination with skip/take pattern
+- Flexible sorting by createdAt or updatedAt (asc/desc)
+- Server Actions return `ActionState<T>` for consistent error handling
+
+#### API Features:
+- **Create Project**: Default name "Untitled Project", optional description
+- **List Projects**: Paginated (default 20), sorted by updatedAt desc
+- **Get Project**: Optional node count via `withStats` parameter
+- **Update Project**: Partial updates supported, whitespace trimmed
+- **Delete Project**: Cascade deletes all associated nodes
+- **Stats**: Total nodes, counts by role, max tree depth, leaf node count
+
+#### File Structure:
+```
+src/lib/
+├── project-crud.ts
+└── project-crud.test.ts
+
+src/app/projects/
+└── actions.ts
+```
+
+#### Usage Examples:
+```ts
+// Direct CRUD usage (Server Components)
+import { createProject, listProjects, getProject } from "@/lib/project-crud";
+
+const project = await createProject({
+  name: "My Conversation",
+  description: "A project about AI"
+});
+
+const result = await listProjects({ take: 10, skip: 0 });
+```
+
+```tsx
+// Server Actions (Client Components)
+import { createProject, listProjects } from "@/app/projects/actions";
+
+// In a form
+<form action={createProject}>
+  <input name="name" placeholder="Project name" />
+  <button type="submit">Create</button>
+</form>
+
+// Direct call
+const result = await createProject({ name: "New Project" });
+if (result.success) {
+  console.log(result.data.id);
+}
+```
+
+#### Important Notes:
+- Empty string description is converted to null (for clearing descriptions)
+- First node created in project becomes `rootNodeId` (via node-crud)
+- Deleting root node clears `project.rootNodeId` to null
+- Projects are sorted by updatedAt desc by default (most recent first)
+- Cascade delete removes all nodes when project is deleted
+- UUID format validation enforced for all ID parameters
+
+#### Next Steps:
+- Feature API-001 is complete. Project management is now fully functional.
+- Dependent features can now proceed:
+  - UI-007: Dashboard (project list view can use these Server Actions)
+  - UI-006: Enhanced Floating Toolbar (connect to project creation)
+
+---
+
 ### [UI-004] Inspector Panel Thread View - COMPLETED
 **Branch:** feat/ui-004-inspector-thread-view
 **Status:** ✅ Complete
