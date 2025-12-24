@@ -9,6 +9,7 @@ import {
 	type ToolMode,
 	TopHeader,
 } from "@/components/layout";
+import { InfiniteCanvas } from "@/components/canvas";
 
 export default function WorkspacePage() {
 	const [toolMode, setToolMode] = useState<ToolMode>("select");
@@ -110,24 +111,14 @@ export default function WorkspacePage() {
 			}
 			inspectorOpen={inspectorOpen}
 		>
-			{/* Canvas Content - Placeholder for Infinite Canvas (UI-002) */}
-			<div className="flex items-center justify-center w-full h-full">
-				<div className="text-center">
-					<p className="text-lg text-slate-600 font-medium mb-2">
-						MindFlow Canvas
-					</p>
-					<p className="text-sm text-slate-400">
-						Infinite canvas will be implemented in UI-002
-					</p>
-					<button
-						type="button"
-						className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-						onClick={() => setInspectorOpen(true)}
-					>
-						Open Inspector Panel
-					</button>
-				</div>
-			</div>
+			{/* Infinite Canvas with pan and zoom support */}
+			<InfiniteCanvas
+				nodes={[]}
+				edges={[]}
+				backgroundVariant="dots"
+				backgroundGap={24}
+				showControls={false}
+			/>
 		</CanvasLayout>
 	);
 }

@@ -3,6 +3,7 @@
 
 import { afterAll, beforeAll } from "vitest";
 import { prisma } from "./lib/prisma";
+import "@testing-library/jest-dom";
 
 // Setup Prisma for testing
 beforeAll(async () => {
