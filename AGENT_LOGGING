@@ -2,6 +2,57 @@
 
 ## 2024-12-25
 
+### [API-002] Graph Retrieval Service - COMPLETED
+**Branch:** feat/api-002-graph-retrieval
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Graph Retrieval Service** (`src/lib/graph-retrieval.ts`)
+   - `getProjectGraph()`: Retrieves complete graph structure for a project (all nodes + edges)
+   - `getNodeSubgraph()`: Retrieves subtree starting from a specific node (for lazy loading)
+   - `getProjectGraphStats()`: Returns node statistics (counts by role, max depth, leaf count)
+   - UUID validation, project/node existence checks, error handling
+
+2. **Type Definitions**
+   - `GraphNode`: Node with id, projectId, parentId, role, content, positionX, positionY, metadata, timestamps
+   - `GraphEdge`: Edge with id (source-target), source (parent node ID), target (child node ID)
+   - `GraphData`: Complete graph with nodes array, edges array, and rootNodeId
+
+3. **Tests** (`src/lib/graph-retrieval.test.ts`)
+   - 28 comprehensive tests covering:
+     - UUID validation and error handling
+     - Project/node existence checks
+     - Empty graph handling
+     - Node content and metadata retrieval
+     - Edge generation from parent-child relationships
+     - Subgraph retrieval with proper edge filtering
+     - Depth-based ordering
+     - Graph statistics calculation
+     - Edge cases (float positions, JSON metadata, null parentId)
+   - ✅ All tests passing
+
+#### Technical Details:
+- Uses raw SQL queries with Prisma `$queryRaw` for optimal performance
+- Column names use camelCase with double quotes (`"projectId"`, `"parentId"`) to match Prisma schema
+- UUID values cast to `::text` for comparison (Prisma String type stores as TEXT in PostgreSQL)
+- Recursive CTE for subtree traversal in `getNodeSubgraph()`
+- Edge building only includes edges where both source and target are in the result set
+- Nodes ordered by `createdAt` ASC for chronological rendering
+
+#### Important Notes:
+- The database uses camelCase column names (`projectId`, not `project_id`)
+- Type casting uses `::text` instead of `::uuid` because Prisma String fields are stored as TEXT
+- Double quotes required around camelCase column names in PostgreSQL
+
+#### Next Steps:
+- Feature API-002 is complete. This enables the frontend canvas to render conversation trees.
+- Dependent features can now proceed:
+  - UI-002: Infinite Canvas (React Flow integration)
+  - UI-003: Node Components (UserNode, AINode)
+
+---
+
 ### [SVC-001] Context Builder Service - COMPLETED
 **Branch:** feat/svc-001-context-builder
 **Status:** ✅ Complete
