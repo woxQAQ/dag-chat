@@ -3,7 +3,7 @@
     "id": "DB-001",
     "name": "数据库架构设计 (Database Schema)",
     "description": "设计 PostgreSQL 数据库模型，使用 Prisma ORM。核心包含 Projects (原 Sessions) 和 Nodes 表。Nodes 表需包含布局信息 (x, y coordinates) 和 JSONB 类型的 data 字段。",
-    "status": "未开发",
+    "status": "complete",
     "priority": "P0",
     "dependencies": []
   },
