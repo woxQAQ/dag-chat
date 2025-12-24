@@ -2,15 +2,15 @@
  * Tests for API-002: Graph Retrieval Service
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { prisma } from "./prisma";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
-	getProjectGraph,
-	getNodeSubgraph,
-	getProjectGraphStats,
-	type GraphNode,
 	type GraphEdge,
+	type GraphNode,
+	getNodeSubgraph,
+	getProjectGraph,
+	getProjectGraphStats,
 } from "./graph-retrieval";
+import { prisma } from "./prisma";
 
 describe("Graph Retrieval Service", () => {
 	let projectId: string;
@@ -140,7 +140,12 @@ describe("Graph Retrieval Service", () => {
 
 			expect(graph.nodes).toHaveLength(4);
 			expect(graph.nodes.map((n) => n.id)).toEqual(
-				expect.arrayContaining([rootNodeId, childNodeId1, childNodeId2, grandchildNodeId]),
+				expect.arrayContaining([
+					rootNodeId,
+					childNodeId1,
+					childNodeId2,
+					grandchildNodeId,
+				]),
 			);
 		});
 
@@ -260,9 +265,13 @@ describe("Graph Retrieval Service", () => {
 
 			// children (depth 1) should come before grandchild (depth 2)
 			const childIndices = subgraph.nodes
-				.map((n, i) => (n.id === childNodeId1 || n.id === childNodeId2 ? i : -1))
+				.map((n, i) =>
+					n.id === childNodeId1 || n.id === childNodeId2 ? i : -1,
+				)
 				.filter((i) => i >= 0);
-			const grandchildIndex = subgraph.nodes.findIndex((n) => n.id === grandchildNodeId);
+			const grandchildIndex = subgraph.nodes.findIndex(
+				(n) => n.id === grandchildNodeId,
+			);
 
 			for (const idx of childIndices) {
 				expect(idx).toBeLessThan(grandchildIndex);

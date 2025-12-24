@@ -2,6 +2,94 @@
 
 ## 2024-12-25
 
+### [AI-001] AI Streaming Integration - COMPLETED
+**Branch:** feat/ai-001-streaming
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **AI Streaming Service** (`src/lib/ai-stream.ts`)
+   - `streamChat()`: Main streaming function using Vercel AI SDK
+   - `streamChatWithNode()`: Convenience function that combines AI streaming with node persistence
+   - `createAIModel()`: Factory function for creating AI model instances (DeepSeek, Anthropic, OpenAI)
+   - `validateAIConfig()`: Validates environment variables for AI providers
+   - `getDefaultProvider()`: Gets default AI provider from environment
+
+2. **Chat API Route** (`src/app/api/chat/route.ts`)
+   - `POST /api/chat`: Streams AI response and persists as ASSISTANT node
+   - `GET /api/chat`: Health check endpoint
+   - Request body: projectId, parentNodeId, message, provider (optional), model (optional), positionX/Y (optional)
+   - Response: Streaming data with `X-Node-Id` header for client reference
+
+3. **Type Definitions**
+   - `AIProvider`: "deepseek" | "anthropic" | "openai"
+   - `StreamChatInput`: messages, provider, model, maxTokens, temperature
+   - `StreamChatResult`: toStreamResponse(), text promise, usage promise
+   - `ChatRequest`: API request body with all parameters
+   - `ChatResponse`: nodeId and error field
+
+4. **Tests** (`src/lib/ai-stream.test.ts`)
+   - 8 comprehensive tests covering:
+     - Request validation (projectId, parentNodeId, message)
+     - Optional parameters (provider, positionX, positionY)
+     - Health check endpoint
+     - Error handling for invalid input
+   - ✅ All tests passing (8/8)
+
+#### Technical Details:
+- Uses Vercel AI SDK (`ai` v6.0.3) for streaming responses
+- Supports multiple providers via AI SDK adapters:
+  - DeepSeek (default, via `@ai-sdk/deepseek`)
+  - Anthropic Claude (via `@ai-sdk/anthropic`)
+  - OpenAI GPT (via `@ai-sdk/openai`)
+- Node creation workflow:
+  1. Creates placeholder ASSISTANT node with empty content
+  2. Streams AI response to client
+  3. Updates node content when stream completes
+- Integrates with `buildConversationContext()` for full conversation history
+- Returns streaming response with `X-Node-Id` header for frontend tracking
+
+#### Environment Variables Required:
+```bash
+DEEPSEEK_API_KEY=sk-xxx           # Required for DeepSeek
+DEEPSEEK_MODEL=deepseek-chat      # Optional model override
+DEEPSEEK_BASE_URL=https://...     # Optional custom base URL
+
+ANTHROPIC_API_KEY=sk-ant-xxx     # Required for Anthropic
+OPENAI_API_KEY=sk-openai-xxx     # Required for OpenAI
+AI_PROVIDER=deepseek              # Optional default provider
+```
+
+#### Important Notes:
+- First creates empty ASSISTANT node, then streams content into it
+- Metadata includes: `streaming: true/false`, `provider`, `contextLength`, `contextTokens`
+- Node position (X, Y) can be specified for canvas layout
+- Provider defaults to "deepseek" if not specified
+- The `X-Node-Id` response header allows frontend to track which node is being updated
+
+#### API Usage Example:
+```bash
+curl -X POST http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectId": "project-uuid",
+    "parentNodeId": "user-node-uuid",
+    "message": "Explain React hooks",
+    "provider": "deepseek",
+    "positionX": 100,
+    "positionY": 200
+  }'
+```
+
+#### Next Steps:
+- Feature AI-001 is complete. The core AI streaming pipeline is now functional.
+- Dependent features can now proceed:
+  - UI-003: Node Components (can consume streaming API for real-time updates)
+  - UI-004: Inspector Panel (can show streaming responses)
+  - Frontend integration using `@ai-sdk/react` for direct streaming consumption
+
+---
+
 ### [API-003] Node CRUD Service - COMPLETED
 **Branch:** feat/api-003-node-crud
 **Status:** ✅ Complete

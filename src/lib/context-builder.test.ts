@@ -11,13 +11,13 @@
  * - AI SDK formatting
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	buildConversationContext,
 	buildConversationContextBatch,
-	truncateContextByTokens,
-	formatContextForAI,
 	type ContextResult,
+	formatContextForAI,
+	truncateContextByTokens,
 } from "./context-builder";
 
 // Mock Prisma client
@@ -102,9 +102,9 @@ describe("Context Builder Service", () => {
 			it("should throw error when node does not exist", async () => {
 				vi.mocked(prisma.node.findUnique).mockResolvedValue(null);
 
-				await expect(
-					buildConversationContext(mockNodeId),
-				).rejects.toThrow("Node not found");
+				await expect(buildConversationContext(mockNodeId)).rejects.toThrow(
+					"Node not found",
+				);
 			});
 
 			it("should query node by ID", async () => {
@@ -230,9 +230,9 @@ describe("Context Builder Service", () => {
 					new Error("Database connection failed"),
 				);
 
-				await expect(
-					buildConversationContext(mockNodeId),
-				).rejects.toThrow("Database connection failed");
+				await expect(buildConversationContext(mockNodeId)).rejects.toThrow(
+					"Database connection failed",
+				);
 			});
 
 			it("should handle query errors gracefully", async () => {
@@ -241,9 +241,9 @@ describe("Context Builder Service", () => {
 					new Error("Query failed"),
 				);
 
-				await expect(
-					buildConversationContext(mockNodeId),
-				).rejects.toThrow("Query failed");
+				await expect(buildConversationContext(mockNodeId)).rejects.toThrow(
+					"Query failed",
+				);
 			});
 		});
 	});
@@ -291,9 +291,7 @@ describe("Context Builder Service", () => {
 				.mockResolvedValueOnce(mockNode);
 			vi.mocked(prisma.$queryRaw).mockResolvedValue(mockPathResult);
 
-			const result = await buildConversationContextBatch(
-				nodeIds as string[],
-			);
+			const result = await buildConversationContextBatch(nodeIds as string[]);
 
 			// Failed nodes should have empty context
 			expect(result.get("invalid-node")).toEqual(mockContext);
@@ -317,7 +315,8 @@ describe("Context Builder Service", () => {
 	describe("truncateContextByTokens", () => {
 		// Create context with longer content that will actually trigger truncation
 		const createLongContext = (): ContextResult => {
-			const longContent = "This is a much longer message that contains many words. ".repeat(5);
+			const longContent =
+				"This is a much longer message that contains many words. ".repeat(5);
 			return {
 				messages: [
 					{
@@ -404,7 +403,8 @@ describe("Context Builder Service", () => {
 			// Should keep the last message(s) - with 80 token budget we should keep at least 1 message
 			expect(result.messages.length).toBeGreaterThan(0);
 
-			const lastOriginal = longContext.messages[longContext.messages.length - 1];
+			const lastOriginal =
+				longContext.messages[longContext.messages.length - 1];
 			const lastTruncated = result.messages[result.messages.length - 1];
 
 			expect(lastTruncated.id).toBe(lastOriginal.id);

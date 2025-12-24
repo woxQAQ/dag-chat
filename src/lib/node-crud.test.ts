@@ -2,20 +2,20 @@
  * Tests for API-003: Node CRUD Service
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { prisma } from "./prisma";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-	createNode,
-	getNode,
-	updateNode,
-	updateNodePosition,
-	updateNodeContent,
-	deleteNode,
 	batchCreateNodes,
 	batchUpdatePositions,
 	type CreateNodeInput,
+	createNode,
+	deleteNode,
+	getNode,
 	type NodeResult,
+	updateNode,
+	updateNodeContent,
+	updateNodePosition,
 } from "./node-crud";
+import { prisma } from "./prisma";
 
 describe("Node CRUD Service", () => {
 	let projectId: string;

@@ -19,7 +19,7 @@
     "id": "API-002",
     "name": "API: 图数据获取 (Graph Retrieval)",
     "description": "获取指定项目的完整节点图结构（包含节点内容、位置信息、连线关系）。",
-    "status": "未开发",
+    "status": "tested",
     "priority": "P0",
     "dependencies": ["DB-001"]
   },
@@ -27,7 +27,7 @@
     "id": "API-003",
     "name": "API: 节点操作 (CRUD & Layout)",
     "description": "实现节点的创建、更新（内容/位置）、删除。支持拖拽后的位置持久化保存。",
-    "status": "未开发",
+    "status": "tested",
     "priority": "P0",
     "dependencies": ["DB-001"]
   },
@@ -35,7 +35,7 @@
     "id": "SVC-001",
     "name": "上下文构建服务 (Context Builder)",
     "description": "在 Server 端实现基于 CTE 的递归查询，从 Root 到指定节点构建线性对话历史，作为 LLM 的 Context。",
-    "status": "未开发",
+    "status": "tested",
     "priority": "P0",
     "dependencies": ["DB-001"]
   },
