@@ -34,7 +34,8 @@ describe("useRootNodeCreation", () => {
 		vi.mocked(global.fetch).mockResolvedValue({
 			ok: true,
 			headers: {
-				get: (name: string) => (name === "X-Node-Id" ? "assistant-node-123" : null),
+				get: (name: string) =>
+					name === "X-Node-Id" ? "assistant-node-123" : null,
 			},
 			json: async () => ({}),
 		} as Response);

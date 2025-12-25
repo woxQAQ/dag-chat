@@ -16,7 +16,6 @@ import {
 	InfiniteCanvas,
 	PromptInputDialog,
 } from "@/components/canvas";
-import { useNodeEditingContext } from "@/contexts/NodeEditingContext";
 import {
 	CanvasLayout,
 	FloatingToolbar,
@@ -25,12 +24,13 @@ import {
 	type ToolMode,
 	TopHeader,
 } from "@/components/layout";
+import { createEditableNode, type MindFlowNode } from "@/components/nodes";
 import {
-	createEditableNode,
-	type MindFlowNode,
-} from "@/components/nodes";
-import { NodeEditingProvider } from "@/contexts/NodeEditingContext";
+	NodeEditingProvider,
+	useNodeEditingContext,
+} from "@/contexts/NodeEditingContext";
 import { useNodeEditing } from "@/hooks/use-node-editing";
+import { useNodeForking } from "@/hooks/use-node-forking";
 import { usePathHighlightWithInspector } from "@/hooks/use-path-highlight";
 import { useRootNodeCreation } from "@/hooks/use-root-creation";
 
@@ -283,7 +283,11 @@ function WorkspaceContent() {
 					const result = await getProjectGraphAction(projectId);
 					if (result.success && result.data) {
 						const updatedNode = result.data.nodes.find((n) => n.id === nodeId);
-						if (updatedNode && updatedNode.content && updatedNode.content !== "") {
+						if (
+							updatedNode &&
+							updatedNode.content &&
+							updatedNode.content !== ""
+						) {
 							console.log("[page.tsx] Assistant node content updated:", {
 								nodeId,
 								contentLength: updatedNode.content.length,
@@ -298,7 +302,9 @@ function WorkspaceContent() {
 													...node.data,
 													content: updatedNode.content,
 													isStreaming: false,
-													metadata: updatedNode.metadata as Record<string, unknown> | undefined,
+													metadata: updatedNode.metadata as
+														| Record<string, unknown>
+														| undefined,
 												},
 											}
 										: node,
@@ -341,6 +347,19 @@ function WorkspaceContent() {
 		},
 		onError: (error) => {
 			console.error("Node update error:", error);
+		},
+	});
+
+	// UI-NEW-005: Node forking hook (non-destructive editing)
+	const { forkUserNode } = useNodeForking({
+		onNodeForked: (userNodeId, aiNodeId) => {
+			// The fork action returns both the USER node and AI node IDs
+			// However, we need to reload the graph to get the actual node data (position, content)
+			// since the server action creates these nodes
+			loadGraph();
+		},
+		onError: (error) => {
+			console.error("Node fork error:", error);
 		},
 	});
 
@@ -573,7 +592,10 @@ function WorkspaceContent() {
 				/>
 
 				{/* Infinite Canvas with ReactFlow integration */}
-				<NodeEditingProvider onUpdateContent={updateNodeContent}>
+				<NodeEditingProvider
+					onUpdateContent={updateNodeContent}
+					onNodeFork={forkUserNode}
+				>
 					<CanvasWithEditHandler
 						nodes={highlightedNodes as MindFlowNode[]}
 						edges={highlightedEdges}

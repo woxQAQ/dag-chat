@@ -2,12 +2,12 @@
  * Tests for use-path-highlight.ts
  */
 
-import { renderHook, act } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, renderHook } from "@testing-library/react";
 import type { Edge, Node } from "@xyflow/react";
+import { describe, expect, it, vi } from "vitest";
 import {
-	type PathHighlightResult,
 	calculatePathHighlight,
+	type PathHighlightResult,
 } from "@/lib/path-calculator";
 
 // Mock the path-calculator module
@@ -17,14 +17,32 @@ vi.mock("@/lib/path-calculator", () => ({
 	applyEdgeHighlightStyles: vi.fn((edges) => edges),
 }));
 
-import { usePathHighlight, usePathHighlightWithInspector } from "./use-path-highlight";
+import {
+	usePathHighlight,
+	usePathHighlightWithInspector,
+} from "./use-path-highlight";
 
 // Helper to create mock nodes
 function createMockNodes(): Node[] {
 	return [
-		{ id: "root", type: "user", position: { x: 0, y: 0 }, data: { id: "root", role: "USER", content: "Root" } },
-		{ id: "child-1", type: "user", position: { x: 0, y: 100 }, data: { id: "child-1", role: "USER", content: "Child 1" } },
-		{ id: "child-2", type: "user", position: { x: 0, y: 200 }, data: { id: "child-2", role: "USER", content: "Child 2" } },
+		{
+			id: "root",
+			type: "user",
+			position: { x: 0, y: 0 },
+			data: { id: "root", role: "USER", content: "Root" },
+		},
+		{
+			id: "child-1",
+			type: "user",
+			position: { x: 0, y: 100 },
+			data: { id: "child-1", role: "USER", content: "Child 1" },
+		},
+		{
+			id: "child-2",
+			type: "user",
+			position: { x: 0, y: 200 },
+			data: { id: "child-2", role: "USER", content: "Child 2" },
+		},
 	];
 }
 
@@ -37,7 +55,9 @@ function createMockEdges(): Edge[] {
 }
 
 // Helper to create mock highlight result
-function createMockHighlightResult(selectedNodeId: string | null): PathHighlightResult {
+function createMockHighlightResult(
+	selectedNodeId: string | null,
+): PathHighlightResult {
 	if (!selectedNodeId) {
 		return {
 			highlightedNodeIds: new Set(),
@@ -60,16 +80,16 @@ function createMockHighlightResult(selectedNodeId: string | null): PathHighlight
 describe("usePathHighlight", () => {
 	beforeEach(() => {
 		// Reset mocks before each test
-		vi.mocked(calculatePathHighlight).mockReturnValue(createMockHighlightResult(null));
+		vi.mocked(calculatePathHighlight).mockReturnValue(
+			createMockHighlightResult(null),
+		);
 	});
 
 	it("should initialize with no selection", () => {
 		const nodes = createMockNodes();
 		const edges = createMockEdges();
 
-		const { result } = renderHook(() =>
-			usePathHighlight({ nodes, edges }),
-		);
+		const { result } = renderHook(() => usePathHighlight({ nodes, edges }));
 
 		expect(result.current.selectedNodeId).toBeNull();
 		expect(result.current.isHighlighting).toBe(false);
@@ -81,9 +101,7 @@ describe("usePathHighlight", () => {
 		const mockResult = createMockHighlightResult(null);
 		vi.mocked(calculatePathHighlight).mockReturnValue(mockResult);
 
-		const { result } = renderHook(() =>
-			usePathHighlight({ nodes, edges }),
-		);
+		const { result } = renderHook(() => usePathHighlight({ nodes, edges }));
 
 		expect(result.current.highlightedNodes).toEqual(nodes);
 		expect(result.current.highlightedEdges).toEqual(edges);
@@ -95,9 +113,7 @@ describe("usePathHighlight", () => {
 		const mockResult = createMockHighlightResult("child-2");
 		vi.mocked(calculatePathHighlight).mockReturnValue(mockResult);
 
-		const { result } = renderHook(() =>
-			usePathHighlight({ nodes, edges }),
-		);
+		const { result } = renderHook(() => usePathHighlight({ nodes, edges }));
 
 		act(() => {
 			result.current.setSelectedNodeId("child-2");
@@ -113,9 +129,7 @@ describe("usePathHighlight", () => {
 		const mockResult = createMockHighlightResult("child-2");
 		vi.mocked(calculatePathHighlight).mockReturnValue(mockResult);
 
-		const { result } = renderHook(() =>
-			usePathHighlight({ nodes, edges }),
-		);
+		const { result } = renderHook(() => usePathHighlight({ nodes, edges }));
 
 		act(() => {
 			result.current.setSelectedNodeId("child-2");
@@ -164,7 +178,8 @@ describe("usePathHighlight", () => {
 		vi.mocked(calculatePathHighlight).mockReturnValue(mockResult);
 
 		const { rerender } = renderHook(
-			({ highlightColor }) => usePathHighlight({ nodes, edges, highlightColor }),
+			({ highlightColor }) =>
+				usePathHighlight({ nodes, edges, highlightColor }),
 			{ initialProps: { highlightColor: "#ff0000" } },
 		);
 
@@ -188,15 +203,31 @@ describe("usePathHighlight", () => {
 		});
 
 		// Verify calculatePathHighlight was called
-		expect(calculatePathHighlight).toHaveBeenCalledWith("child-2", nodes, edges);
+		expect(calculatePathHighlight).toHaveBeenCalledWith(
+			"child-2",
+			nodes,
+			edges,
+		);
 
 		// Update nodes
-		const newNodes = [...nodes, { id: "new-node", type: "user", position: { x: 0, y: 300 }, data: { id: "new-node", role: "USER", content: "New" } }];
+		const newNodes = [
+			...nodes,
+			{
+				id: "new-node",
+				type: "user",
+				position: { x: 0, y: 300 },
+				data: { id: "new-node", role: "USER", content: "New" },
+			},
+		];
 
 		rerender({ nodes: newNodes, edges });
 
 		// Verify calculatePathHighlight was called with new nodes
-		expect(calculatePathHighlight).toHaveBeenCalledWith("child-2", newNodes, edges);
+		expect(calculatePathHighlight).toHaveBeenCalledWith(
+			"child-2",
+			newNodes,
+			edges,
+		);
 	});
 
 	it("should return highlight result", () => {
@@ -205,9 +236,7 @@ describe("usePathHighlight", () => {
 		const mockResult = createMockHighlightResult("child-2");
 		vi.mocked(calculatePathHighlight).mockReturnValue(mockResult);
 
-		const { result } = renderHook(() =>
-			usePathHighlight({ nodes, edges }),
-		);
+		const { result } = renderHook(() => usePathHighlight({ nodes, edges }));
 
 		act(() => {
 			result.current.setSelectedNodeId("child-2");
@@ -224,7 +253,9 @@ describe("usePathHighlight", () => {
 
 describe("usePathHighlightWithInspector", () => {
 	beforeEach(() => {
-		vi.mocked(calculatePathHighlight).mockReturnValue(createMockHighlightResult(null));
+		vi.mocked(calculatePathHighlight).mockReturnValue(
+			createMockHighlightResult(null),
+		);
 	});
 
 	it("should call onNodeSelected when node is selected", () => {

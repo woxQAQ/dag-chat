@@ -157,26 +157,39 @@ describe("createRootNode Server Action", () => {
 		});
 	});
 
-	describe("Validation Errors", () => {
-		it("should reject if project already has root node", async () => {
+	describe("Forest Structure Support", () => {
+		it("should allow creating multiple root nodes", async () => {
 			// Create first root node
-			await createRootNode({
+			const root1 = await createRootNode({
 				projectId: testProjectId,
 				content: "First root",
 				positionX: 0,
 				positionY: 0,
 			});
+			expect(root1.success).toBe(true);
 
 			// Try to create another root node
-			const result = await createRootNode({
+			const root2 = await createRootNode({
 				projectId: testProjectId,
 				content: "Second root",
 				positionX: 100,
 				positionY: 100,
 			});
 
-			expect(result.success).toBe(false);
-			expect(result.error).toContain("already has a root node");
+			expect(root2.success).toBe(true);
+			expect(root2.data?.nodeId).toBeDefined();
+			expect(root2.data?.nodeId).not.toBe(root1.data?.nodeId);
+
+			// Verify both are roots
+			const node1 = await prisma.node.findUnique({
+				where: { id: root1.data?.nodeId },
+			});
+			const node2 = await prisma.node.findUnique({
+				where: { id: root2.data?.nodeId },
+			});
+
+			expect(node1?.parentId).toBeNull();
+			expect(node2?.parentId).toBeNull();
 		});
 
 		it("should reject if project does not exist", async () => {

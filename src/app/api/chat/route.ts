@@ -81,7 +81,10 @@ export async function POST(req: NextRequest) {
 		}
 
 		// Build conversation context from root to parent node
-		console.log("[/api/chat] Building conversation context from parent node:", parentNodeId);
+		console.log(
+			"[/api/chat] Building conversation context from parent node:",
+			parentNodeId,
+		);
 		const context = await buildConversationContext(parentNodeId);
 		console.log("[/api/chat] Context built:", {
 			pathLength: context.pathLength,

@@ -79,15 +79,9 @@ export async function createRootNode(
 			};
 		}
 
-		// Validate: Project must not already have a root node
-		// This prevents multiple roots and maintains tree structure
-		if (project.rootNodeId) {
-			return {
-				success: false,
-				error:
-					"Project already has a root node. Use branching to create new nodes.",
-			};
-		}
+		// Note: We allow multiple root nodes in a project now (Forest structure).
+		// The project.rootNodeId will act as the "primary" or "first" root,
+		// but subsequent roots can be created freely.
 
 		// Create the root node (no parentId = root)
 		// The createNode service will automatically set project.rootNodeId

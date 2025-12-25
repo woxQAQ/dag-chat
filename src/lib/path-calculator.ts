@@ -162,7 +162,11 @@ export function calculatePathHighlight(
 			// (source comes before target in path)
 			const sourceIndex = pathNodeIds.indexOf(edge.source);
 			const targetIndex = pathNodeIds.indexOf(edge.target);
-			if (sourceIndex >= 0 && targetIndex >= 0 && targetIndex === sourceIndex + 1) {
+			if (
+				sourceIndex >= 0 &&
+				targetIndex >= 0 &&
+				targetIndex === sourceIndex + 1
+			) {
 				highlightedEdgeIds.add(edge.id);
 			}
 		}
@@ -218,7 +222,8 @@ export function applyNodeHighlightStyles<T extends Node = Node>(
 				opacity: isDimmed ? 0.3 : isHighlighted ? 1 : 1,
 				transition: "opacity 0.2s ease-in-out",
 			},
-			className: `${node.className || ""} ${isHighlighted ? "node-highlighted" : ""} ${isDimmed ? "node-dimmed" : ""}`.trim(),
+			className:
+				`${node.className || ""} ${isHighlighted ? "node-highlighted" : ""} ${isDimmed ? "node-dimmed" : ""}`.trim(),
 		};
 	});
 }
@@ -254,12 +259,17 @@ export function applyEdgeHighlightStyles(
 					: isDimmed
 						? dimmedColor
 						: (edge.style?.stroke as string) || "#cbd5e1",
-				strokeWidth: isHighlighted ? 3 : isDimmed ? 1 : (edge.style?.strokeWidth as number) || 2,
+				strokeWidth: isHighlighted
+					? 3
+					: isDimmed
+						? 1
+						: (edge.style?.strokeWidth as number) || 2,
 				opacity: isDimmed ? 0.3 : 1,
 				transition: "all 0.2s ease-in-out",
 			},
 			animated: isHighlighted,
-			className: `${edge.className || ""} ${isHighlighted ? "edge-highlighted" : ""} ${isDimmed ? "edge-dimmed" : ""}`.trim(),
+			className:
+				`${edge.className || ""} ${isHighlighted ? "edge-highlighted" : ""} ${isDimmed ? "edge-dimmed" : ""}`.trim(),
 		};
 	});
 }

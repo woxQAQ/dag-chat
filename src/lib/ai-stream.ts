@@ -272,27 +272,36 @@ export async function streamChatWithNode(
 		temperature: input.temperature,
 	});
 
-	console.log("[streamChatWithNode] AI stream started, will update node on completion");
+	console.log(
+		"[streamChatWithNode] AI stream started, will update node on completion",
+	);
 
 	// Accumulate full text and update node when complete
-	result.text.then(async (fullText) => {
-		console.log("[streamChatWithNode] Stream complete, updating node content:", {
-			nodeId: node.id,
-			contentLength: fullText.length,
+	result.text
+		.then(async (fullText) => {
+			console.log(
+				"[streamChatWithNode] Stream complete, updating node content:",
+				{
+					nodeId: node.id,
+					contentLength: fullText.length,
+				},
+			);
+			const { updateNodeContent } = await import("./node-crud");
+			await updateNodeContent(node.id, {
+				content: fullText,
+				metadata: {
+					...(typeof metadata === "object" && metadata !== null
+						? metadata
+						: {}),
+					streaming: false,
+					provider: input.provider || "deepseek",
+				},
+			});
+			console.log("[streamChatWithNode] Node content updated successfully");
+		})
+		.catch((error) => {
+			console.error("[streamChatWithNode] Error updating node content:", error);
 		});
-		const { updateNodeContent } = await import("./node-crud");
-		await updateNodeContent(node.id, {
-			content: fullText,
-			metadata: {
-				...(typeof metadata === "object" && metadata !== null ? metadata : {}),
-				streaming: false,
-				provider: input.provider || "deepseek",
-			},
-		});
-		console.log("[streamChatWithNode] Node content updated successfully");
-	}).catch((error) => {
-		console.error("[streamChatWithNode] Error updating node content:", error);
-	});
 
 	return {
 		...result,

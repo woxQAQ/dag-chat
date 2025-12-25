@@ -1,12 +1,17 @@
 /**
  * UI-NEW-004: Node Content Editing Wrapper Component
+ * UI-NEW-005: Node Forking Support (Non-destructive editing)
  *
  * A wrapper component that adds content editing interaction to existing node components.
  * Use this to wrap UserNode and AINode when using them in the canvas.
  *
  * This component manages local edit state and saves content changes to the database.
  *
- * The update callback is provided via NodeEditingContext instead of props,
+ * IMPORTANT: For USER nodes, editing now creates a fork (parallel branch) instead
+ * of modifying the original node. This implements non-destructive editing as per the
+ * project's architecture principles.
+ *
+ * The update/fork callback is provided via NodeEditingContext instead of props,
  * allowing nodeTypes to remain stable across renders.
  *
  * The editing state is tracked globally in the context, allowing:
@@ -18,8 +23,9 @@
 
 import { memo, useCallback } from "react";
 import { useNodeEditingContext } from "@/contexts/NodeEditingContext";
-import type { AINodeProps, MindFlowNode, UserNodeProps } from "./types";
+import { calculateForkPosition } from "@/lib/position-calculator";
 import { AINode as BaseAINode } from "./AINode";
+import type { AINodeProps, MindFlowNode, UserNodeProps } from "./types";
 import { UserNode as BaseUserNode } from "./UserNode";
 
 // ============================================================================
@@ -64,6 +70,7 @@ export const EditableUserNode = memo<
 	// Get editing state and methods from context
 	const {
 		updateNodeContent,
+		forkNode,
 		startEditing,
 		stopEditing,
 		isEditing: isNodeEditing,
@@ -101,11 +108,33 @@ export const EditableUserNode = memo<
 	const handleEditSave = useCallback(() => {
 		// Only save if content has actually changed
 		if (currentContent !== node.data.content) {
-			updateNodeContent(node.data.id, currentContent);
+			// For USER nodes: ALWAYS fork (non-destructive editing)
+			if (node.data.role === "USER") {
+				// Calculate position for forked node (to the right of original)
+				// Use node position if available, otherwise default to (0, 0)
+				const posX = node.position?.x ?? 0;
+				const posY = node.position?.y ?? 0;
+				const forkPosition = calculateForkPosition(posX, posY);
+				forkNode(node.data.id, currentContent, forkPosition.x, forkPosition.y);
+			} else {
+				// For other node types (ASSISTANT, SYSTEM): fall back to in-place update
+				// Note: ASSISTANT nodes should not be editable, but we handle it for safety
+				updateNodeContent(node.data.id, currentContent);
+			}
 		}
 		// Stop editing
 		stopEditing(false);
-	}, [node.data.id, node.data.content, currentContent, updateNodeContent, stopEditing]);
+	}, [
+		node.data.id,
+		node.data.content,
+		node.data.role,
+		node.position?.x,
+		node.position?.y,
+		currentContent,
+		updateNodeContent,
+		forkNode,
+		stopEditing,
+	]);
 
 	// Handle cancel action (Escape)
 	const handleEditCancel = useCallback(() => {

@@ -2,8 +2,8 @@
  * Tests for path-calculator.ts
  */
 
-import { describe, expect, it } from "vitest";
 import type { Node } from "@xyflow/react";
+import { describe, expect, it } from "vitest";
 import {
 	applyEdgeHighlightStyles,
 	applyNodeHighlightStyles,
@@ -25,9 +25,7 @@ describe("Path Calculator", () => {
 	describe("calculatePathHighlight", () => {
 		it("should return empty result when no node is selected", () => {
 			const nodes = [createMockNode("node-1"), createMockNode("node-2")];
-			const edges = [
-				{ id: "edge-1-2", source: "node-1", target: "node-2" },
-			];
+			const edges = [{ id: "edge-1-2", source: "node-1", target: "node-2" }];
 
 			const result = calculatePathHighlight(null, nodes, edges);
 
@@ -109,11 +107,7 @@ describe("Path Calculator", () => {
 			const result = calculatePathHighlight("leaf-a-1", nodes, edges);
 
 			// Path should be: root -> branch-a -> leaf-a-1
-			expect(result.pathNodeIds).toEqual([
-				"root",
-				"branch-a",
-				"leaf-a-1",
-			]);
+			expect(result.pathNodeIds).toEqual(["root", "branch-a", "leaf-a-1"]);
 
 			// Highlighted nodes
 			expect(result.highlightedNodeIds.has("root")).toBe(true);
@@ -178,7 +172,10 @@ describe("Path Calculator", () => {
 			const nodes = [
 				{
 					...createMockNode("node-1"),
-					data: { ...createMockNode("node-1").data, metadata: { isRoot: true } },
+					data: {
+						...createMockNode("node-1").data,
+						metadata: { isRoot: true },
+					},
 				},
 				createMockNode("node-2"),
 				createMockNode("node-3"),
@@ -275,9 +272,7 @@ describe("Path Calculator", () => {
 		});
 
 		it("should support custom highlight color", () => {
-			const edges = [
-				{ id: "edge-1", source: "node-1", target: "node-2" },
-			];
+			const edges = [{ id: "edge-1", source: "node-1", target: "node-2" }];
 			const highlightResult: PathHighlightResult = {
 				highlightedNodeIds: new Set(),
 				highlightedEdgeIds: new Set(["edge-1"]),

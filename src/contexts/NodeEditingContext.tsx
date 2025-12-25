@@ -24,6 +24,11 @@ export interface NodeEditingContextValue {
 	 */
 	updateNodeContent: (nodeId: string, content: string) => void;
 	/**
+	 * Callback to fork a USER node (non-destructive editing)
+	 * Creates a parallel branch with the new content
+	 */
+	forkNode: (nodeId: string, content: string, x: number, y: number) => void;
+	/**
 	 * The ID of the node currently being edited, or null if no node is being edited
 	 */
 	editingNodeId: string | null;
@@ -64,6 +69,7 @@ const NodeEditingContext = createContext<NodeEditingContextValue | null>(null);
 export interface NodeEditingProviderProps {
 	children: ReactNode;
 	onUpdateContent: (nodeId: string, content: string) => void;
+	onNodeFork?: (nodeId: string, content: string, x: number, y: number) => void;
 }
 
 /**
@@ -82,6 +88,7 @@ export interface NodeEditingProviderProps {
 export function NodeEditingProvider({
 	children,
 	onUpdateContent,
+	onNodeFork,
 }: NodeEditingProviderProps) {
 	// Track the currently editing node
 	const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
@@ -130,6 +137,7 @@ export function NodeEditingProvider({
 
 	const value: NodeEditingContextValue = {
 		updateNodeContent: onUpdateContent,
+		forkNode: onNodeFork ?? (() => {}),
 		editingNodeId,
 		startEditing,
 		stopEditing,

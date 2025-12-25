@@ -58,6 +58,13 @@ export interface UserNodeProps extends BaseNodeProps {
 	onEditCancel?: () => void;
 	/** Callback to create a child node from this node (branching interaction) */
 	onCreateChild?: () => void;
+	/** Callback to fork this node (non-destructive editing - creates parallel branch) */
+	onNodeFork?: (
+		nodeId: string,
+		newContent: string,
+		x: number,
+		y: number,
+	) => Promise<void>;
 }
 
 /**

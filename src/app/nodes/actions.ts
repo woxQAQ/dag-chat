@@ -11,7 +11,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { GraphData } from "@/lib/graph-retrieval";
-import { createNode, updateNodeContent } from "@/lib/node-crud";
+import { createNode, getNode, updateNodeContent } from "@/lib/node-crud";
 
 // ============================================================================
 // Type Definitions
@@ -31,6 +31,13 @@ export interface UpdateNodeContentInput {
 	nodeId: string;
 	content: string;
 	metadata?: Record<string, unknown>;
+}
+
+export interface ForkUserNodeInput {
+	nodeId: string;
+	newContent: string;
+	positionX: number;
+	positionY: number;
 }
 
 export interface ActionState<T> {
@@ -217,6 +224,107 @@ export async function updateNodeContentAction(
 				error instanceof Error
 					? error.message
 					: "Failed to update node content",
+		};
+	}
+}
+
+/**
+ * UI-NEW-005: Forks a USER node to create a parallel branch.
+ *
+ * This Server Action creates a new USER node as a sibling of the original node,
+ * preserving the original node's content (non-destructive editing).
+ * It then triggers an AI response for the new USER node.
+ *
+ * Behavior:
+ * - If original node has a parent: creates sibling (same parent)
+ * - If original node is root (no parent): creates new root node
+ * - Only USER nodes can be forked (ASSISTANT nodes will throw error)
+ *
+ * @param input - Fork node parameters
+ * @returns ActionState with created node IDs or error
+ *
+ * @example
+ * ```tsx
+ * const result = await forkUserNodeAction({
+ *   nodeId: "user-node-uuid",
+ *   newContent: "Modified question",
+ *   positionX: 400,
+ *   positionY: 100
+ * });
+ * // result.data.userNodeId: ID of new USER node
+ * // result.data.aiNodeId: ID of streaming ASSISTANT node (may be null initially)
+ * ```
+ */
+export async function forkUserNodeAction(
+	input: ForkUserNodeInput,
+): Promise<ActionState<{ userNodeId: string; aiNodeId: string | null }>> {
+	try {
+		// 1. Get original node
+		const originalNode = await getNode(input.nodeId);
+
+		// 2. Validate it's a USER node (ASSISTANT nodes cannot be edited)
+		if (originalNode.role !== "USER") {
+			return {
+				success: false,
+				error: "Only USER nodes can be edited. ASSISTANT nodes are read-only.",
+			};
+		}
+
+		// 3. Create new USER node as fork
+		// - If original has parent: create sibling (same parent)
+		// - If original is root: create new root (parentId = undefined)
+		const newUserNode = await createNode({
+			projectId: originalNode.projectId,
+			parentId: originalNode.parentId ?? undefined, // Convert null to undefined for root nodes
+			role: "USER",
+			content: input.newContent,
+			positionX: input.positionX,
+			positionY: input.positionY,
+			metadata: {
+				forkedFrom: input.nodeId, // Track origin
+			},
+		});
+
+		// 4. Build conversation context for AI response
+		// Import dynamically to avoid circular dependency
+		const { buildConversationContext, formatContextForAI } = await import(
+			"@/lib/context-builder"
+		);
+
+		// Build context from the new USER node (includes all ancestors)
+		const context = await buildConversationContext(newUserNode.id);
+		const aiMessages = formatContextForAI(context);
+
+		// 5. Trigger AI response using streamChatWithNode
+		// This creates an ASSISTANT node as child of the new USER node
+		const { streamChatWithNode } = await import("@/lib/ai-stream");
+		const aiPositionY = input.positionY + 150; // Position below USER node
+
+		const aiResult = await streamChatWithNode({
+			messages: aiMessages,
+			projectId: originalNode.projectId,
+			parentId: newUserNode.id,
+			positionX: input.positionX,
+			positionY: aiPositionY,
+			metadata: {
+				forkedBranch: true, // Mark as part of a forked branch
+			},
+		});
+
+		// 6. Revalidate workspace page to refresh node data
+		revalidatePath("/workspace");
+
+		return {
+			success: true,
+			data: {
+				userNodeId: newUserNode.id,
+				aiNodeId: aiResult.nodeId, // ID of the streaming ASSISTANT node
+			},
+		};
+	} catch (error) {
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : "Failed to fork node",
 		};
 	}
 }

@@ -17,7 +17,7 @@ vi.mock("@xyflow/react", () => ({
 		nodes,
 		edges,
 		onMoveStart,
-		onMoveEnd
+		onMoveEnd,
 	}: {
 		children?: React.ReactNode;
 		nodes?: any[];
@@ -35,8 +35,21 @@ vi.mock("@xyflow/react", () => ({
 			{children}
 		</div>
 	),
-	Background: ({ variant, gap, color }: { variant?: string; gap?: number; color?: string }) => (
-		<div data-testid="background" data-variant={variant} data-gap={gap} data-color={color} />
+	Background: ({
+		variant,
+		gap,
+		color,
+	}: {
+		variant?: string;
+		gap?: number;
+		color?: string;
+	}) => (
+		<div
+			data-testid="background"
+			data-variant={variant}
+			data-gap={gap}
+			data-color={color}
+		/>
 	),
 	Controls: () => <div data-testid="controls">Controls</div>,
 }));
@@ -210,13 +223,19 @@ describe("InfiniteCanvas", () => {
 		it("should render background with default dotOpacity of 0.04", () => {
 			render(<InfiniteCanvas />);
 			const background = screen.getByTestId("background");
-			expect(background).toHaveAttribute("data-color", "rgba(203, 213, 225, 0.04)");
+			expect(background).toHaveAttribute(
+				"data-color",
+				"rgba(203, 213, 225, 0.04)",
+			);
 		});
 
 		it("should render background with custom dotOpacity", () => {
 			render(<InfiniteCanvas dotOpacity={0.1} />);
 			const background = screen.getByTestId("background");
-			expect(background).toHaveAttribute("data-color", "rgba(203, 213, 225, 0.1)");
+			expect(background).toHaveAttribute(
+				"data-color",
+				"rgba(203, 213, 225, 0.1)",
+			);
 		});
 
 		it("should show background by default when showDotsOnPanOnly is false", () => {
@@ -246,13 +265,19 @@ describe("InfiniteCanvas", () => {
 		it("should support very subtle dots with 0.03 opacity", () => {
 			render(<InfiniteCanvas dotOpacity={0.03} />);
 			const background = screen.getByTestId("background");
-			expect(background).toHaveAttribute("data-color", "rgba(203, 213, 225, 0.03)");
+			expect(background).toHaveAttribute(
+				"data-color",
+				"rgba(203, 213, 225, 0.03)",
+			);
 		});
 
 		it("should support more visible dots with 0.08 opacity", () => {
 			render(<InfiniteCanvas dotOpacity={0.08} />);
 			const background = screen.getByTestId("background");
-			expect(background).toHaveAttribute("data-color", "rgba(203, 213, 225, 0.08)");
+			expect(background).toHaveAttribute(
+				"data-color",
+				"rgba(203, 213, 225, 0.08)",
+			);
 		});
 	});
 

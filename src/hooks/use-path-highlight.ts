@@ -22,8 +22,8 @@
  * ```
  */
 
-import { useMemo, useState } from "react";
 import type { Edge, Node } from "@xyflow/react";
+import { useMemo, useState } from "react";
 import {
 	applyEdgeHighlightStyles,
 	applyNodeHighlightStyles,
@@ -75,11 +75,18 @@ export interface UsePathHighlightResult {
 export function usePathHighlight(
 	options: UsePathHighlightOptions,
 ): UsePathHighlightResult {
-	const { nodes, edges, highlightColor = "#2563eb", dimmedColor = "#cbd5e1", onSelectionChange } =
-		options;
+	const {
+		nodes,
+		edges,
+		highlightColor = "#2563eb",
+		dimmedColor = "#cbd5e1",
+		onSelectionChange,
+	} = options;
 
 	// State for selected node ID
-	const [selectedNodeId, setSelectedNodeIdState] = useState<string | null>(null);
+	const [selectedNodeId, setSelectedNodeIdState] = useState<string | null>(
+		null,
+	);
 
 	// Memoized path highlight calculation
 	const highlightResult = useMemo((): PathHighlightResult => {
@@ -93,7 +100,12 @@ export function usePathHighlight(
 
 	// Apply styles to edges
 	const highlightedEdges = useMemo((): Edge[] => {
-		return applyEdgeHighlightStyles(edges, highlightResult, highlightColor, dimmedColor);
+		return applyEdgeHighlightStyles(
+			edges,
+			highlightResult,
+			highlightColor,
+			dimmedColor,
+		);
 	}, [edges, highlightResult, highlightColor, dimmedColor]);
 
 	// Set selected node ID with optional callback
@@ -108,7 +120,8 @@ export function usePathHighlight(
 	};
 
 	// Check if highlighting is active
-	const isHighlighting = selectedNodeId !== null && highlightResult.pathNodeIds.length > 0;
+	const isHighlighting =
+		selectedNodeId !== null && highlightResult.pathNodeIds.length > 0;
 
 	return {
 		highlightedNodes,
@@ -124,7 +137,8 @@ export function usePathHighlight(
 /**
  * Extended hook options with inspector panel integration
  */
-export interface UsePathHighlightWithInspectorOptions extends UsePathHighlightOptions {
+export interface UsePathHighlightWithInspectorOptions
+	extends UsePathHighlightOptions {
 	/** Callback when node is selected (opens inspector) */
 	onNodeSelected?: (nodeId: string) => void;
 	/** Callback when selection is cleared (closes inspector) */
@@ -134,7 +148,8 @@ export interface UsePathHighlightWithInspectorOptions extends UsePathHighlightOp
 /**
  * Extended result with inspector integration
  */
-export interface UsePathHighlightWithInspectorResult extends UsePathHighlightResult {
+export interface UsePathHighlightWithInspectorResult
+	extends UsePathHighlightResult {
 	/** Handle node selection with inspector panel integration */
 	handleNodeSelect: (nodeId: string) => void;
 	/** Handle selection clear with inspector panel integration */
