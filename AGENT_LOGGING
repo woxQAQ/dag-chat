@@ -2,6 +2,141 @@
 
 ## 2024-12-25
 
+### [UI-005] Path Highlighting - COMPLETED
+**Branch:** feat/ui-005-path-highlighting
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Path Calculator Utility** (`src/lib/path-calculator.ts`)
+   - `calculatePathHighlight()`: Main function to calculate highlighted/dimmed nodes and edges
+   - `buildParentMap()`: Builds parent-child map from edges for efficient traversal
+   - `findRootNodeId()`: Finds root node (node with no parent or isRoot metadata)
+   - `calculatePathToRoot()`: Traverses from selected node up to root
+   - `applyNodeHighlightStyles()`: Applies opacity styles to nodes (highlighted vs dimmed)
+   - `applyEdgeHighlightStyles()`: Applies color/width/animation styles to edges
+   - Returns `PathHighlightResult` with sets of highlighted/dimmed element IDs
+
+2. **Custom Hook** (`src/hooks/use-path-highlight.ts`)
+   - `usePathHighlight()`: Manages path highlighting state
+   - Returns: `{ highlightedNodes, highlightedEdges, selectedNodeId, setSelectedNodeId, clearSelection, highlightResult, isHighlighting }`
+   - Supports custom highlight/dimmed colors
+   - Optional `onSelectionChange` callback
+   - `usePathHighlightWithInspector()`: Extended hook with inspector panel integration
+   - Returns additional handlers: `{ handleNodeSelect, handleSelectionClear }`
+
+3. **Workspace Integration** (`src/app/workspace/page.tsx`)
+   - Added `usePathHighlightWithInspector` hook
+   - Hook integration opens inspector panel when node is selected
+   - `onSelectionChange` handler syncs with ReactFlow selection
+   - Canvas now uses `highlightedNodes` and `highlightedEdges`
+
+4. **Tests**
+   - **path-calculator.test.ts**: 13 tests covering:
+     - Empty selection handling
+     - Linear chain path calculation
+     - Branching tree with dimmed nodes/edges
+     - Complex tree with multiple levels
+     - Root node identification with isRoot metadata
+     - Orphan node handling
+     - Node and edge style application
+   - **use-path-highlight.test.ts**: 11 tests covering:
+     - Initial state with no selection
+     - Setting selected node ID
+     - Clearing selection
+     - onSelectionChange callback invocation
+     - Custom highlight color support
+     - Reactivity to nodes/edges changes
+     - Highlight result exposure
+     - Inspector integration with handleNodeSelect/handleSelectionClear
+   - ✅ All 24 new tests passing (24/24)
+
+#### Technical Details:
+- Client-side path calculation using existing ReactFlow nodes and edges
+- Parent-child relationship derived from edges (source → target)
+- Root node identified as node with no incoming edges or `isRoot: true` metadata
+- Highlighted path computed by traversing from selected node up to root
+- Dimmed elements = all elements not on the active path
+- Smooth transitions (0.2s ease-in-out) for visual feedback
+- Highlighted edges: animated, stroke width 3px, custom color (#2563eb)
+- Dimmed edges: opacity 0.3, stroke width 1px
+
+#### Visual Design:
+- **Highlighted nodes**: opacity 1, normal appearance
+- **Dimmed nodes**: opacity 0.3, reduced visibility
+- **Highlighted edges**: animated, stroke width 3px, custom color
+- **Dimmed edges**: opacity 0.3, stroke width 1px
+- **CSS classes**: `node-highlighted`, `node-dimmed`, `edge-highlighted`, `edge-dimmed`
+- **Transition**: 0.2s ease-in-out for smooth visual feedback
+
+#### File Structure:
+```
+src/lib/
+├── path-calculator.ts (new)
+└── path-calculator.test.ts (new)
+
+src/hooks/
+├── use-path-highlight.ts (new)
+└── use-path-highlight.test.ts (new)
+
+src/app/workspace/
+└── page.tsx (modified - integrated path highlighting)
+```
+
+#### Usage Example:
+```tsx
+import { usePathHighlightWithInspector } from "@/hooks/use-path-highlight";
+
+const {
+  highlightedNodes,
+  highlightedEdges,
+  handleNodeSelect,
+  handleSelectionClear,
+} = usePathHighlightWithInspector({
+  nodes,
+  edges,
+  highlightColor: "#2563eb",
+  dimmedColor: "#cbd5e1",
+  onNodeSelected: (nodeId) => {
+    setInspectorOpen(true);
+    setInspectorTab("thread");
+  },
+});
+
+// In onSelectionChange handler
+const onSelectionChange = (params) => {
+  const selectedNodeId = params.nodes?.[0]?.id || null;
+  if (selectedNodeId) {
+    handleNodeSelect(selectedNodeId);
+  } else {
+    handleSelectionClear();
+  }
+};
+
+<InfiniteCanvas
+  nodes={highlightedNodes}
+  edges={highlightedEdges}
+  onSelectionChange={onSelectionChange}
+/>
+```
+
+#### Important Notes:
+- Path highlighting is purely visual - doesn't modify underlying data
+- Selection state managed by hook, synced with ReactFlow via onSelectionChange
+- Inspector panel automatically opens when node is selected
+- Clicking empty canvas clears selection and removes highlighting
+- Works with any tree structure (linear, branching, complex)
+- Root node can be identified by: no incoming edges OR `isRoot: true` metadata
+
+#### Next Steps:
+- Feature UI-005 is complete. Users now see visual feedback for selected conversation paths.
+- Dependent features can now proceed:
+  - UI-NEW-003: Empty State Guidance (visual consistency)
+  - Inspector Panel integration improvements
+  - Keyboard shortcuts for path navigation
+
+---
+
 ### [UI-NEW-004] Node Content Editing - COMPLETED
 **Branch:** feat/ui-new-004-node-content-editing
 **Status:** ✅ Complete

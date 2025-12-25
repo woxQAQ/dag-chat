@@ -1,0 +1,4 @@
+on run argv
+  set content to item 1 of argv
+  display notification content with title "Claude Code" sound name "Glass"
+end run

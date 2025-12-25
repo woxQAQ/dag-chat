@@ -26,6 +26,7 @@ import {
 import { createEditableNode, type MindFlowNode } from "@/components/nodes";
 import { NodeEditingProvider } from "@/contexts/NodeEditingContext";
 import { useNodeEditing } from "@/hooks/use-node-editing";
+import { usePathHighlightWithInspector } from "@/hooks/use-path-highlight";
 import { useRootNodeCreation } from "@/hooks/use-root-creation";
 
 function WorkspaceContent() {
@@ -173,6 +174,30 @@ function WorkspaceContent() {
 		},
 	});
 
+	// UI-005: Path highlighting hook
+	const {
+		highlightedNodes,
+		highlightedEdges,
+		setSelectedNodeId,
+		clearSelection,
+		handleNodeSelect,
+		handleSelectionClear,
+	} = usePathHighlightWithInspector({
+		nodes,
+		edges,
+		highlightColor: "#2563eb",
+		dimmedColor: "#cbd5e1",
+		onNodeSelected: (nodeId) => {
+			// Open inspector panel when node is selected
+			setInspectorOpen(true);
+			setInspectorTab("thread");
+		},
+		onSelectionCleared: () => {
+			// Optional: close inspector when selection is cleared
+			// setInspectorOpen(false);
+		},
+	});
+
 	// UI-NEW-004: Create stable node types (no dependencies since callback comes from context)
 	const nodeTypes = useMemo(
 		() => ({
@@ -263,6 +288,19 @@ function WorkspaceContent() {
 			setEdges((eds) => addEdge(params, eds));
 		},
 		[setEdges],
+	);
+
+	// UI-005: Handle selection change from ReactFlow
+	const onSelectionChange = useCallback(
+		(params: { nodes: readonly { id: string }[] }) => {
+			const selectedNodeId = params.nodes?.[0]?.id || null;
+			if (selectedNodeId) {
+				handleNodeSelect(selectedNodeId);
+			} else {
+				handleSelectionClear();
+			}
+		},
+		[handleNodeSelect, handleSelectionClear],
 	);
 
 	// Existing handlers (unchanged)
@@ -369,12 +407,13 @@ function WorkspaceContent() {
 				{/* Infinite Canvas with ReactFlow integration */}
 				<NodeEditingProvider onUpdateContent={updateNodeContent}>
 					<InfiniteCanvas
-						nodes={nodes}
-						edges={edges}
+						nodes={highlightedNodes}
+						edges={highlightedEdges}
 						nodeTypes={nodeTypes}
 						onNodesChange={onNodesChange as any}
 						onEdgesChange={onEdgesChange}
 						onConnect={onConnect}
+						onSelectionChange={onSelectionChange}
 						onInit={setReactFlowInstance}
 						backgroundVariant="dots"
 						backgroundGap={24}
