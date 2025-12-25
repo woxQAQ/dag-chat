@@ -11,7 +11,7 @@
     "id": "API-001",
     "name": "Server Actions: 项目管理",
     "description": "实现项目的创建、获取列表、重命名、删除。支持基于 Server Components 的数据读取。",
-    "status": "未开发",
+    "status": "non tested",
     "priority": "P1",
     "dependencies": ["DB-001"]
   },
@@ -51,7 +51,7 @@
     "id": "UI-001",
     "name": "应用布局框架 (Canvas Layout)",
     "description": "实现全屏画布布局。包含 Top Header (透明/极简), Floating Toolbar (底部悬浮), Inspector Panel (右侧侧滑)。",
-    "status": "未开发",
+    "status": "tested",
     "priority": "P0",
     "dependencies": []
   },
@@ -59,7 +59,7 @@
     "id": "UI-002",
     "name": "核心组件: 无限画布 (Infinite Canvas)",
     "description": "集成 React Flow 或类似库。实现画布的平移 (Pan)、缩放 (Zoom)、背景网格 (Background)。",
-    "status": "未开发",
+    "status": "tested",
     "priority": "P0",
     "dependencies": ["UI-001"]
   },
@@ -67,7 +67,7 @@
     "id": "UI-003",
     "name": "核心组件: 节点 (Node Components)",
     "description": "开发自定义节点组件：UserNode (输入框样式) 和 AINode (Markdown 展示样式)。实现节点的选中、悬停交互。",
-    "status": "未开发",
+    "status": "non tested",
     "priority": "P0",
     "dependencies": ["UI-002"]
   },
@@ -75,7 +75,7 @@
     "id": "UI-004",
     "name": "辅助视图: 线性对话流 (Inspector Panel)",
     "description": "右侧面板组件。当选中节点时，显示从 Root 到该节点的线性对话流 (Thread View)。支持在此处继续追问。",
-    "status": "未开发",
+    "status": "non tested",
     "priority": "P0",
     "dependencies": ["UI-001", "SVC-001"]
   },
@@ -99,7 +99,7 @@
     "id": "UI-007",
     "name": "Dashboard: 项目列表",
     "description": "首页项目管理视图。网格布局展示 Project Cards，支持创建新项目。",
-    "status": "未开发",
+    "status": "tested",
     "priority": "P1",
     "dependencies": ["UI-001", "API-001"]
   }
