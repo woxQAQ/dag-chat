@@ -40,5 +40,13 @@
     "status": "未开发",
     "priority": "P1",
     "dependencies": ["UI-002"]
+  },
+  {
+    "id": "UI-NEW-004",
+    "name": "交互: 节点内容编辑 (Node Content Editing)",
+    "description": "实现节点内容编辑功能：双击节点进入编辑模式，修改内容后保存到数据库。需要实现 updateNodeContent Server Action，并在 UserNode 组件中连接 onEditToggle 和 onContentChange 回调。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["UI-003", "API-003"]
   }
 ]

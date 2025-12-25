@@ -10,10 +10,9 @@
 "use client";
 
 import { memo } from "react";
-import { UserNode as BaseUserNode } from "./UserNode";
 import { AINode as BaseAINode } from "./AINode";
-import type { MindFlowNode } from "./types";
-import type { UserNodeProps, AINodeProps } from "./types";
+import type { AINodeProps, MindFlowNode, UserNodeProps } from "./types";
+import { UserNode as BaseUserNode } from "./UserNode";
 
 // ============================================================================
 // Type Definitions
@@ -47,19 +46,24 @@ export interface BranchingNodeProps {
  * />
  * ```
  */
-export const BranchingUserNode = memo<BranchingNodeProps & UserNodeProps>(
-	function BranchingUserNode({ node, isHovered = false, onCreateChild, ...props }) {
-		return (
-			<BaseUserNode
-				data={node.data}
-				selected={node.selected}
-				isHovered={isHovered}
-				onCreateChild={onCreateChild}
-				{...props}
-			/>
-		);
-	},
-);
+export const BranchingUserNode = memo<
+	BranchingNodeProps & Omit<UserNodeProps, "data" | "selected">
+>(function BranchingUserNode({
+	node,
+	isHovered = false,
+	onCreateChild,
+	...props
+}) {
+	return (
+		<BaseUserNode
+			data={node.data}
+			selected={node.selected}
+			isHovered={isHovered}
+			onCreateChild={onCreateChild}
+			{...props}
+		/>
+	);
+});
 
 /**
  * AINode with branching interaction support.
@@ -76,19 +80,24 @@ export const BranchingUserNode = memo<BranchingNodeProps & UserNodeProps>(
  * />
  * ```
  */
-export const BranchingAINode = memo<BranchingNodeProps & AINodeProps>(
-	function BranchingAINode({ node, isHovered = false, onCreateChild, ...props }) {
-		return (
-			<BaseAINode
-				data={node.data}
-				selected={node.selected}
-				isHovered={isHovered}
-				onCreateChild={onCreateChild}
-				{...props}
-			/>
-		);
-	},
-);
+export const BranchingAINode = memo<
+	BranchingNodeProps & Omit<AINodeProps, "data" | "selected">
+>(function BranchingAINode({
+	node,
+	isHovered = false,
+	onCreateChild,
+	...props
+}) {
+	return (
+		<BaseAINode
+			data={node.data}
+			selected={node.selected}
+			isHovered={isHovered}
+			onCreateChild={onCreateChild}
+			{...props}
+		/>
+	);
+});
 
 // ============================================================================
 // Node Factory Function
@@ -115,13 +124,24 @@ export function createBranchingNode(
 	role: "user" | "assistant",
 	onCreateChild: (parentId: string) => void,
 ) {
-	return function BranchingNode(props: { node: MindFlowNode; isHovered?: boolean }) {
-		const handleCreateChild = () => onCreateChild(props.node.data.id);
+	return function BranchingNode(props: any) {
+		// Props from React Flow contain data, selected, etc. directly
+		// We need to wrap them in our expected format
+		const node: MindFlowNode = {
+			id: props.data.id,
+			type: props.type,
+			position: props.position,
+			data: props.data,
+			selected: props.selected,
+		};
+
+		const handleCreateChild = () => onCreateChild(props.data.id);
 
 		if (role === "user") {
 			return (
 				<BranchingUserNode
-					{...props}
+					node={node}
+					isHovered={props.isHovered}
 					onCreateChild={handleCreateChild}
 				/>
 			);
@@ -129,7 +149,8 @@ export function createBranchingNode(
 
 		return (
 			<BranchingAINode
-				{...props}
+				node={node}
+				isHovered={props.isHovered}
 				onCreateChild={handleCreateChild}
 			/>
 		);

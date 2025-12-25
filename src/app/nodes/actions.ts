@@ -8,6 +8,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { GraphData } from "@/lib/graph-retrieval";
 import { createNode } from "@/lib/node-crud";
 
 // ============================================================================
@@ -30,9 +31,38 @@ export interface ActionState<T> {
 	error?: string;
 }
 
+// Re-export GraphData types for client components
+export type { GraphData, GraphEdge, GraphNode } from "@/lib/graph-retrieval";
+
 // ============================================================================
 // Server Actions
 // ============================================================================
+
+/**
+ * Gets the project graph data for rendering on the canvas.
+ *
+ * This Server Action wraps API-002's getProjectGraph for client components.
+ *
+ * @param projectId - The project ID to fetch graph data for
+ * @returns The complete graph with nodes, edges, and root node ID
+ */
+export async function getProjectGraphAction(
+	projectId: string,
+): Promise<ActionState<GraphData>> {
+	try {
+		const { getProjectGraph } = await import("@/lib/graph-retrieval");
+		const graph = await getProjectGraph(projectId);
+		return {
+			success: true,
+			data: graph,
+		};
+	} catch (error) {
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : "Failed to load graph",
+		};
+	}
+}
 
 /**
  * Creates a child node from a parent node during branching interaction.

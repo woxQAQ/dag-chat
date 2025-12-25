@@ -1,23 +1,25 @@
 /**
- * UI-NEW-002: Branching Interaction Hook Tests
+ * UI-NEW-001: Root Node Creation Hook Tests
  *
- * Tests for the useBranching hook.
+ * Tests for the useRootNodeCreation hook.
  */
 
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useBranching } from "./use-branching";
+import { useRootNodeCreation } from "./use-root-creation";
 
 // Mock the Server Actions
-vi.mock("@/app/nodes/actions", () => ({
-	createChildNodeAutoPosition: vi.fn(),
+vi.mock("@/app/nodes/root-actions", () => ({
+	createRootNode: vi.fn(),
 }));
 
-import { createChildNodeAutoPosition } from "@/app/nodes/actions";
+import { createRootNode } from "@/app/nodes/root-actions";
 
-describe("useBranching", () => {
+describe("useRootNodeCreation", () => {
 	const mockProjectId = "project-123";
-	const mockParentNodeId = "parent-node-456";
+	const mockPositionX = 150;
+	const mockPositionY = 200;
+	const mockContent = "What is the meaning of life?";
 
 	const mockOnNodeCreated = vi.fn();
 	const mockOnError = vi.fn();
@@ -32,17 +34,17 @@ describe("useBranching", () => {
 
 	it("should return initial state correctly", () => {
 		// Mock successful response
-		vi.mocked(createChildNodeAutoPosition).mockResolvedValue({
+		vi.mocked(createRootNode).mockResolvedValue({
 			success: true,
 			data: {
-				nodeId: "new-node-789",
-				positionX: 120,
-				positionY: 300,
+				nodeId: "new-root-node-789",
+				positionX: mockPositionX,
+				positionY: mockPositionY,
 			},
 		});
 
 		const { result } = renderHook(() =>
-			useBranching({
+			useRootNodeCreation({
 				projectId: mockProjectId,
 				onNodeCreated: mockOnNodeCreated,
 				onError: mockOnError,
@@ -51,15 +53,13 @@ describe("useBranching", () => {
 
 		expect(result.current.isCreating).toBe(false);
 		expect(result.current.error).toBe(null);
-		expect(typeof result.current.createChildNode).toBe("function");
+		expect(typeof result.current.createRootNode).toBe("function");
 	});
 
-	it("should create child node successfully", async () => {
-		const mockNodeId = "new-node-789";
-		const mockPositionX = 120;
-		const mockPositionY = 300;
+	it("should create root node successfully", async () => {
+		const mockNodeId = "new-root-node-789";
 
-		vi.mocked(createChildNodeAutoPosition).mockResolvedValue({
+		vi.mocked(createRootNode).mockResolvedValue({
 			success: true,
 			data: {
 				nodeId: mockNodeId,
@@ -69,7 +69,7 @@ describe("useBranching", () => {
 		});
 
 		const { result } = renderHook(() =>
-			useBranching({
+			useRootNodeCreation({
 				projectId: mockProjectId,
 				onNodeCreated: mockOnNodeCreated,
 				onError: mockOnError,
@@ -79,17 +79,21 @@ describe("useBranching", () => {
 		// Initial state
 		expect(result.current.isCreating).toBe(false);
 
-		// Create child node
+		// Create root node
 		await act(async () => {
-			await result.current.createChildNode(mockParentNodeId, "USER");
+			await result.current.createRootNode(
+				mockContent,
+				mockPositionX,
+				mockPositionY,
+			);
 		});
 
 		// Verify Server Action was called with correct parameters
-		expect(createChildNodeAutoPosition).toHaveBeenCalledWith({
+		expect(createRootNode).toHaveBeenCalledWith({
 			projectId: mockProjectId,
-			parentNodeId: mockParentNodeId,
-			role: "USER",
-			content: "",
+			content: mockContent,
+			positionX: mockPositionX,
+			positionY: mockPositionY,
 		});
 
 		// Verify callback was called with correct data
@@ -104,44 +108,15 @@ describe("useBranching", () => {
 		expect(result.current.error).toBe(null);
 	});
 
-	it("should default to USER role when role is not specified", async () => {
-		vi.mocked(createChildNodeAutoPosition).mockResolvedValue({
-			success: true,
-			data: {
-				nodeId: "new-node-789",
-				positionX: 120,
-				positionY: 300,
-			},
-		});
-
-		const { result } = renderHook(() =>
-			useBranching({
-				projectId: mockProjectId,
-				onNodeCreated: mockOnNodeCreated,
-			}),
-		);
-
-		await act(async () => {
-			await result.current.createChildNode(mockParentNodeId);
-		});
-
-		expect(createChildNodeAutoPosition).toHaveBeenCalledWith({
-			projectId: mockProjectId,
-			parentNodeId: mockParentNodeId,
-			role: "USER", // Default role
-			content: "",
-		});
-	});
-
 	it("should handle server action failure", async () => {
-		const mockError = "Failed to create child node";
-		vi.mocked(createChildNodeAutoPosition).mockResolvedValue({
+		const mockError = "Project already has a root node";
+		vi.mocked(createRootNode).mockResolvedValue({
 			success: false,
 			error: mockError,
 		});
 
 		const { result } = renderHook(() =>
-			useBranching({
+			useRootNodeCreation({
 				projectId: mockProjectId,
 				onNodeCreated: mockOnNodeCreated,
 				onError: mockOnError,
@@ -149,7 +124,11 @@ describe("useBranching", () => {
 		);
 
 		await act(async () => {
-			await result.current.createChildNode(mockParentNodeId);
+			await result.current.createRootNode(
+				mockContent,
+				mockPositionX,
+				mockPositionY,
+			);
 		});
 
 		// Verify error callback was called
@@ -164,10 +143,10 @@ describe("useBranching", () => {
 
 	it("should handle unexpected errors", async () => {
 		const mockError = new Error("Network error");
-		vi.mocked(createChildNodeAutoPosition).mockRejectedValue(mockError);
+		vi.mocked(createRootNode).mockRejectedValue(mockError);
 
 		const { result } = renderHook(() =>
-			useBranching({
+			useRootNodeCreation({
 				projectId: mockProjectId,
 				onNodeCreated: mockOnNodeCreated,
 				onError: mockOnError,
@@ -175,7 +154,11 @@ describe("useBranching", () => {
 		);
 
 		await act(async () => {
-			await result.current.createChildNode(mockParentNodeId);
+			await result.current.createRootNode(
+				mockContent,
+				mockPositionX,
+				mockPositionY,
+			);
 		});
 
 		// Verify error callback was called
@@ -188,7 +171,7 @@ describe("useBranching", () => {
 	it("should set isCreating to true during creation", async () => {
 		let resolveCreation: (value: any) => void;
 
-		vi.mocked(createChildNodeAutoPosition).mockImplementation(
+		vi.mocked(createRootNode).mockImplementation(
 			() =>
 				new Promise((resolve) => {
 					resolveCreation = resolve;
@@ -196,7 +179,7 @@ describe("useBranching", () => {
 		);
 
 		const { result } = renderHook(() =>
-			useBranching({
+			useRootNodeCreation({
 				projectId: mockProjectId,
 				onNodeCreated: mockOnNodeCreated,
 			}),
@@ -204,7 +187,7 @@ describe("useBranching", () => {
 
 		// Start creation (don't await - we want to check intermediate state)
 		act(() => {
-			result.current.createChildNode(mockParentNodeId);
+			result.current.createRootNode(mockContent, mockPositionX, mockPositionY);
 		});
 
 		// Check loading state during creation
@@ -214,7 +197,11 @@ describe("useBranching", () => {
 		await act(async () => {
 			resolveCreation!({
 				success: true,
-				data: { nodeId: "new-node", positionX: 100, positionY: 200 },
+				data: {
+					nodeId: "new-root-node",
+					positionX: mockPositionX,
+					positionY: mockPositionY,
+				},
 			});
 		});
 
@@ -222,54 +209,77 @@ describe("useBranching", () => {
 		expect(result.current.isCreating).toBe(false);
 	});
 
-	it("should support ASSISTANT role for child nodes", async () => {
-		vi.mocked(createChildNodeAutoPosition).mockResolvedValue({
-			success: true,
-			data: {
-				nodeId: "new-node-789",
-				positionX: 120,
-				positionY: 300,
-			},
+	it("should clear previous error on new creation attempt", async () => {
+		// First call fails
+		vi.mocked(createRootNode).mockResolvedValueOnce({
+			success: false,
+			error: "First error",
 		});
 
 		const { result } = renderHook(() =>
-			useBranching({
+			useRootNodeCreation({
 				projectId: mockProjectId,
 				onNodeCreated: mockOnNodeCreated,
+				onError: mockOnError,
 			}),
 		);
 
+		// First attempt fails
 		await act(async () => {
-			await result.current.createChildNode(mockParentNodeId, "ASSISTANT");
+			await result.current.createRootNode(
+				mockContent,
+				mockPositionX,
+				mockPositionY,
+			);
 		});
 
-		expect(createChildNodeAutoPosition).toHaveBeenCalledWith({
-			projectId: mockProjectId,
-			parentNodeId: mockParentNodeId,
-			role: "ASSISTANT",
-			content: "",
+		expect(result.current.error).toBe("First error");
+
+		// Second call succeeds
+		vi.mocked(createRootNode).mockResolvedValueOnce({
+			success: true,
+			data: {
+				nodeId: "new-node",
+				positionX: mockPositionX,
+				positionY: mockPositionY,
+			},
 		});
+
+		await act(async () => {
+			await result.current.createRootNode(
+				mockContent,
+				mockPositionX,
+				mockPositionY,
+			);
+		});
+
+		// Error should be cleared
+		expect(result.current.error).toBe(null);
 	});
 
 	it("should work without callbacks provided", async () => {
-		vi.mocked(createChildNodeAutoPosition).mockResolvedValue({
+		vi.mocked(createRootNode).mockResolvedValue({
 			success: true,
 			data: {
-				nodeId: "new-node-789",
-				positionX: 120,
-				positionY: 300,
+				nodeId: "new-root-node-789",
+				positionX: mockPositionX,
+				positionY: mockPositionY,
 			},
 		});
 
 		const { result } = renderHook(() =>
-			useBranching({
+			useRootNodeCreation({
 				projectId: mockProjectId,
 			}),
 		);
 
 		// Should not throw even without callbacks
 		await act(async () => {
-			await result.current.createChildNode(mockParentNodeId);
+			await result.current.createRootNode(
+				mockContent,
+				mockPositionX,
+				mockPositionY,
+			);
 		});
 
 		expect(result.current.isCreating).toBe(false);

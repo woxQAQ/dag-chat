@@ -2,6 +2,163 @@
 
 ## 2024-12-25
 
+### [UI-NEW-001] Root Node Creation - COMPLETED
+**Branch:** feat/ui-new-001-root-node-creation
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Root Node Server Action** (`src/app/nodes/root-actions.ts`)
+   - `createRootNode()`: Server Action for creating the first USER node in a project
+   - Validates project doesn't already have a root node
+   - Creates USER node with no parent (root of tree)
+   - Sets metadata `{ isRoot: true }` on created node
+   - Revalidates `/workspace` path after creation
+
+2. **Graph Loading Server Action** (`src/app/nodes/actions.ts`)
+   - `getProjectGraphAction()`: Server Action wrapper for graph loading
+   - Prevents client components from importing server-side code
+   - Returns complete graph data for ReactFlow rendering
+
+3. **Custom Hook** (`src/hooks/use-root-creation.ts`)
+   - `useRootNodeCreation()`: Manages root node creation state
+   - Returns: `{ isCreating, error, createRootNode }`
+   - Optional callbacks: `onNodeCreated`, `onError`
+   - `use-root-creation.test.ts`: 7 comprehensive tests for the hook
+
+4. **Empty State Canvas** (`src/components/canvas/EmptyStateCanvas.tsx`)
+   - Centered hint message for empty projects
+   - Default message: "Double click anywhere to start your thought flow"
+   - Custom message support via `message` prop
+   - Uses `pointer-events-none` to allow clicks through to canvas
+   - `EmptyStateCanvas.test.tsx`: 12 comprehensive tests
+
+5. **Workspace Integration** (`src/app/workspace/page.tsx`)
+   - Added ReactFlow state management: `useNodesState`, `useEdgesState`
+   - Graph data loading on mount via Server Action
+   - `onPaneDoubleClick` handler for root node creation
+   - Coordinate conversion using `screenToFlowPosition`
+   - Empty state overlay shown when `nodes.length === 0`
+   - Prevents root creation if project already has nodes
+
+6. **TypeScript Fixes** (`src/components/nodes/BranchingNode.tsx`)
+   - Fixed type definitions to properly exclude conflicting props
+   - Used `Omit<UserNodeProps, 'data' | 'selected'>` for proper type composition
+
+7. **Exports Update** (`src/components/canvas/index.ts`)
+   - Added exports for `EmptyStateCanvas` component
+
+8. **Tests**
+   - **root-actions.test.ts**: 13 tests covering:
+     - UUID validation, project existence
+     - Root node creation with validation
+     - Error handling for existing root nodes
+   - **use-root-creation.test.ts**: 7 tests covering:
+     - Initial state, successful creation, error handling
+     - Callback invocation, loading states
+   - **EmptyStateCanvas.test.tsx**: 12 tests covering:
+     - Rendering with show/hide, custom messages
+     - Conditional display, edge cases
+   - ✅ All 32 new tests passing (32/32)
+
+#### Technical Details:
+- Uses Server Actions to avoid client importing server code
+- ReactFlow's `screenToFlowPosition` for coordinate conversion
+- Type casting `(as any)` for ReactFlow generic limitations
+- Revalidates `/workspace` path after node creation
+- Prevents multiple root nodes in same project
+- Empty state uses `z-index: 0` to stay below canvas elements
+
+#### Visual Design:
+- **Empty State**: Centered, text-lg, text-slate-400, font-light, tracking-wide
+- **Background**: `pointer-events-none` to allow canvas interactions
+- **Message**: "Double click anywhere to start your thought flow" (default)
+
+#### File Structure:
+```
+src/app/nodes/
+├── root-actions.ts (new)
+├── root-actions.test.ts (new)
+└── actions.ts (modified - added getProjectGraphAction)
+
+src/hooks/
+├── use-root-creation.ts (new)
+└── use-root-creation.test.ts (new)
+
+src/components/canvas/
+├── EmptyStateCanvas.tsx (new)
+├── EmptyStateCanvas.test.tsx (new)
+└── index.ts (modified - added exports)
+
+src/app/workspace/
+└── page.tsx (modified - ReactFlow integration)
+
+src/components/nodes/
+└── BranchingNode.tsx (modified - type fixes)
+```
+
+#### Usage Example:
+```tsx
+import { useRootNodeCreation } from "@/hooks/use-root-creation";
+import { getProjectGraphAction } from "@/app/nodes/actions";
+import { EmptyStateCanvas } from "@/components/canvas";
+
+// Graph loading
+useEffect(() => {
+  const loadGraph = async () => {
+    const result = await getProjectGraphAction(projectId);
+    if (result.success) {
+      const { nodes, edges } = result.data;
+      setNodes(formatNodesForReactFlow(nodes));
+      setEdges(formatEdgesForReactFlow(edges));
+    }
+  };
+  loadGraph();
+}, [projectId]);
+
+// Root creation hook
+const { isCreating, createRootNode } = useRootNodeCreation({
+  projectId,
+  onNodeCreated: (nodeId, x, y) => {
+    setNodes((prev) => [...prev, { id: nodeId, type: "user", position: { x, y }, data: {...} }]);
+  },
+  onError: (error) => {
+    toast.error(error);
+  }
+});
+
+// Double-click handler
+const onPaneDoubleClick = (event: React.MouseEvent) => {
+  if (nodes.length > 0 || !reactFlowInstance) return;
+
+  const position = reactFlowInstance.screenToFlowPosition({
+    x: event.clientX,
+    y: event.clientY,
+  });
+
+  createRootNode(position.x, position.y);
+};
+
+// Empty state overlay
+<EmptyStateCanvas show={nodes.length === 0} />
+```
+
+#### Important Notes:
+- Root node can only be created when project has no nodes
+- Double-clicking on canvas when nodes exist shows console error
+- Root nodes are always USER role with `{ isRoot: true }` metadata
+- Server Action wrapper pattern used for `getProjectGraphAction`
+- Empty state message is fully customizable via `message` prop
+
+#### Next Steps:
+- Feature UI-NEW-001 is complete. Users can now create the first node by double-clicking on empty canvas.
+- Dependent features can now proceed:
+  - UI-NEW-002: Branching Interaction (already complete - creates child nodes from existing nodes)
+
+---
+
+## 2024-12-25
+
 ### [UI-NEW-002] Branching Interaction - COMPLETED
 **Branch:** feat/ui-new-002-branching-interaction
 **Status:** ✅ Complete

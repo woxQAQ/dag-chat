@@ -4,14 +4,20 @@
  * Tests for the branching interaction components and hooks.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { BranchingUserNode, BranchingAINode } from "./BranchingNode";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { BranchingAINode, BranchingUserNode } from "./BranchingNode";
 import type { MindFlowNode } from "./types";
 
 // Mock React Flow's Handle component
 vi.mock("@xyflow/react", () => ({
-	Handle: ({ children, className }: { children?: React.ReactNode; className?: string }) => (
+	Handle: ({
+		children,
+		className,
+	}: {
+		children?: React.ReactNode;
+		className?: string;
+	}) => (
 		<div data-testid="react-flow-handle" className={className}>
 			{children}
 		</div>
@@ -52,7 +58,9 @@ describe("BranchingUserNode", () => {
 		);
 
 		// Check that the user node content is rendered
-		expect(screen.getByText("Hello, this is a user message")).toBeInTheDocument();
+		expect(
+			screen.getByText("Hello, this is a user message"),
+		).toBeInTheDocument();
 
 		// Branch button should not be visible when not hovered
 		const branchButton = screen.queryByLabelText("Create child node");
@@ -125,9 +133,7 @@ describe("BranchingUserNode", () => {
 	});
 
 	it("should show edit hint when branch button is not provided", () => {
-		render(
-			<BranchingUserNode node={mockNode} isHovered={true} />,
-		);
+		render(<BranchingUserNode node={mockNode} isHovered={true} />);
 
 		// Edit hint should be shown when no branch button
 		const editHint = screen.queryByText("Double-click to edit");

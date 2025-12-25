@@ -5,16 +5,23 @@
  * Supports USER, ASSISTANT, and SYSTEM node types with distinct visual styles.
  */
 
-// Import components first
-import { UserNode } from "./UserNode";
 import { AINode } from "./AINode";
 import {
-	BranchingUserNode,
 	BranchingAINode,
+	BranchingUserNode,
 	createBranchingNode,
 } from "./BranchingNode";
+// Import components first
+import { UserNode } from "./UserNode";
 
 export { AINode } from "./AINode";
+export type { BranchingNodeProps } from "./BranchingNode";
+// UI-NEW-002: Branching interaction components
+export {
+	BranchingAINode,
+	BranchingUserNode,
+	createBranchingNode,
+} from "./BranchingNode";
 // Types
 export type {
 	AINodeProps,
@@ -27,14 +34,6 @@ export type {
 } from "./types";
 // Node components
 export { UserNode } from "./UserNode";
-
-// UI-NEW-002: Branching interaction components
-export {
-	BranchingUserNode,
-	BranchingAINode,
-	createBranchingNode,
-} from "./BranchingNode";
-export type { BranchingNodeProps } from "./BranchingNode";
 
 /**
  * Node types configuration for React Flow
