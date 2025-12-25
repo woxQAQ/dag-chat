@@ -11,6 +11,7 @@ import {
 	BranchingUserNode,
 	createBranchingNode,
 } from "./BranchingNode";
+import { createEditableNode, EditableUserNode } from "./EditableNode";
 // Import components first
 import { UserNode } from "./UserNode";
 
@@ -22,6 +23,11 @@ export {
 	BranchingUserNode,
 	createBranchingNode,
 } from "./BranchingNode";
+// UI-NEW-004: Content editing components
+export {
+	createEditableNode,
+	EditableUserNode,
+} from "./EditableNode";
 // Types
 export type {
 	AINodeProps,

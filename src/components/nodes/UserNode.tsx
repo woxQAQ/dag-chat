@@ -31,6 +31,8 @@ export function UserNode({
 	isHovered = false,
 	onContentChange,
 	onEditToggle,
+	onEditSave,
+	onEditCancel,
 	onCreateChild,
 }: UserNodeProps) {
 	const { content, isEditing = false } = data;
@@ -50,14 +52,22 @@ export function UserNode({
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
 			e.preventDefault();
+			// Call both onEditToggle and onEditSave for save action
 			if (onEditToggle) {
 				onEditToggle(false);
+			}
+			if (onEditSave) {
+				onEditSave();
 			}
 		}
 		if (e.key === "Escape") {
 			e.preventDefault();
+			// Call both onEditToggle and onEditCancel for cancel action
 			if (onEditToggle) {
 				onEditToggle(false);
+			}
+			if (onEditCancel) {
+				onEditCancel();
 			}
 		}
 	};

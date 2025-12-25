@@ -52,6 +52,10 @@ export interface UserNodeProps extends BaseNodeProps {
 	onContentChange?: (content: string) => void;
 	/** Callback when edit mode is toggled */
 	onEditToggle?: (isEditing: boolean) => void;
+	/** Callback when edit is saved (Cmd/Ctrl+Enter) */
+	onEditSave?: () => void;
+	/** Callback when edit is cancelled (Escape) */
+	onEditCancel?: () => void;
 	/** Callback to create a child node from this node (branching interaction) */
 	onCreateChild?: () => void;
 }

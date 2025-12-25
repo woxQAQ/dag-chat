@@ -8,7 +8,7 @@ import {
 	useNodesState,
 } from "@xyflow/react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { type GraphData, getProjectGraphAction } from "@/app/nodes/actions";
 import {
 	EmptyStateCanvas,
@@ -23,7 +23,9 @@ import {
 	type ToolMode,
 	TopHeader,
 } from "@/components/layout";
-import { type MindFlowNode, nodeTypes } from "@/components/nodes";
+import { createEditableNode, type MindFlowNode } from "@/components/nodes";
+import { NodeEditingProvider } from "@/contexts/NodeEditingContext";
+import { useNodeEditing } from "@/hooks/use-node-editing";
 import { useRootNodeCreation } from "@/hooks/use-root-creation";
 
 function WorkspaceContent() {
@@ -150,6 +152,36 @@ function WorkspaceContent() {
 			console.error("Root creation error:", error);
 		},
 	});
+
+	// UI-NEW-004: Node editing hook
+	const { isUpdating, updateNodeContent } = useNodeEditing({
+		onContentUpdated: (nodeId, content) => {
+			// Update the node in ReactFlow state after save
+			setNodes((nds) =>
+				nds.map((node) =>
+					node.id === nodeId
+						? {
+								...node,
+								data: { ...node.data, content, isEditing: false },
+							}
+						: node,
+				),
+			);
+		},
+		onError: (error) => {
+			console.error("Node update error:", error);
+		},
+	});
+
+	// UI-NEW-004: Create stable node types (no dependencies since callback comes from context)
+	const nodeTypes = useMemo(
+		() => ({
+			user: createEditableNode(),
+			assistant: createEditableNode(),
+			system: createEditableNode(),
+		}),
+		[],
+	);
 
 	// NEW: Handle double-click on canvas - opens prompt dialog
 	const onPaneDoubleClick = useCallback(
@@ -335,18 +367,20 @@ function WorkspaceContent() {
 				/>
 
 				{/* Infinite Canvas with ReactFlow integration */}
-				<InfiniteCanvas
-					nodes={nodes}
-					edges={edges}
-					nodeTypes={nodeTypes}
-					onNodesChange={onNodesChange as any}
-					onEdgesChange={onEdgesChange}
-					onConnect={onConnect}
-					onInit={setReactFlowInstance}
-					backgroundVariant="dots"
-					backgroundGap={24}
-					showControls={false}
-				/>
+				<NodeEditingProvider onUpdateContent={updateNodeContent}>
+					<InfiniteCanvas
+						nodes={nodes}
+						edges={edges}
+						nodeTypes={nodeTypes}
+						onNodesChange={onNodesChange as any}
+						onEdgesChange={onEdgesChange}
+						onConnect={onConnect}
+						onInit={setReactFlowInstance}
+						backgroundVariant="dots"
+						backgroundGap={24}
+						showControls={false}
+					/>
+				</NodeEditingProvider>
 			</CanvasLayout>
 
 			{/* Prompt Input Dialog */}

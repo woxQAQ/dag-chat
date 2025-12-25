@@ -2,6 +2,193 @@
 
 ## 2024-12-25
 
+### [UI-NEW-004] Node Content Editing - COMPLETED
+**Branch:** feat/ui-new-004-node-content-editing
+**Status:** ✅ Complete
+
+---
+
+### [FIX] React Flow nodeTypes Warning - FIXED
+**Branch:** feat/ui-new-004-node-content-editing
+**Status:** ✅ Complete
+
+#### Issue:
+React Flow warning appeared in console:
+```
+[React Flow]: It looks like you've created a new nodeTypes or edgeTypes object.
+If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the
+component or memoize them.
+```
+
+#### Root Cause:
+The `updateNodeContent` function from `useNodeEditing` hook changed on each render
+due to `useCallback` dependencies (`onContentUpdated`, `onError`). This caused
+`createEditableNode(updateNodeContent)` to create new component functions each time,
+making the `useMemo` ineffective.
+
+#### Solution:
+Implemented React Context pattern to provide the update callback to editable nodes,
+allowing `nodeTypes` to be truly stable:
+
+1. **Created NodeEditingContext** (`src/contexts/NodeEditingContext.tsx`)
+   - Provides `updateNodeContent` callback via context
+   - Includes `NodeEditingProvider` wrapper component
+   - Exports `useNodeEditingContext()` hook for consuming
+
+2. **Updated EditableNode** (`src/components/nodes/EditableNode.tsx`)
+   - Removed `onUpdateContent` from `EditableNodeProps`
+   - Uses `useNodeEditingContext()` to get update callback
+   - `createEditableNode()` no longer takes parameters
+
+3. **Updated Workspace** (`src/app/workspace/page.tsx`)
+   - Wrapped `InfiniteCanvas` with `NodeEditingProvider`
+   - `nodeTypes` now has empty dependency array: `useMemo(() => ({...}), [])`
+
+4. **Updated Tests** (`src/components/nodes/EditableNode.test.tsx`)
+   - Added `renderEditableUserNode()` helper function
+   - All test renders wrapped with `NodeEditingProvider`
+
+#### Result:
+- ✅ `nodeTypes` is now truly stable (no recreation on each render)
+- ✅ React Flow warning eliminated
+- ✅ All 18 tests passing
+- ✅ TypeScript compilation successful
+
+#### Changes Made:
+
+1. **Server Actions** (`src/app/nodes/actions.ts`)
+   - Added `UpdateNodeContentInput` interface for node content updates
+   - `updateNodeContentAction()`: Server Action for updating node content
+   - Wraps API-003 `updateNodeContent` service for client components
+   - Revalidates `/workspace` path after update
+
+2. **Custom Hook** (`src/hooks/use-node-editing.ts`)
+   - `useNodeEditing()`: Manages node content editing state
+   - Returns: `{ isUpdating, error, updateNodeContent }`
+   - Optional callbacks: `onContentUpdated`, `onError`
+   - `use-node-editing.test.ts`: 9 comprehensive tests for the hook
+
+3. **Editable Node Wrapper** (`src/components/nodes/EditableNode.tsx`)
+   - `EditableUserNode`: Wrapper component with local edit state management
+   - Tracks `isEditing` state locally to trigger re-renders
+   - Syncs with node data changes (e.g., after external save)
+   - Separates save (Cmd/Ctrl+Enter) and cancel (Escape) actions
+   - `EditableNode.test.tsx`: 9 comprehensive tests for the wrapper
+
+4. **UserNode Component** (`src/components/nodes/UserNode.tsx`)
+   - Added `onEditSave` and `onEditCancel` callbacks
+   - Save action: Calls both `onEditToggle(false)` and `onEditSave()`
+   - Cancel action: Calls both `onEditToggle(false)` and `onEditCancel()`
+   - Enables EditableNode to distinguish save from cancel
+
+5. **Types** (`src/components/nodes/types.ts`)
+   - Extended `UserNodeProps` with `onEditSave` and `onEditCancel` callbacks
+
+6. **Node Exports** (`src/components/nodes/index.ts`)
+   - Added exports for `createEditableNode` and `EditableUserNode`
+
+7. **Workspace Integration** (`src/app/workspace/page.tsx`)
+   - Added `useNodeEditing` hook for edit state and API calls
+   - Created editable `nodeTypes` using `createEditableNode` factory
+   - Updates ReactFlow state after successful save
+   - Memoized `nodeTypes` for performance
+
+8. **Tests**
+   - **use-node-editing.test.ts**: 9 tests covering:
+     - Initial state, successful updates, loading states
+     - Error handling for Server Action failures and exceptions
+     - Callback invocation with and without handlers
+     - Multiple sequential updates
+   - **EditableNode.test.tsx**: 9 tests covering:
+     - Rendering, edit mode toggle, content changes
+     - Save (Cmd+Enter) and cancel (Escape) keyboard shortcuts
+     - Editing badge display, callback behavior
+     - `createEditableNode` factory function
+   - ✅ All 18 new tests passing
+
+#### Technical Details:
+- Uses Server Actions to avoid client importing server code
+- Local state management for edit mode to trigger React re-renders
+- Separate callbacks for save (persist to DB) and cancel (discard changes)
+- ReactFlow state updated after successful database save
+- Memoized nodeTypes to prevent unnecessary re-renders
+- `useEffect` syncs local edited content with node data changes
+
+#### Visual Design:
+- **Edit Mode**: "Editing" badge in amber shows when node is being edited
+- **Textarea**: White background, blue border focus, resize-y (48px min height)
+- **Keyboard Shortcuts**: Cmd/Ctrl+Enter to save, Escape to cancel
+- **Original Content**: Restored on cancel without saving to database
+
+#### File Structure:
+```
+src/app/nodes/
+└── actions.ts (modified - added updateNodeContentAction)
+
+src/hooks/
+├── use-node-editing.ts (new)
+└── use-node-editing.test.ts (new)
+
+src/components/nodes/
+├── EditableNode.tsx (new)
+├── EditableNode.test.tsx (new)
+├── UserNode.tsx (modified - added onEditSave/onEditCancel)
+├── types.ts (modified - extended UserNodeProps)
+└── index.ts (modified - added exports)
+
+src/app/workspace/
+└── page.tsx (modified - integrated useNodeEditing and editable nodes)
+```
+
+#### Usage Example:
+```tsx
+import { useNodeEditing } from "@/hooks/use-node-editing";
+import { createEditableNode } from "@/components/nodes";
+
+// In workspace component
+const { isUpdating, updateNodeContent } = useNodeEditing({
+  projectId: currentProjectId,
+  onContentUpdated: (nodeId, content) => {
+    // Update ReactFlow state after save
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, content, isEditing: false } }
+          : node
+      )
+    );
+  },
+  onError: (error) => {
+    toast.error(error);
+  }
+});
+
+// Create editable node types
+const nodeTypes = useMemo(() => ({
+  user: createEditableNode(updateNodeContent),
+  assistant: createEditableNode(updateNodeContent),
+}), [updateNodeContent]);
+
+<InfiniteCanvas nodeTypes={nodeTypes} />
+```
+
+#### Important Notes:
+- Double-click a node to enter edit mode
+- Type new content in textarea
+- Cmd/Ctrl+Enter to save (writes to database)
+- Escape to cancel (discards changes)
+- Edit state is managed locally in EditableNode wrapper
+- Original content is preserved on cancel
+- Database is only updated on save action
+
+#### Next Steps:
+- Feature UI-NEW-004 is complete. Users can now edit node content inline.
+- Dependent features can now proceed:
+  - UI-NEW-003: Empty State Guidance (for projects without nodes)
+  - UI-005: Path Highlighting (visual feedback for selected paths)
+
+---
+
 ### [UI-006-UPDATE] FloatingToolbar Button Pruning - COMPLETED
 **Branch:** feat/ui-006-update-toolbar-pruning
 **Status:** ✅ Complete

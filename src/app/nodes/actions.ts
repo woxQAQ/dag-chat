@@ -1,7 +1,9 @@
 /**
  * UI-NEW-002: Branching Interaction Server Actions
+ * UI-NEW-004: Node Content Editing Server Actions
  *
- * Server Actions for creating child nodes during branching interaction.
+ * Server Actions for creating child nodes during branching interaction,
+ * and for updating node content during editing.
  * Wraps API-003 node-crud service for use in client components.
  */
 
@@ -9,7 +11,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { GraphData } from "@/lib/graph-retrieval";
-import { createNode } from "@/lib/node-crud";
+import { createNode, updateNodeContent } from "@/lib/node-crud";
 
 // ============================================================================
 // Type Definitions
@@ -22,6 +24,12 @@ export interface CreateChildNodeInput {
 	content?: string;
 	positionX?: number;
 	positionY?: number;
+	metadata?: Record<string, unknown>;
+}
+
+export interface UpdateNodeContentInput {
+	nodeId: string;
+	content: string;
 	metadata?: Record<string, unknown>;
 }
 
@@ -162,6 +170,53 @@ export async function createChildNodeAutoPosition(
 			success: false,
 			error:
 				error instanceof Error ? error.message : "Failed to create child node",
+		};
+	}
+}
+
+/**
+ * UI-NEW-004: Updates the content of an existing node.
+ *
+ * This Server Action wraps API-003's updateNodeContent for client components.
+ * Used when user edits a node's content via double-click and save.
+ *
+ * @param input - Node content update parameters
+ * @returns ActionState with updated node data or error
+ *
+ * @example
+ * ```tsx
+ * const result = await updateNodeContentAction({
+ *   nodeId: "node-uuid",
+ *   content: "Updated message content"
+ * });
+ * ```
+ */
+export async function updateNodeContentAction(
+	input: UpdateNodeContentInput,
+): Promise<ActionState<{ nodeId: string; content: string }>> {
+	try {
+		const node = await updateNodeContent(input.nodeId, {
+			content: input.content,
+			metadata: input.metadata,
+		});
+
+		// Revalidate workspace page to refresh node data
+		revalidatePath("/workspace");
+
+		return {
+			success: true,
+			data: {
+				nodeId: node.id,
+				content: node.content,
+			},
+		};
+	} catch (error) {
+		return {
+			success: false,
+			error:
+				error instanceof Error
+					? error.message
+					: "Failed to update node content",
 		};
 	}
 }
