@@ -31,6 +31,7 @@ export function UserNode({
 	isHovered = false,
 	onContentChange,
 	onEditToggle,
+	onCreateChild,
 }: UserNodeProps) {
 	const { content, isEditing = false } = data;
 
@@ -135,8 +136,37 @@ export function UserNode({
 				/>
 			)}
 
-			{/* Edit Hint - Only visible when hovered */}
-			{isHovered && !isEditing && (
+			{/* Branch Button (+) - Only visible when hovered */}
+			{isHovered && onCreateChild && (
+				<button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation();
+						onCreateChild();
+					}}
+					className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-6 h-6 flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-md transition-all duration-200 hover:scale-110 active:scale-95"
+					title="Create child node"
+					aria-label="Create child node"
+				>
+					<svg
+						className="w-3.5 h-3.5"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						aria-hidden="true"
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2.5}
+							d="M12 4.5v15m7.5-7.5h-15"
+						/>
+					</svg>
+				</button>
+			)}
+
+			{/* Edit Hint - Only visible when hovered and no branch button */}
+			{isHovered && !isEditing && !onCreateChild && (
 				<div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-slate-400 whitespace-nowrap">
 					Double-click to edit
 				</div>

@@ -52,6 +52,8 @@ export interface UserNodeProps extends BaseNodeProps {
 	onContentChange?: (content: string) => void;
 	/** Callback when edit mode is toggled */
 	onEditToggle?: (isEditing: boolean) => void;
+	/** Callback to create a child node from this node (branching interaction) */
+	onCreateChild?: () => void;
 }
 
 /**
@@ -62,6 +64,8 @@ export interface AINodeProps extends BaseNodeProps {
 	onRegenerate?: () => void;
 	/** Callback to copy node content */
 	onCopy?: () => void;
+	/** Callback to create a child node from this node (branching interaction) */
+	onCreateChild?: () => void;
 }
 
 /**

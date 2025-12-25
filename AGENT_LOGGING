@@ -2,6 +2,161 @@
 
 ## 2024-12-25
 
+### [UI-NEW-002] Branching Interaction - COMPLETED
+**Branch:** feat/ui-new-002-branching-interaction
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Node Component Updates** (`src/components/nodes/`)
+   - `UserNode.tsx`: Added branch button with `onCreateChild` callback
+   - `AINode.tsx`: Added branch button with `onCreateChild` callback
+   - `types.ts`: Extended props interfaces with `onCreateChild` callback
+   - `BranchingNode.tsx`: New wrapper components for branching interaction
+   - `BranchingNode.test.tsx`: 12 comprehensive tests for branching components
+   - `index.ts`: Updated exports to include branching components
+
+2. **Component Features**
+
+   **Branch Button**:
+   - Circular blue "+" button (24px × 24px)
+   - Only visible when node is hovered
+   - Positioned below the node (-bottom-8)
+   - Hover: scale-110, Active: scale-95
+   - Click calls `onCreateChild()` callback
+   - Event propagation stopped to prevent parent selection
+
+   **BranchingUserNode**:
+   - Extends base UserNode with branching support
+   - Shows branch button on hover when `onCreateChild` is provided
+   - Hides edit hint when branch button is present
+
+   **BranchingAINode**:
+   - Extends base AINode with branching support
+   - Shows branch button on hover when `onCreateChild` is provided
+   - Hides action hint when branch button is present
+   - Compatible with existing action bar (copy, regenerate)
+
+3. **Server Actions** (`src/app/nodes/actions.ts`)
+   - `createChildNode()`: Creates child node with specified position
+   - `createChildNodeAutoPosition()`: Creates child with auto-calculated position
+   - Returns `ActionState<{ nodeId, positionX, positionY }>`
+   - Revalidates `/workspace` path after creation
+   - Wraps API-003 `createNode` service
+
+4. **Custom Hook** (`src/hooks/use-branching.ts`)
+   - `useBranching()`: Manages branching state and API calls
+   - Returns: `{ isCreating, error, createChildNode }`
+   - Auto-positions child nodes below parent with random horizontal offset (-20 to +20)
+   - Vertical spacing: 150px between parent and child
+   - Optional callbacks: `onNodeCreated`, `onError`
+   - `use-branching.test.ts`: 8 comprehensive tests for the hook
+
+5. **Factory Function** (`createBranchingNode`)
+   - Creates branching-enabled node components dynamically
+   - Accepts role ("user" | "assistant") and onCreateChild callback
+   - Returns React component for use with React Flow
+
+6. **Tests**
+   - **BranchingNode.test.tsx**: 12 tests covering:
+     - UserNode: branch button visibility, click handling, propagation stop
+     - UserNode: edit hint conditional rendering
+     - AINode: branch button with action bar compatibility
+     - AINode: action hint conditional rendering
+     - ✅ All tests passing (12/12)
+
+   - **use-branching.test.ts**: 8 tests covering:
+     - Initial state, successful creation, error handling
+     - USER/ASSISTANT role support, loading states
+     - Callback invocation, error propagation
+     - ✅ All tests passing (8/8)
+
+#### Technical Details:
+- Built with React 19.2.3 and TypeScript strict mode
+- Branch button: `bg-blue-500 hover:bg-blue-600`
+- Icon: SVG "+" with `strokeWidth={2.5}`
+- Transition: `duration-200` with smooth hover/active states
+- Server Actions use Next.js `revalidatePath` for cache invalidation
+- Auto-positioning uses parent node position + offsets
+- Horizontal offset randomization prevents perfect overlap on multiple children
+
+#### Visual Design:
+- **Button Size**: 24px × 24px (w-6 h-6)
+- **Button Color**: #3B82F6 (blue-500) → #2563EB (blue-600)
+- **Button Position**: -bottom-8 (32px below node)
+- **Shadow**: `shadow-md` on button
+- **Hover Effect**: `scale-110` (10% larger)
+- **Active Effect**: `scale-95` (5% smaller for press feedback)
+- **Label**: "Create child node" for accessibility
+
+#### File Structure:
+```
+src/components/nodes/
+├── UserNode.tsx (updated)
+├── AINode.tsx (updated)
+├── types.ts (updated)
+├── BranchingNode.tsx (new)
+├── BranchingNode.test.tsx (new)
+└── index.ts (updated)
+
+src/app/nodes/
+└── actions.ts (new)
+
+src/hooks/
+├── use-branching.ts (new)
+└── use-branching.test.ts (new)
+```
+
+#### Usage Example:
+```tsx
+import { useBranching } from "@/hooks/use-branching";
+import { createBranchingNode } from "@/components/nodes";
+
+// In your workspace component
+const { isCreating, createChildNode } = useBranching({
+  projectId: currentProjectId,
+  onNodeCreated: (nodeId, x, y) => {
+    // Add the new node to the graph
+    setNodes((prev) => [...prev, {
+      id: nodeId,
+      type: "user",
+      position: { x, y },
+      data: { id: nodeId, role: "USER", content: "" }
+    }]);
+  },
+  onError: (error) => {
+    toast.error(error);
+  }
+});
+
+// Create nodeTypes with branching support
+const nodeTypes = {
+  user: createBranchingNode("user", (parentId) => createChildNode(parentId)),
+  assistant: createBranchingNode("assistant", (parentId) => createChildNode(parentId, "ASSISTANT")),
+};
+
+<InfiniteCanvas nodeTypes={nodeTypes} />
+```
+
+#### Important Notes:
+- Branch button only appears when `onCreateChild` prop is provided
+- Existing nodes without `onCreateChild` work exactly as before
+- Edit/action hints are hidden when branch button is present (prevents clutter)
+- Click event stops propagation to prevent node selection
+- Auto-positioning prevents perfect overlap by adding random horizontal offset
+- Server Actions automatically revalidate workspace page for fresh data
+
+#### Next Steps:
+- Feature UI-NEW-002 is complete. Users can now create child nodes by hovering over nodes and clicking the "+" button.
+- Dependent features can now proceed:
+  - UI-NEW-001: Root Node Creation (double-click on empty canvas)
+  - UI-NEW-003: Empty State Guidance (when project has no nodes)
+  - Canvas integration: Connect `onNodeCreated` to React Flow's `onNodesChange`
+
+---
+
+## 2024-12-25
+
 ### [UI-007] Dashboard: Project List - TypeScript Fixes - COMPLETED
 **Branch:** feat/ui-007-dashboard
 **Status:** ✅ Type Errors Fixed

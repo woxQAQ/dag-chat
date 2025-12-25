@@ -1,0 +1,137 @@
+/**
+ * UI-NEW-002: Branching Interaction Server Actions
+ *
+ * Server Actions for creating child nodes during branching interaction.
+ * Wraps API-003 node-crud service for use in client components.
+ */
+
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createNode } from "@/lib/node-crud";
+
+// ============================================================================
+// Type Definitions
+// ============================================================================
+
+export interface CreateChildNodeInput {
+	projectId: string;
+	parentNodeId: string;
+	role?: "USER" | "ASSISTANT";
+	content?: string;
+	positionX?: number;
+	positionY?: number;
+	metadata?: Record<string, unknown>;
+}
+
+export interface ActionState<T> {
+	success: boolean;
+	data?: T;
+	error?: string;
+}
+
+// ============================================================================
+// Server Actions
+// ============================================================================
+
+/**
+ * Creates a child node from a parent node during branching interaction.
+ *
+ * This is the primary action for UI-NEW-002: when user clicks the "+" button
+ * on a node, a new USER node is created as a child of the parent node.
+ *
+ * @param input - Child node creation parameters
+ * @returns ActionState with created node data or error
+ *
+ * @example
+ * ```tsx
+ * const result = await createChildNode({
+ *   projectId: "project-uuid",
+ *   parentNodeId: "parent-uuid",
+ *   role: "USER",
+ *   content: "",
+ *   positionX: 100,
+ *   positionY: 200
+ * });
+ * ```
+ */
+export async function createChildNode(
+	input: CreateChildNodeInput,
+): Promise<
+	ActionState<{ nodeId: string; positionX: number; positionY: number }>
+> {
+	try {
+		const node = await createNode({
+			projectId: input.projectId,
+			parentId: input.parentNodeId,
+			role: input.role || "USER",
+			content: input.content || "",
+			positionX: input.positionX ?? 0,
+			positionY: input.positionY ?? 0,
+			metadata: input.metadata ?? {},
+		});
+
+		// Revalidate workspace page to refresh node data
+		revalidatePath("/workspace");
+
+		return {
+			success: true,
+			data: {
+				nodeId: node.id,
+				positionX: node.positionX,
+				positionY: node.positionY,
+			},
+		};
+	} catch (error) {
+		return {
+			success: false,
+			error:
+				error instanceof Error ? error.message : "Failed to create child node",
+		};
+	}
+}
+
+/**
+ * Creates a child node with automatic position calculation.
+ *
+ * Positions the new child node below the parent node with a horizontal offset.
+ *
+ * @param input - Child node creation parameters (without position)
+ * @returns ActionState with created node data including calculated position
+ */
+export async function createChildNodeAutoPosition(
+	input: Omit<CreateChildNodeInput, "positionX" | "positionY">,
+): Promise<
+	ActionState<{ nodeId: string; positionX: number; positionY: number }>
+> {
+	try {
+		// Import graph-retrieval to get parent node position
+		const { getProjectGraph } = await import("@/lib/graph-retrieval");
+		const graph = await getProjectGraph(input.projectId);
+
+		// Find parent node to get its position
+		const parentNode = graph.nodes.find((n) => n.id === input.parentNodeId);
+
+		// Calculate child position: below parent with slight random horizontal offset
+		// to prevent perfect overlap when creating multiple children
+		const parentX = parentNode?.positionX ?? 0;
+		const parentY = parentNode?.positionY ?? 0;
+		const verticalSpacing = 150; // Space between parent and child
+		const horizontalOffset = Math.floor(Math.random() * 40) - 20; // -20 to +20
+
+		const childX = parentX + horizontalOffset;
+		const childY = parentY + verticalSpacing;
+
+		return createChildNode({
+			...input,
+			positionX: childX,
+			positionY: childY,
+		});
+	} catch (error) {
+		return {
+			success: false,
+			error:
+				error instanceof Error ? error.message : "Failed to create child node",
+		};
+	}
+}
