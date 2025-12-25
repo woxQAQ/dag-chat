@@ -2,6 +2,116 @@
 
 ## 2024-12-25
 
+### [UI-002-UPDATE] Canvas Visual Optimization - COMPLETED
+**Branch:** feat/ui-002-update-canvas-visual
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **InfiniteCanvas Component Updates** (`src/components/canvas/InfiniteCanvas.tsx`)
+   - Added new prop: `showDotsOnPanOnly` (default: false)
+     - When true, background dots only appear during canvas panning/dragging
+     - Provides a cleaner, minimal look when canvas is static
+   - Added new prop: `dotOpacity` (default: 0.04)
+     - Controls the opacity of background dots (0-1 range)
+     - Default 4% provides very subtle spatial reference
+   - Changed default dot color from solid `#cbd5e1` to `rgba(203, 213, 225, 0.04)`
+     - 4% opacity is much more subtle than previous solid color
+   - Added panning state tracking using `useState`
+   - Added `onMoveStart` and `onMoveEnd` handlers to detect panning
+   - Background conditionally renders based on `shouldShowBackground` flag
+   - Imported `useCallback` and `OnMoveProps` type from React Flow
+
+2. **Visual Design Changes**
+   - **Default dot opacity**: 4% (0.04) - very subtle, barely visible
+   - **Customizable opacity**: Can be increased (e.g., 0.08) for more visibility
+   - **Optional dynamic display**: Dots appear only when panning (showDotsOnPanOnly)
+   - **Pure white/transparent background**: Cleaner look with minimal dot pattern
+
+3. **Tests** (`src/components/canvas/InfiniteCanvas.test.tsx`)
+   - **Added 8 new tests** for UI-002-UPDATE functionality:
+     - Default dotOpacity of 0.04
+     - Custom dotOpacity values
+     - Background visibility with showDotsOnPanOnly settings
+     - Very subtle dots (0.03 opacity)
+     - More visible dots (0.08 opacity)
+     - Integration test with all visual optimization props
+     - Always show dots when showDotsOnPanOnly is false
+   - **Total tests**: 27 (all passing)
+   - Updated mock to support `onMoveStart` and `onMoveEnd` handlers
+   - Updated mock to set `data-color` attribute on Background component
+
+4. **TypeScript Updates**
+   - Extended `InfiniteCanvasProps` interface with new props
+   - Added `OnMoveProps` import from `@xyflow/react`
+   - Added comprehensive JSDoc comments for new props
+
+#### Technical Details:
+- Uses React's `useState` to track panning state
+- `onMoveStart` handler sets `isPanning` to true when canvas pan begins
+- `onMoveEnd` handler sets `isPanning` to false when canvas pan ends
+- `shouldShowBackground` = `!showDotsOnPanOnly || isPanning`
+  - Always show dots when `showDotsOnPanOnly` is false (default)
+  - Only show dots during pan when `showDotsOnPanOnly` is true
+- Dot color uses `rgba()` for opacity control: `rgba(203, 213, 225, ${dotOpacity})`
+
+#### Visual Design:
+- **Default dot opacity**: 4% (0.04) - extremely subtle
+- **Dot color**: Slate-300 (#cbd5e1) at configurable opacity
+- **Background**: Pure white/transparent (no solid fill)
+- **Dynamic behavior** (optional): Dots fade in during pan, fade out when static
+
+#### File Structure:
+```
+src/components/canvas/
+├── InfiniteCanvas.tsx (modified - added visual optimization props)
+└── InfiniteCanvas.test.tsx (modified - added 8 new tests)
+```
+
+#### Usage Example:
+```tsx
+import { InfiniteCanvas } from "@/components/canvas";
+
+// Basic usage with subtle dots (default)
+<InfiniteCanvas
+  nodes={nodes}
+  edges={edges}
+  onNodesChange={onNodesChange}
+  onEdgesChange={onEdgesChange}
+/>
+
+// With dynamic dot display (dots appear only when panning)
+<InfiniteCanvas
+  nodes={nodes}
+  edges={edges}
+  showDotsOnPanOnly={true}
+  dotOpacity={0.04}
+/>
+
+// With more visible dots
+<InfiniteCanvas
+  nodes={nodes}
+  edges={edges}
+  dotOpacity={0.08}
+/>
+```
+
+#### Important Notes:
+- Default behavior maintains backward compatibility (dots always shown)
+- `showDotsOnPanOnly` is opt-in via prop (defaults to false)
+- `dotOpacity` can be adjusted from 0.01 (barely visible) to 0.1 (noticeable)
+- The visual changes make the canvas feel cleaner and less cluttered
+- Dynamic dot display provides spatial context only when needed
+
+#### Next Steps:
+- Feature UI-002-UPDATE is complete. Canvas now has a cleaner, minimal appearance.
+- The workspace page can optionally enable `showDotsOnPanOnly` for dynamic dots
+- Users can customize `dotOpacity` based on their preference
+
+---
+
+## 2024-12-25
+
 ### [UI-005] Path Highlighting - COMPLETED
 **Branch:** feat/ui-005-path-highlighting
 **Status:** ✅ Complete

@@ -3,7 +3,7 @@
     "id": "UI-002-UPDATE",
     "name": "核心组件: 无限画布 (Infinite Canvas) - 视觉优化",
     "description": "变更背景实现：不再使用显性网格。改为默认纯白/透明，仅保留极低透明度(3-5%)的微弱点阵作为空间参照。可选高级特性：点阵仅在拖拽画布(Panning)时动态显示，静止时隐藏。",
-    "status": "未开发",
+    "status": "complete",
     "priority": "P1",
     "dependencies": ["UI-002"],
     "refers_to": "UI-002"
@@ -48,5 +48,45 @@
     "status": "未开发",
     "priority": "P0",
     "dependencies": ["UI-003", "API-003"]
+  },
+  {
+    "id": "UI-WORKSPACE-001",
+    "name": "Workspace: 分享功能 (Share)",
+    "description": "实现项目分享功能：生成分享链接、设置访问权限（只读/编辑）、管理分享链接、查看分享历史。支持通过链接邀请他人协作或只读查看思维导图。",
+    "status": "未开发",
+    "priority": "P2",
+    "dependencies": ["UI-001", "API-001"]
+  },
+  {
+    "id": "UI-WORKSPACE-002",
+    "name": "Workspace: 导出功能 (Export)",
+    "description": "实现项目导出功能：支持导出为 Markdown 文件（线性对话格式）、JSON 文件（完整节点树结构）、PNG 图片（当前画布视图）。提供导出选项对话框，包含格式选择和内容范围选择。",
+    "status": "未开发",
+    "priority": "P1",
+    "dependencies": ["UI-002", "API-002"]
+  },
+  {
+    "id": "UI-WORKSPACE-003",
+    "name": "Workspace: 设置功能 (Settings)",
+    "description": "实现项目设置对话框：支持重命名项目、修改项目描述、设置默认 AI Provider、设置默认 AI Model、删除项目。提供设置面板入口，包含所有项目级别的配置选项。",
+    "status": "未开发",
+    "priority": "P1",
+    "dependencies": ["UI-001", "API-001"]
+  },
+  {
+    "id": "UI-WORKSPACE-004",
+    "name": "Workspace: 自动布局 (Auto Layout)",
+    "description": "实现画布节点自动布局功能：使用树形布局算法自动排列节点位置，支持水平/垂直方向切换，处理节点重叠和间距。提供布局预览和撤销功能。",
+    "status": "未开发",
+    "priority": "P2",
+    "dependencies": ["UI-002", "API-003"]
+  },
+  {
+    "id": "UI-WORKSPACE-005",
+    "name": "Workspace: 导航功能 (Navigation)",
+    "description": "实现 workspace 页面导航功能：返回 Dashboard 导航、动态项目名称显示（从 API 获取）、面包屑导航。确保用户可以清晰地在 Dashboard 和 Workspace 之间切换。",
+    "status": "未开发",
+    "priority": "P1",
+    "dependencies": ["UI-001", "UI-007"]
   }
 ]

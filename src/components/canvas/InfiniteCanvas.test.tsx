@@ -12,11 +12,31 @@ vi.mock("@xyflow/react/dist/style.css", () => ({}));
 
 // Mock @xyflow/react module
 vi.mock("@xyflow/react", () => ({
-	ReactFlow: ({ children }: { children?: React.ReactNode }) => (
-		<div data-testid="react-flow">{children}</div>
+	ReactFlow: ({
+		children,
+		nodes,
+		edges,
+		onMoveStart,
+		onMoveEnd
+	}: {
+		children?: React.ReactNode;
+		nodes?: any[];
+		edges?: any[];
+		onMoveStart?: () => void;
+		onMoveEnd?: () => void;
+	}) => (
+		<div
+			data-testid="react-flow"
+			data-nodes={nodes?.length ?? 0}
+			data-edges={edges?.length ?? 0}
+			onMoveStart={onMoveStart}
+			onMoveEnd={onMoveEnd}
+		>
+			{children}
+		</div>
 	),
-	Background: ({ variant, gap }: { variant?: string; gap?: number }) => (
-		<div data-testid="background" data-variant={variant} data-gap={gap} />
+	Background: ({ variant, gap, color }: { variant?: string; gap?: number; color?: string }) => (
+		<div data-testid="background" data-variant={variant} data-gap={gap} data-color={color} />
 	),
 	Controls: () => <div data-testid="controls">Controls</div>,
 }));
@@ -183,6 +203,135 @@ describe("InfiniteCanvas", () => {
 				"32",
 			);
 			expect(screen.getByTestId("controls")).toBeInTheDocument();
+		});
+	});
+
+	describe("UI-002-UPDATE: Visual Optimization", () => {
+		it("should render background with default dotOpacity of 0.04", () => {
+			render(<InfiniteCanvas />);
+			const background = screen.getByTestId("background");
+			expect(background).toHaveAttribute("data-color", "rgba(203, 213, 225, 0.04)");
+		});
+
+		it("should render background with custom dotOpacity", () => {
+			render(<InfiniteCanvas dotOpacity={0.1} />);
+			const background = screen.getByTestId("background");
+			expect(background).toHaveAttribute("data-color", "rgba(203, 213, 225, 0.1)");
+		});
+
+		it("should show background by default when showDotsOnPanOnly is false", () => {
+			render(<InfiniteCanvas showDotsOnPanOnly={false} />);
+			expect(screen.getByTestId("background")).toBeInTheDocument();
+		});
+
+		it("should show background by default when showDotsOnPanOnly is not provided", () => {
+			render(<InfiniteCanvas />);
+			expect(screen.getByTestId("background")).toBeInTheDocument();
+		});
+
+		it("should accept showDotsOnPanOnly prop", () => {
+			render(<InfiniteCanvas showDotsOnPanOnly={true} />);
+			const canvas = screen.getByTestId("react-flow");
+			expect(canvas).toBeInTheDocument();
+			// Background should be hidden initially when showDotsOnPanOnly is true
+			// Note: In a real scenario, background would appear during pan
+		});
+
+		it("should accept dotOpacity prop", () => {
+			render(<InfiniteCanvas dotOpacity={0.05} />);
+			const canvas = screen.getByTestId("react-flow");
+			expect(canvas).toBeInTheDocument();
+		});
+
+		it("should support very subtle dots with 0.03 opacity", () => {
+			render(<InfiniteCanvas dotOpacity={0.03} />);
+			const background = screen.getByTestId("background");
+			expect(background).toHaveAttribute("data-color", "rgba(203, 213, 225, 0.03)");
+		});
+
+		it("should support more visible dots with 0.08 opacity", () => {
+			render(<InfiniteCanvas dotOpacity={0.08} />);
+			const background = screen.getByTestId("background");
+			expect(background).toHaveAttribute("data-color", "rgba(203, 213, 225, 0.08)");
+		});
+	});
+
+	describe("UI-002-UPDATE: Integration with Visual Updates", () => {
+		it("should render with all visual optimization props configured", () => {
+			const nodes: Node[] = [
+				{
+					id: "1",
+					type: "default",
+					position: { x: 0, y: 0 },
+					data: { label: "Node 1" },
+				},
+			];
+			const edges: Edge[] = [{ id: "e1-2", source: "1", target: "2" }];
+
+			render(
+				<InfiniteCanvas
+					nodes={nodes}
+					edges={edges}
+					backgroundVariant="dots"
+					backgroundGap={24}
+					showDotsOnPanOnly={true}
+					dotOpacity={0.05}
+					showControls={false}
+				/>,
+			);
+
+			expect(screen.getByTestId("react-flow")).toHaveAttribute(
+				"data-nodes",
+				"1",
+			);
+			expect(screen.getByTestId("react-flow")).toHaveAttribute(
+				"data-edges",
+				"1",
+			);
+			// When showDotsOnPanOnly is true and not panning, background is hidden
+			expect(screen.queryByTestId("background")).not.toBeInTheDocument();
+		});
+
+		it("should render with visual optimization but always show dots when showDotsOnPanOnly is false", () => {
+			const nodes: Node[] = [
+				{
+					id: "1",
+					type: "default",
+					position: { x: 0, y: 0 },
+					data: { label: "Node 1" },
+				},
+			];
+			const edges: Edge[] = [{ id: "e1-2", source: "1", target: "2" }];
+
+			render(
+				<InfiniteCanvas
+					nodes={nodes}
+					edges={edges}
+					backgroundVariant="dots"
+					backgroundGap={24}
+					showDotsOnPanOnly={false}
+					dotOpacity={0.05}
+					showControls={false}
+				/>,
+			);
+
+			expect(screen.getByTestId("react-flow")).toHaveAttribute(
+				"data-nodes",
+				"1",
+			);
+			expect(screen.getByTestId("react-flow")).toHaveAttribute(
+				"data-edges",
+				"1",
+			);
+			// When showDotsOnPanOnly is false, background is always shown
+			expect(screen.getByTestId("background")).toHaveAttribute(
+				"data-variant",
+				"dots",
+			);
+			expect(screen.getByTestId("background")).toHaveAttribute(
+				"data-color",
+				"rgba(203, 213, 225, 0.05)",
+			);
 		});
 	});
 });
