@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ThreadMessage, ThreadViewProps } from "./types";
+import { buildConversationContext } from "@/lib/context-builder";
 import { ThreadInput } from "./ThreadInput";
 import { ThreadMessage as ThreadMessageComponent } from "./ThreadMessage";
-import { buildConversationContext } from "@/lib/context-builder";
+import type { ThreadMessage, ThreadViewProps } from "./types";
 
 /**
  * ThreadView - Linear conversation view for the Inspector Panel
@@ -76,13 +76,11 @@ export function ThreadView({
 				if (cancelled) return;
 
 				// Convert ContextMessage to ThreadMessage
-				const threadMessages: ThreadMessage[] = context.messages.map(
-					(msg) => ({
-						...msg,
-						isStreaming: false,
-						metadata: undefined,
-					}),
-				);
+				const threadMessages: ThreadMessage[] = context.messages.map((msg) => ({
+					...msg,
+					isStreaming: false,
+					metadata: undefined,
+				}));
 
 				setMessages(threadMessages);
 			} catch (err) {
@@ -109,7 +107,7 @@ export function ThreadView({
 	// Auto-scroll to bottom when messages change
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	}, [displayMessages]);
+	}, []);
 
 	const handleSendMessage = async (message: string) => {
 		if (!nodeId || !projectId || !onSendMessage) {
@@ -175,7 +173,9 @@ export function ThreadView({
 			>
 				<div className="flex-1 flex items-center justify-center p-8">
 					<div className="text-center">
-						<p className="text-sm text-red-500 mb-2">Error loading conversation</p>
+						<p className="text-sm text-red-500 mb-2">
+							Error loading conversation
+						</p>
 						<p className="text-xs text-slate-400">{displayError}</p>
 					</div>
 				</div>
@@ -193,7 +193,9 @@ export function ThreadView({
 			<div className="flex-1 overflow-y-auto px-4 py-4">
 				{displayMessages.length === 0 ? (
 					<div className="flex items-center justify-center h-full">
-						<p className="text-sm text-slate-400">No messages in this conversation</p>
+						<p className="text-sm text-slate-400">
+							No messages in this conversation
+						</p>
 					</div>
 				) : (
 					<div className="flex flex-col group">

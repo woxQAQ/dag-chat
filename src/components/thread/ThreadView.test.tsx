@@ -4,9 +4,9 @@
  * Comprehensive tests for ThreadView components.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the context builder
 vi.mock("@/lib/context-builder", () => ({
@@ -28,11 +28,11 @@ vi.mock("remark-gfm", () => ({
 	default: [],
 }));
 
-import { ThreadView } from "./ThreadView";
+import { buildConversationContext } from "@/lib/context-builder";
 import { ThreadInput } from "./ThreadInput";
 import { ThreadMessage } from "./ThreadMessage";
+import { ThreadView } from "./ThreadView";
 import type { ThreadMessage as ThreadMessageType } from "./types";
-import { buildConversationContext } from "@/lib/context-builder";
 
 // Mock navigator.clipboard.writeText
 const mockWriteText = vi.fn().mockResolvedValue(undefined);
@@ -61,7 +61,10 @@ const createMockMessage = (
 describe("ThreadMessage", () => {
 	describe("USER role", () => {
 		it("should render user message with blue background", () => {
-			const message = createMockMessage({ role: "USER", content: "Test message" });
+			const message = createMockMessage({
+				role: "USER",
+				content: "Test message",
+			});
 
 			render(<ThreadMessage message={message} />);
 
@@ -94,7 +97,7 @@ describe("ThreadMessage", () => {
 
 			render(<ThreadMessage message={message} />);
 
-			const content = screen.getByText(/Line 1.*Line 2.*Line 3/s);
+			const content = screen.getByText(/Line 1[\s\S]*Line 2[\s\S]*Line 3/);
 			expect(content).toBeInTheDocument();
 		});
 	});
@@ -164,9 +167,7 @@ describe("ThreadMessage", () => {
 
 			// Check for copy button (aria-label)
 			expect(screen.getByLabelText("Copy message")).toBeInTheDocument();
-			expect(
-				screen.getByLabelText("Regenerate response"),
-			).toBeInTheDocument();
+			expect(screen.getByLabelText("Regenerate response")).toBeInTheDocument();
 		});
 
 		it("should not show regenerate button when streaming", () => {
@@ -184,7 +185,9 @@ describe("ThreadMessage", () => {
 				/>,
 			);
 
-			expect(screen.queryByLabelText("Regenerate response")).not.toBeInTheDocument();
+			expect(
+				screen.queryByLabelText("Regenerate response"),
+			).not.toBeInTheDocument();
 		});
 
 		it("should call onCopy when copy button is clicked", async () => {
@@ -226,9 +229,7 @@ describe("ThreadMessage", () => {
 				content: "Response",
 			});
 
-			render(
-				<ThreadMessage message={message} onRegenerate={onRegenerate} />,
-			);
+			render(<ThreadMessage message={message} onRegenerate={onRegenerate} />);
 
 			await user.click(screen.getByLabelText("Regenerate response"));
 			expect(onRegenerate).toHaveBeenCalledTimes(1);
@@ -268,12 +269,7 @@ describe("ThreadInput", () => {
 	});
 
 	it("should render textarea and send button", () => {
-		render(
-			<ThreadInput
-				onSend={vi.fn()}
-				placeholder="Type a message..."
-			/>,
-		);
+		render(<ThreadInput onSend={vi.fn()} placeholder="Type a message..." />);
 
 		expect(
 			screen.getByPlaceholderText("Type a message..."),
@@ -282,12 +278,7 @@ describe("ThreadInput", () => {
 	});
 
 	it("should disable input when isLoading is true", () => {
-		render(
-			<ThreadInput
-				isLoading
-				onSend={vi.fn()}
-			/>,
-		);
+		render(<ThreadInput isLoading onSend={vi.fn()} />);
 
 		const textarea = screen.getByRole("textbox");
 		expect(textarea).toBeDisabled();
@@ -295,12 +286,7 @@ describe("ThreadInput", () => {
 	});
 
 	it("should disable input when disabled is true", () => {
-		render(
-			<ThreadInput
-				disabled
-				onSend={vi.fn()}
-			/>,
-		);
+		render(<ThreadInput disabled onSend={vi.fn()} />);
 
 		expect(screen.getByRole("textbox")).toBeDisabled();
 	});
@@ -432,13 +418,7 @@ describe("ThreadView", () => {
 
 	describe("Loading state", () => {
 		it("should use isLoading prop when provided", () => {
-			render(
-				<ThreadView
-					nodeId="node-1"
-					projectId="project-1"
-					isLoading
-				/>,
-			);
+			render(<ThreadView nodeId="node-1" projectId="project-1" isLoading />);
 
 			expect(screen.getByText("Loading conversation...")).toBeInTheDocument();
 		});

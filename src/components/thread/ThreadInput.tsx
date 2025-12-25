@@ -43,6 +43,29 @@ export function ThreadInput({
 		}
 	}, []);
 
+	const handleSend = useCallback(
+		async (e?: FormEvent) => {
+			e?.preventDefault();
+
+			const trimmedMessage = message.trim();
+			if (!trimmedMessage || isLoading || disabled) {
+				return;
+			}
+
+			setMessage("");
+			adjustHeight();
+
+			try {
+				await onSend(trimmedMessage);
+			} catch (error) {
+				// Restore message on error
+				setMessage(trimmedMessage);
+				console.error("Failed to send message:", error);
+			}
+		},
+		[message, isLoading, disabled, onSend, adjustHeight],
+	);
+
 	const handleChange = useCallback(
 		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
 			const newValue = e.target.value;
@@ -67,30 +90,7 @@ export function ThreadInput({
 				adjustHeight();
 			}
 		},
-		[isLoading, adjustHeight],
-	);
-
-	const handleSend = useCallback(
-		async (e?: FormEvent) => {
-			e?.preventDefault();
-
-			const trimmedMessage = message.trim();
-			if (!trimmedMessage || isLoading || disabled) {
-				return;
-			}
-
-			setMessage("");
-			adjustHeight();
-
-			try {
-				await onSend(trimmedMessage);
-			} catch (error) {
-				// Restore message on error
-				setMessage(trimmedMessage);
-				console.error("Failed to send message:", error);
-			}
-		},
-		[message, isLoading, disabled, onSend, adjustHeight],
+		[isLoading, adjustHeight, handleSend],
 	);
 
 	const isDisabled = isLoading || disabled;
@@ -187,7 +187,11 @@ export function ThreadInput({
 
 				{/* Helper text */}
 				<p className="text-xs text-slate-400 text-center">
-					Press <kbd className="px-1.5 py-0.5 bg-slate-200 rounded text-slate-600">Cmd+Enter</kbd> to send
+					Press{" "}
+					<kbd className="px-1.5 py-0.5 bg-slate-200 rounded text-slate-600">
+						Cmd+Enter
+					</kbd>{" "}
+					to send
 				</p>
 			</form>
 		</div>

@@ -4,8 +4,6 @@
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
-	type GraphEdge,
-	type GraphNode,
 	getNodeSubgraph,
 	getProjectGraph,
 	getProjectGraphStats,
@@ -366,7 +364,7 @@ describe("Graph Retrieval Service", () => {
 				},
 			});
 
-			const node2 = await prisma.node.create({
+			const _node2 = await prisma.node.create({
 				data: {
 					projectId: chainProject.id,
 					parentId: node1.id,

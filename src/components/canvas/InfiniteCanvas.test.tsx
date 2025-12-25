@@ -12,23 +12,11 @@ vi.mock("@xyflow/react/dist/style.css", () => ({}));
 
 // Mock @xyflow/react module
 vi.mock("@xyflow/react", () => ({
-	ReactFlow: ({ children, nodes, edges, ...props }: any) => (
-		<div
-			data-testid="react-flow"
-			data-nodes={nodes?.length}
-			data-edges={edges?.length}
-		>
-			{children}
-		</div>
+	ReactFlow: ({ children }: { children?: React.ReactNode }) => (
+		<div data-testid="react-flow">{children}</div>
 	),
-	Background: ({ variant, gap, size, color }: any) => (
-		<div
-			data-testid="background"
-			data-variant={variant}
-			data-gap={gap}
-			data-size={size}
-			data-color={color}
-		/>
+	Background: ({ variant, gap }: { variant?: string; gap?: number }) => (
+		<div data-testid="background" data-variant={variant} data-gap={gap} />
 	),
 	Controls: () => <div data-testid="controls">Controls</div>,
 }));
@@ -116,7 +104,7 @@ describe("InfiniteCanvas", () => {
 
 	describe("Props", () => {
 		it("should pass additional props to ReactFlow", () => {
-			const { container } = render(
+			render(
 				<InfiniteCanvas data-custom-prop="test" className="custom-class" />,
 			);
 			const canvas = screen.getByTestId("react-flow");

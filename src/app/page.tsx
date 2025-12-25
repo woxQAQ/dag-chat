@@ -1,28 +1,27 @@
-import Link from "next/link";
+/**
+ * UI-007: Dashboard - Home Page
+ *
+ * This is the main dashboard page that displays all projects.
+ * It's a Server Component that fetches projects and renders the Dashboard client component.
+ */
 
-export default function Home() {
+import { listProjectsWithStats } from "@/app/projects/actions";
+import { Dashboard } from "@/components/dashboard";
+
+export default async function HomePage() {
+	// Fetch projects with stats on the server
+	const result = await listProjectsWithStats({
+		take: 20,
+		orderBy: "updatedAt",
+		orderDirection: "desc",
+	});
+
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-slate-50 font-sans">
-			<main className="flex flex-col items-center gap-8 p-8">
-				<h1 className="text-4xl font-bold text-slate-800">MindFlow</h1>
-				<p className="text-lg text-slate-600 text-center max-w-md">
-					Tree-structured AI chatbot that solves the context loss problem in
-					complex conversations.
-				</p>
-
-				<div className="flex gap-4">
-					<Link
-						href="/workspace"
-						className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
-					>
-						Open Workspace
-					</Link>
-				</div>
-
-				<div className="mt-8 text-sm text-slate-400">
-					<p>UI-001: Application Layout Framework</p>
-				</div>
-			</main>
-		</div>
+		<Dashboard
+			projects={result.success && result.data ? result.data.projects : []}
+			total={result.success && result.data ? result.data.total : 0}
+			hasMore={result.success && result.data ? result.data.hasMore : false}
+			error={!result.success ? result.error : undefined}
+		/>
 	);
 }

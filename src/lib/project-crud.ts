@@ -230,8 +230,12 @@ export async function getProject(
 export async function listProjects(
 	options: ListProjectsOptions = {},
 ): Promise<ProjectListResult> {
-	const { skip = 0, take = 20, orderBy = "updatedAt", orderDirection = "desc" } =
-		options;
+	const {
+		skip = 0,
+		take = 20,
+		orderBy = "updatedAt",
+		orderDirection = "desc",
+	} = options;
 
 	const [projects, total] = await Promise.all([
 		prisma.project.findMany({
@@ -285,7 +289,7 @@ export async function updateProject(
 	await validateProjectExists(projectId);
 
 	// Build update data with validation
-	const updateData: Record<string, string> = {};
+	const updateData: Record<string, string | null> = {};
 
 	if (input.name !== undefined) {
 		const name = input.name.trim();
@@ -367,17 +371,20 @@ export async function deleteProject(projectId: string): Promise<void> {
  * console.log(`Max depth: ${stats.maxDepth}`);
  * ```
  */
-export async function getProjectStats(projectId: string): Promise<ProjectStats> {
+export async function getProjectStats(
+	projectId: string,
+): Promise<ProjectStats> {
 	validateUUID(projectId, "projectId");
 	await validateProjectExists(projectId);
 
 	// Get total count and counts by role
-	const [totalNodes, userNodes, assistantNodes, systemNodes] = await Promise.all([
-		prisma.node.count({ where: { projectId } }),
-		prisma.node.count({ where: { projectId, role: "USER" } }),
-		prisma.node.count({ where: { projectId, role: "ASSISTANT" } }),
-		prisma.node.count({ where: { projectId, role: "SYSTEM" } }),
-	]);
+	const [totalNodes, userNodes, assistantNodes, systemNodes] =
+		await Promise.all([
+			prisma.node.count({ where: { projectId } }),
+			prisma.node.count({ where: { projectId, role: "USER" } }),
+			prisma.node.count({ where: { projectId, role: "ASSISTANT" } }),
+			prisma.node.count({ where: { projectId, role: "SYSTEM" } }),
+		]);
 
 	// Calculate max depth using recursive CTE
 	const depthQuery = `
@@ -439,8 +446,12 @@ export async function getProjectStats(projectId: string): Promise<ProjectStats> 
 export async function listProjectsWithStats(
 	options: ListProjectsOptions = {},
 ): Promise<ProjectListResult> {
-	const { skip = 0, take = 20, orderBy = "updatedAt", orderDirection = "desc" } =
-		options;
+	const {
+		skip = 0,
+		take = 20,
+		orderBy = "updatedAt",
+		orderDirection = "desc",
+	} = options;
 
 	const [projects, total] = await Promise.all([
 		prisma.project.findMany({

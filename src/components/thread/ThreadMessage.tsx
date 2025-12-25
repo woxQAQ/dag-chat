@@ -28,7 +28,7 @@ export function ThreadMessage({
 	onCopy,
 	onRegenerate,
 }: ThreadMessageProps) {
-	const { id, role, content, isStreaming = false, metadata } = message;
+	const { role, content, isStreaming = false, metadata } = message;
 
 	// Extract provider/model from metadata for display
 	const provider = (metadata?.provider as string) || "AI";
@@ -94,9 +94,7 @@ export function ThreadMessage({
 							/>
 						</svg>
 					</div>
-					<span className="text-xs font-medium text-slate-700">
-						{provider}
-					</span>
+					<span className="text-xs font-medium text-slate-700">{provider}</span>
 					{model && <span className="text-xs text-slate-400">{model}</span>}
 					{isStreaming && (
 						<div className="flex items-center gap-1 ml-auto">

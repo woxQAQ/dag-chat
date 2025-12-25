@@ -34,15 +34,15 @@
 
 import {
 	createProject as createProjectCrud,
-	getProject as getProjectCrud,
-	listProjects as listProjectsCrud,
-	updateProject as updateProjectCrud,
 	deleteProject as deleteProjectCrud,
+	getProject as getProjectCrud,
 	getProjectStats as getProjectStatsCrud,
+	listProjects as listProjectsCrud,
 	listProjectsWithStats as listProjectsWithStatsCrud,
-	type ProjectResult,
 	type ProjectListResult,
+	type ProjectResult,
 	type ProjectStats,
+	updateProject as updateProjectCrud,
 } from "@/lib/project-crud";
 
 // ============================================================================
@@ -116,7 +116,8 @@ export async function createProject(
 	} catch (error) {
 		return {
 			success: false,
-			error: error instanceof Error ? error.message : "Failed to create project",
+			error:
+				error instanceof Error ? error.message : "Failed to create project",
 		};
 	}
 }
@@ -233,7 +234,9 @@ export async function listProjectsWithStats(
 		return {
 			success: false,
 			error:
-				error instanceof Error ? error.message : "Failed to list projects with stats",
+				error instanceof Error
+					? error.message
+					: "Failed to list projects with stats",
 		};
 	}
 }
@@ -273,7 +276,8 @@ export async function updateProject(
 	} catch (error) {
 		return {
 			success: false,
-			error: error instanceof Error ? error.message : "Failed to update project",
+			error:
+				error instanceof Error ? error.message : "Failed to update project",
 		};
 	}
 }
@@ -304,16 +308,15 @@ export async function updateProject(
  * </button>
  * ```
  */
-export async function deleteProject(
-	projectId: string,
-): Promise<ActionState> {
+export async function deleteProject(projectId: string): Promise<ActionState> {
 	try {
 		await deleteProjectCrud(projectId);
 		return { success: true };
 	} catch (error) {
 		return {
 			success: false,
-			error: error instanceof Error ? error.message : "Failed to delete project",
+			error:
+				error instanceof Error ? error.message : "Failed to delete project",
 		};
 	}
 }
@@ -361,38 +364,9 @@ export async function getProjectStats(
 }
 
 // ============================================================================
-// Re-exports
+// Type Exports
 // ============================================================================
 
-/**
- * @deprecated Use `createProject` action instead. For direct CRUD access, import from `@/lib/project-crud`.
- */
-export { createProject as createProjectCrud } from "@/lib/project-crud";
-
-/**
- * @deprecated Use `getProject` action instead. For direct CRUD access, import from `@/lib/project-crud`.
- */
-export { getProject as getProjectCrud } from "@/lib/project-crud";
-
-/**
- * @deprecated Use `listProjects` action instead. For direct CRUD access, import from `@/lib/project-crud`.
- */
-export { listProjects as listProjectsCrud } from "@/lib/project-crud";
-
-/**
- * @deprecated Use `updateProject` action instead. For direct CRUD access, import from `@/lib/project-crud`.
- */
-export { updateProject as updateProjectCrud } from "@/lib/project-crud";
-
-/**
- * @deprecated Use `deleteProject` action instead. For direct CRUD access, import from `@/lib/project-crud`.
- */
-export { deleteProject as deleteProjectCrud } from "@/lib/project-crud";
-
-/**
- * @deprecated Use `getProjectStats` action instead. For direct CRUD access, import from `@/lib/project-crud`.
- */
-export { getProjectStats as getProjectStatsCrud } from "@/lib/project-crud";
-
-// Export types for consumer use
-export type { ProjectResult, ProjectListResult, ProjectStats };
+// IMPORTANT: Types from @/lib/project-crud should be imported directly from that file
+// Server Actions modules have limitations on type re-exports
+// For types, use: import type { ProjectResult, ProjectListResult, ProjectStats } from "@/lib/project-crud";

@@ -2,20 +2,18 @@
  * Tests for API-001: Project CRUD Service
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
-import {
-	createProject,
-	getProject,
-	listProjects,
-	updateProject,
-	deleteProject,
-	getProjectStats,
-	listProjectsWithStats,
-	type CreateProjectInput,
-	type UpdateProjectInput,
-	type ListProjectsOptions,
-} from "./project-crud";
+import { beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
+import {
+	type CreateProjectInput,
+	createProject,
+	deleteProject,
+	getProject,
+	getProjectStats,
+	listProjects,
+	listProjectsWithStats,
+	updateProject,
+} from "./project-crud";
 
 describe("Project CRUD Service", () => {
 	// Clean up database before each test
@@ -58,7 +56,9 @@ describe("Project CRUD Service", () => {
 			const result = await createProject(input);
 
 			expect(result.name).toBe("AI Conversation");
-			expect(result.description).toBe("A project about artificial intelligence");
+			expect(result.description).toBe(
+				"A project about artificial intelligence",
+			);
 		});
 
 		it("should trim whitespace from name", async () => {
@@ -210,7 +210,10 @@ describe("Project CRUD Service", () => {
 			await new Promise((resolve) => setTimeout(resolve, 10));
 			const newProject = await createProject({ name: "Newest" });
 
-			const result = await listProjects({ orderBy: "updatedAt", orderDirection: "desc" });
+			const result = await listProjects({
+				orderBy: "updatedAt",
+				orderDirection: "desc",
+			});
 
 			expect(result.projects[0].id).toBe(newProject.id);
 			expect(result.projects[1].id).toBe(proj2.id);
@@ -306,9 +309,9 @@ describe("Project CRUD Service", () => {
 			const project = await createProject({ name: "Test" });
 			const longName = "a".repeat(101);
 
-			await expect(updateProject(project.id, { name: longName })).rejects.toThrow(
-				"Project name cannot exceed 100 characters",
-			);
+			await expect(
+				updateProject(project.id, { name: longName }),
+			).rejects.toThrow("Project name cannot exceed 100 characters");
 		});
 
 		it("should reject description exceeding 1000 characters", async () => {
@@ -526,7 +529,9 @@ describe("Project CRUD Service", () => {
 
 		it("should throw error for non-existent project", async () => {
 			const fakeId = "00000000-0000-0000-0000-000000000000";
-			await expect(getProjectStats(fakeId)).rejects.toThrow("Project not found");
+			await expect(getProjectStats(fakeId)).rejects.toThrow(
+				"Project not found",
+			);
 		});
 	});
 
@@ -538,7 +543,7 @@ describe("Project CRUD Service", () => {
 			// Create projects with different node counts
 			const p1 = await createProject({ name: "Project A" });
 			const p2 = await createProject({ name: "Project B" });
-			const p3 = await createProject({ name: "Project C" });
+			const _p3 = await createProject({ name: "Project C" });
 
 			// Add nodes to some projects
 			await prisma.node.create({
@@ -565,7 +570,9 @@ describe("Project CRUD Service", () => {
 		it("should have correct node counts", async () => {
 			const result = await listProjectsWithStats();
 
-			const counts = result.projects.map((p) => p._nodeCount).sort((a, b) => a! - b!);
+			const counts = result.projects
+				.map((p) => p._nodeCount)
+				.sort((a, b) => a! - b!);
 			expect(counts).toEqual([0, 1, 2]);
 		});
 

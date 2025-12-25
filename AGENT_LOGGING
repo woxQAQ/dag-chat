@@ -2,6 +2,180 @@
 
 ## 2024-12-25
 
+### [UI-007] Dashboard: Project List - TypeScript Fixes - COMPLETED
+**Branch:** feat/ui-007-dashboard
+**Status:** ✅ Type Errors Fixed
+
+#### TypeScript Errors Fixed
+
+**1. nodes.test.tsx - Missing type annotation**
+- Line 14: Added `type?: string` to Handle mock props parameter
+- Error: `Property 'type' does not exist on type '{}'`
+
+**2. ThreadView.test.tsx - Regex flag requires ES2018+**
+- Line 108: Changed `/s` flag to `[\s\S]` pattern for ES2017 compatibility
+- Error: `This regular expression flag is only available when targeting 'es2018' or later`
+
+**3. context-builder.test.ts - Incomplete mock type**
+- Line 39: Added all required properties to mockNode:
+  - `parentId: null as string | null`
+  - `role: "USER" as const`
+  - `content: "Test message"`
+  - `positionX: 0, positionY: 0`
+  - `metadata: {}`
+  - `createdAt: new Date(), updatedAt: new Date()`
+- Line 265: Removed `as const` assertion (created readonly array)
+
+**Result:**
+- TypeScript compilation passes: `npx tsc --noEmit` returns no errors
+
+---
+
+### [UI-007] Dashboard: Project List - Bug Fix - COMPLETED
+**Branch:** feat/ui-007-dashboard
+**Status:** ✅ Bug Fixed
+
+#### Bug Fix: Comments Appearing in UI
+
+**Issue:**
+- Comments at lines 200 and 212 in `Dashboard.tsx` were appearing in the UI
+- Root cause: C-style comments (`/* */`) inside JSX were being rendered as text nodes
+
+**Fix Applied:**
+- Line 200: Changed `/* Project Grid */` to `{/* Project Grid */}`
+- Line 212: Changed `/* Load More */` to `{/* Load More */}`
+
+**Additional Fix:**
+- Cleared `.next` cache to resolve Turbopack build corruption
+- Build now succeeds: `✓ Compiled successfully in 3.2s`
+
+---
+
+### [UI-007] Dashboard: Project List - COMPLETED
+**Branch:** feat/ui-007-dashboard
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Dashboard Components** (`src/components/dashboard/`)
+   - `Dashboard.tsx`: Main client component with project grid, header, and create functionality
+   - `ProjectCard.tsx`: Individual project card with name, description, stats, and actions
+   - `CreateProjectDialog.tsx`: Modal dialog for creating new projects
+   - `types.ts`: TypeScript type definitions for dashboard components
+   - `index.ts`: Barrel export file for easy imports
+   - `Dashboard.test.tsx`: Comprehensive test suite (31 tests)
+
+2. **Component Features**
+
+   **Dashboard**:
+   - Server Component integration via home page
+   - Fetches projects with stats using `listProjectsWithStats()` API-001
+   - Sticky header with project count and "New Project" button
+   - Responsive grid layout (1 column mobile, 2 tablet, 3 desktop)
+   - Empty state with call-to-action
+   - Error state with retry capability
+   - Load more button for pagination
+
+   **ProjectCard**:
+   - Displays project name and description (with line-clamp)
+   - Shows node count and last updated date
+   - Hover action bar with rename and delete buttons
+   - Inline rename mode with form
+   - Delete confirmation overlay
+   - Click to open project in workspace
+   - Selected/hover states for visual feedback
+
+   **CreateProjectDialog**:
+   - Modal dialog with backdrop click to close
+   - Name input (required, max 100 chars) with character count
+   - Description textarea (optional, max 1000 chars) with character count
+   - Form validation and error handling
+   - Loading state during creation
+   - Auto-focus on name input when dialog opens
+   - Keyboard support (Escape to close)
+
+3. **Home Page** (`src/app/page.tsx`)
+   - Server Component that fetches projects server-side
+   - Passes data to Dashboard client component
+   - Uses `listProjectsWithStats()` for node counts
+
+4. **Type Definitions**
+   - `DashboardProjectCardProps`: project, onOpen, onDelete, onRename
+   - `CreateProjectDialogProps`: isOpen, onClose, onCreate, isCreating
+   - `DashboardProps`: projects, total, hasMore, loading, error, onLoadMore
+
+5. **Tests** (`src/components/dashboard/Dashboard.test.tsx`)
+   - 31 comprehensive tests covering:
+     - ProjectCard: rendering, node count, dates, open/rename/delete actions
+     - ProjectCard: rename mode, delete confirmation, hover states
+     - CreateProjectDialog: rendering, form submission, validation
+     - CreateProjectDialog: character counts, backdrop click, accessibility
+     - ✅ All tests passing (31/31)
+
+#### Technical Details:
+- Built with React 19.2.3 and TypeScript strict mode
+- Server Component (page) + Client Component (Dashboard) pattern
+- Uses API-001 Server Actions for all project operations
+- Next.js router for navigation and refresh
+- Tailwind CSS v4 for all styling
+- Inline SVG icons (no external icon library)
+
+#### Visual Design:
+- **Background**: #F8FAFC (Slate 50) for main dashboard area
+- **Card Background**: #FFFFFF (white) with #E2E8F0 border
+- **Header**: White background with sticky positioning, 64px height
+- **Primary Button**: #3B82F6 (blue-500) with hover state
+- **Card Hover**: Enhanced shadow and border color change
+- **Grid Gap**: 1.25rem (20px) between cards
+- **Empty State**: Centered with icon, heading, description, and CTA
+
+#### File Structure:
+```
+src/components/dashboard/
+├── Dashboard.tsx
+├── ProjectCard.tsx
+├── CreateProjectDialog.tsx
+├── types.ts
+├── index.ts
+└── Dashboard.test.tsx
+
+src/app/
+└── page.tsx (Server Component - Dashboard home)
+```
+
+#### Important Notes:
+- Dashboard is the main landing page for the app
+- Projects are sorted by `updatedAt` desc (most recent first)
+- Creating a project redirects directly to the workspace
+- Deleting a project requires confirmation to prevent accidents
+- Rename is inline and doesn't require a separate page
+- Node count is fetched via `listProjectsWithStats()` from API-001
+
+#### Usage Example:
+```tsx
+// The Dashboard is used via the home page
+// GET / renders the Dashboard with all projects
+
+// Create project flow:
+// 1. Click "New Project" button
+// 2. Dialog opens, enter name and description
+// 3. Click "Create Project"
+// 4. Redirected to /workspace?project={newId}
+
+// Open project flow:
+// 1. Click "Open" button on any project card
+// 2. Redirected to /workspace?project={projectId}
+```
+
+#### Next Steps:
+- Feature UI-007 is complete. Users can now view, create, rename, and delete projects from the dashboard.
+- Dependent features can now proceed:
+  - UI-005: Path Highlighting (canvas visual feedback)
+  - UI-006: Enhanced Floating Toolbar (connect to project creation)
+  - Workspace page integration (project parameter handling)
+
+---
+
 ### [API-001] Server Actions: Project Management - COMPLETED
 **Branch:** feat/api-001-project-management
 **Status:** ✅ Complete

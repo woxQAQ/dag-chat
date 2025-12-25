@@ -39,6 +39,14 @@ describe("Context Builder Service", () => {
 	const mockNode = {
 		id: mockNodeId,
 		projectId: mockProjectId,
+		parentId: null as string | null,
+		role: "USER" as const,
+		content: "Test message",
+		positionX: 0,
+		positionY: 0,
+		metadata: {},
+		createdAt: new Date(),
+		updatedAt: new Date(),
 	};
 
 	// Mock recursive CTE result (path from root to target)
@@ -254,7 +262,7 @@ describe("Context Builder Service", () => {
 				"123e4567-e89b-12d3-a456-426614174001",
 				"123e4567-e89b-12d3-a456-426614174002",
 				"123e4567-e89b-12d3-a456-426614174003",
-			] as const;
+			];
 
 			vi.mocked(prisma.node.findUnique).mockResolvedValue(mockNode);
 			vi.mocked(prisma.$queryRaw).mockResolvedValue(mockPathResult);
@@ -272,9 +280,9 @@ describe("Context Builder Service", () => {
 			expect(context2).toBeDefined();
 			expect(context3).toBeDefined();
 
-			expect(context1!.messages).toHaveLength(3);
-			expect(context2!.messages).toHaveLength(3);
-			expect(context3!.messages).toHaveLength(3);
+			expect(context1?.messages).toHaveLength(3);
+			expect(context2?.messages).toHaveLength(3);
+			expect(context3?.messages).toHaveLength(3);
 		});
 
 		it("should handle partial failures in batch", async () => {

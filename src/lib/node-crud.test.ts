@@ -10,7 +10,6 @@ import {
 	createNode,
 	deleteNode,
 	getNode,
-	type NodeResult,
 	updateNode,
 	updateNodeContent,
 	updateNodePosition,

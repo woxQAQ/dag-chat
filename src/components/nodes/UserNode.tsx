@@ -111,7 +111,6 @@ export function UserNode({
 			<div className="p-4">
 				{isEditing ? (
 					<textarea
-						autoFocus
 						defaultValue={content}
 						onChange={handleContentChange}
 						onKeyDown={handleKeyDown}

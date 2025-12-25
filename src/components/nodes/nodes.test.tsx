@@ -10,7 +10,13 @@ vi.mock("@xyflow/react", async () => {
 	const actual = await vi.importActual("@xyflow/react");
 	return {
 		...actual,
-		Handle: ({ children, ...props }: { children?: React.ReactNode }) => (
+		Handle: ({
+			children,
+			...props
+		}: {
+			children?: React.ReactNode;
+			type?: string;
+		}) => (
 			<div data-handle-type={props.type} data-testid={`handle-${props.type}`}>
 				{children}
 			</div>

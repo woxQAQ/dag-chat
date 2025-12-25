@@ -2,7 +2,6 @@
 
 import {
 	Background,
-	type BackgroundProps,
 	BackgroundVariant,
 	Controls,
 	type Edge,

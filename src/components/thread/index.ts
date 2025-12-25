@@ -20,19 +20,18 @@
  * ```
  */
 
-// Main components
-export { ThreadView, ThreadViewServer } from "./ThreadView";
-export { ThreadMessage } from "./ThreadMessage";
-export { ThreadInput } from "./ThreadInput";
-
-// Types
-export type {
-	ThreadMessage,
-	ThreadMessageRole,
-	ThreadViewProps,
-	ThreadMessageProps,
-	ThreadInputProps,
-} from "./types";
-
 // Re-export context builder types for convenience
 export type { ContextMessage, ContextResult } from "@/lib/context-builder";
+export { ThreadInput } from "./ThreadInput";
+export { ThreadMessage } from "./ThreadMessage";
+// Main components
+export { ThreadView, ThreadViewServer } from "./ThreadView";
+// Types
+// Export ThreadMessage data type as ThreadMessageData to avoid naming conflict
+export type {
+	ThreadInputProps,
+	ThreadMessage as ThreadMessageData,
+	ThreadMessageProps,
+	ThreadMessageRole,
+	ThreadViewProps,
+} from "./types";

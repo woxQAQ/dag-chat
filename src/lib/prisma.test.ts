@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
 
 describe("Database Schema - Project", () => {
-	let projectId: string;
+	let _projectId: string;
 
 	afterEach(async () => {
 		// Clean up all test data
@@ -321,7 +321,7 @@ describe("Database Schema - Tree Traversal", () => {
 	let projectId: string;
 	let rootNode: string;
 	let branch1: string;
-	let branch2: string;
+	let _branch2: string;
 
 	beforeEach(async () => {
 		const project = await prisma.project.create({
@@ -350,7 +350,7 @@ describe("Database Schema - Tree Traversal", () => {
 			})
 		).id;
 
-		branch2 = (
+		_branch2 = (
 			await prisma.node.create({
 				data: {
 					projectId,
