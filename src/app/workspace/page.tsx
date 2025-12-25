@@ -234,11 +234,6 @@ function WorkspaceContent() {
 	);
 
 	// Existing handlers (unchanged)
-	const handleAddNode = () => {
-		console.log("Add node clicked");
-		// TODO: Implement node creation in UI-003
-	};
-
 	const handleLayout = () => {
 		console.log("Auto layout clicked");
 		// TODO: Implement auto layout in UI-002
@@ -300,7 +295,6 @@ function WorkspaceContent() {
 					<FloatingToolbar
 						mode={toolMode}
 						onModeChange={setToolMode}
-						onAddNode={handleAddNode}
 						onLayout={handleLayout}
 					/>
 				}

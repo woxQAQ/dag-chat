@@ -132,7 +132,6 @@ describe("FloatingToolbar", () => {
 		expect(screen.getByLabelText("Select mode (V)")).toBeInTheDocument();
 		expect(screen.getByLabelText("Hand mode (H)")).toBeInTheDocument();
 		expect(screen.getByLabelText("Connect mode (L)")).toBeInTheDocument();
-		expect(screen.getByLabelText("Add node (N)")).toBeInTheDocument();
 		expect(screen.getByLabelText("Auto layout")).toBeInTheDocument();
 	});
 
@@ -152,12 +151,6 @@ describe("FloatingToolbar", () => {
 		render(<FloatingToolbar onModeChange={onModeChange} />);
 		// Button is rendered, click handler is attached
 		expect(screen.getByLabelText("Hand mode (H)")).toBeInTheDocument();
-	});
-
-	it("should call onAddNode when Add button is clicked", () => {
-		const onAddNode = () => {};
-		render(<FloatingToolbar onAddNode={onAddNode} />);
-		expect(screen.getByLabelText("Add node (N)")).toBeInTheDocument();
 	});
 
 	it("should call onLayout when Layout button is clicked", () => {

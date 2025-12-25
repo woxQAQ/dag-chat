@@ -2,6 +2,57 @@
 
 ## 2024-12-25
 
+### [UI-006-UPDATE] FloatingToolbar Button Pruning - COMPLETED
+**Branch:** feat/ui-006-update-toolbar-pruning
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **FloatingToolbar Component** (`src/components/layout/FloatingToolbar.tsx`)
+   - Removed `onAddNode` prop from `FloatingToolbarProps` interface
+   - Removed Add Node button and its divider from JSX
+   - Removed `primaryButtonClass` variable (no longer needed)
+   - Updated JSDoc comments to reflect new functionality
+   - Toolbar now has 4 buttons: Select, Hand, Connect, Layout
+
+2. **Tests Update** (`src/components/layout/CanvasLayout.test.tsx`)
+   - Removed test case "should call onAddNode when Add button is clicked"
+   - Updated "should render all tool buttons" test to exclude Add Node button
+   - All 28 tests passing
+
+3. **Workspace Page** (`src/app/workspace/page.tsx`)
+   - Removed `onAddNode={handleAddNode}` prop from FloatingToolbar usage
+   - Removed unused `handleAddNode` function
+
+#### Technical Details:
+- Prevents creating rootless nodes via toolbar button
+- Node creation now only through:
+  - Double-click on empty canvas (UI-NEW-001: Root Node Creation)
+  - Branch button on existing nodes (UI-NEW-002: Branching Interaction)
+- No visual changes to toolbar layout (gap closed naturally)
+
+#### Visual Design:
+- **Toolbar**: Glassmorphism capsule, 4 buttons instead of 5
+- **Buttons**: Select (V), Hand (H), Connect (L), Layout
+- **Removed**: Add Node button with "+" icon and "Add" label
+
+#### File Structure:
+```
+src/components/layout/
+├── FloatingToolbar.tsx (modified - removed Add Node button)
+└── CanvasLayout.test.tsx (modified - updated tests)
+
+src/app/workspace/
+└── page.tsx (modified - removed onAddNode prop)
+```
+
+#### Next Steps:
+- Feature UI-006-UPDATE is complete. Users can no longer create rootless nodes via toolbar.
+- Dependent features:
+  - UI-006: Original Floating Toolbar feature (now updated/superseded)
+
+---
+
 ### [UI-NEW-001] Root Node Creation - COMPLETED
 **Branch:** feat/ui-new-001-root-node-creation
 **Status:** ✅ Complete
