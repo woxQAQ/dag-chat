@@ -15,17 +15,29 @@ vi.mock("@/app/nodes/root-actions", () => ({
 
 import { createRootNode } from "@/app/nodes/root-actions";
 
+// Mock global fetch for AI API calls
+global.fetch = vi.fn();
+
 describe("useRootNodeCreation", () => {
 	const mockProjectId = "project-123";
 	const mockPositionX = 150;
 	const mockPositionY = 200;
 	const mockContent = "What is the meaning of life?";
 
-	const mockOnNodeCreated = vi.fn();
+	const mockOnUserNodeCreated = vi.fn();
+	const mockOnAssistantNodeCreated = vi.fn();
 	const mockOnError = vi.fn();
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		// Mock fetch to return a successful response with node ID
+		vi.mocked(global.fetch).mockResolvedValue({
+			ok: true,
+			headers: {
+				get: (name: string) => (name === "X-Node-Id" ? "assistant-node-123" : null),
+			},
+			json: async () => ({}),
+		} as Response);
 	});
 
 	afterEach(() => {
@@ -46,7 +58,8 @@ describe("useRootNodeCreation", () => {
 		const { result } = renderHook(() =>
 			useRootNodeCreation({
 				projectId: mockProjectId,
-				onNodeCreated: mockOnNodeCreated,
+				onUserNodeCreated: mockOnUserNodeCreated,
+				onAssistantNodeCreated: mockOnAssistantNodeCreated,
 				onError: mockOnError,
 			}),
 		);
@@ -56,8 +69,9 @@ describe("useRootNodeCreation", () => {
 		expect(typeof result.current.createRootNode).toBe("function");
 	});
 
-	it("should create root node successfully", async () => {
+	it("should create root node successfully and call AI API", async () => {
 		const mockNodeId = "new-root-node-789";
+		const mockAssistantNodeId = "assistant-node-123";
 
 		vi.mocked(createRootNode).mockResolvedValue({
 			success: true,
@@ -71,7 +85,8 @@ describe("useRootNodeCreation", () => {
 		const { result } = renderHook(() =>
 			useRootNodeCreation({
 				projectId: mockProjectId,
-				onNodeCreated: mockOnNodeCreated,
+				onUserNodeCreated: mockOnUserNodeCreated,
+				onAssistantNodeCreated: mockOnAssistantNodeCreated,
 				onError: mockOnError,
 			}),
 		);
@@ -96,15 +111,40 @@ describe("useRootNodeCreation", () => {
 			positionY: mockPositionY,
 		});
 
-		// Verify callback was called with correct data
-		expect(mockOnNodeCreated).toHaveBeenCalledWith(
+		// Verify user node callback was called
+		expect(mockOnUserNodeCreated).toHaveBeenCalledWith(
 			mockNodeId,
 			mockPositionX,
 			mockPositionY,
 		);
 
+		// Verify AI API was called
+		expect(global.fetch).toHaveBeenCalledWith("/api/chat", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				projectId: mockProjectId,
+				parentNodeId: mockNodeId,
+				message: mockContent,
+				positionX: mockPositionX,
+				positionY: mockPositionY + 150,
+			}),
+		});
+
+		// Verify assistant node callback was called
+		expect(mockOnAssistantNodeCreated).toHaveBeenCalledWith(
+			mockAssistantNodeId,
+			mockPositionX,
+			mockPositionY + 150,
+			mockNodeId,
+		);
+
 		// Verify state is reset after success
-		expect(result.current.isCreating).toBe(false);
+		await waitFor(() => {
+			expect(result.current.isCreating).toBe(false);
+		});
 		expect(result.current.error).toBe(null);
 	});
 
@@ -118,7 +158,8 @@ describe("useRootNodeCreation", () => {
 		const { result } = renderHook(() =>
 			useRootNodeCreation({
 				projectId: mockProjectId,
-				onNodeCreated: mockOnNodeCreated,
+				onUserNodeCreated: mockOnUserNodeCreated,
+				onAssistantNodeCreated: mockOnAssistantNodeCreated,
 				onError: mockOnError,
 			}),
 		);
@@ -137,8 +178,8 @@ describe("useRootNodeCreation", () => {
 		// Verify error state is set
 		expect(result.current.error).toBe(mockError);
 
-		// Verify onNodeCreated was not called
-		expect(mockOnNodeCreated).not.toHaveBeenCalled();
+		// Verify onUserNodeCreated was not called
+		expect(mockOnUserNodeCreated).not.toHaveBeenCalled();
 	});
 
 	it("should handle unexpected errors", async () => {
@@ -148,7 +189,8 @@ describe("useRootNodeCreation", () => {
 		const { result } = renderHook(() =>
 			useRootNodeCreation({
 				projectId: mockProjectId,
-				onNodeCreated: mockOnNodeCreated,
+				onUserNodeCreated: mockOnUserNodeCreated,
+				onAssistantNodeCreated: mockOnAssistantNodeCreated,
 				onError: mockOnError,
 			}),
 		);
@@ -181,7 +223,8 @@ describe("useRootNodeCreation", () => {
 		const { result } = renderHook(() =>
 			useRootNodeCreation({
 				projectId: mockProjectId,
-				onNodeCreated: mockOnNodeCreated,
+				onUserNodeCreated: mockOnUserNodeCreated,
+				onAssistantNodeCreated: mockOnAssistantNodeCreated,
 			}),
 		);
 
@@ -205,8 +248,12 @@ describe("useRootNodeCreation", () => {
 			});
 		});
 
-		// Check loading state is reset
-		expect(result.current.isCreating).toBe(false);
+		// Check loading state is reset (may still be true briefly due to AI API call)
+		// Note: The AI API call happens after node creation, so isCreating might briefly be true
+		// until the AI API call completes
+		await waitFor(() => {
+			expect(result.current.isCreating).toBe(false);
+		});
 	});
 
 	it("should clear previous error on new creation attempt", async () => {
@@ -219,7 +266,8 @@ describe("useRootNodeCreation", () => {
 		const { result } = renderHook(() =>
 			useRootNodeCreation({
 				projectId: mockProjectId,
-				onNodeCreated: mockOnNodeCreated,
+				onUserNodeCreated: mockOnUserNodeCreated,
+				onAssistantNodeCreated: mockOnAssistantNodeCreated,
 				onError: mockOnError,
 			}),
 		);

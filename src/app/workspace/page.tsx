@@ -3,18 +3,20 @@
 import {
 	addEdge,
 	type Edge,
+	type NodeTypes,
 	type ReactFlowInstance,
 	useEdgesState,
 	useNodesState,
 } from "@xyflow/react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { type GraphData, getProjectGraphAction } from "@/app/nodes/actions";
+import { getProjectGraphAction } from "@/app/nodes/actions";
 import {
 	EmptyStateCanvas,
 	InfiniteCanvas,
 	PromptInputDialog,
 } from "@/components/canvas";
+import { useNodeEditingContext } from "@/contexts/NodeEditingContext";
 import {
 	CanvasLayout,
 	FloatingToolbar,
@@ -23,11 +25,76 @@ import {
 	type ToolMode,
 	TopHeader,
 } from "@/components/layout";
-import { createEditableNode, type MindFlowNode } from "@/components/nodes";
+import {
+	createEditableNode,
+	type MindFlowNode,
+} from "@/components/nodes";
 import { NodeEditingProvider } from "@/contexts/NodeEditingContext";
 import { useNodeEditing } from "@/hooks/use-node-editing";
 import { usePathHighlightWithInspector } from "@/hooks/use-path-highlight";
 import { useRootNodeCreation } from "@/hooks/use-root-creation";
+
+// ============================================================================
+// Canvas Wrapper Component with Edit Handling
+// ============================================================================
+
+/**
+ * CanvasWithEditHandler - Wraps InfiniteCanvas with edit mode handling
+ *
+ * This component is rendered inside the NodeEditingProvider and can access
+ * the context to handle pane clicks for exiting edit mode.
+ *
+ * When clicking outside the node (on the canvas), the edit mode is exited
+ * and changes are saved.
+ */
+function CanvasWithEditHandler({
+	nodes,
+	edges,
+	nodeTypes,
+	onNodesChange,
+	onEdgesChange,
+	onConnect,
+	onSelectionChange,
+	onInit,
+}: {
+	nodes: MindFlowNode[];
+	edges: Edge[];
+	nodeTypes: NodeTypes;
+	onNodesChange: any;
+	onEdgesChange: any;
+	onConnect: (params: any) => void;
+	onSelectionChange: (params: { nodes: readonly { id: string }[] }) => void;
+	onInit: (instance: ReactFlowInstance | null) => void;
+}) {
+	const { stopEditing } = useNodeEditingContext();
+
+	// Handle pane click to exit edit mode and save changes
+	const handlePaneClick = useCallback(() => {
+		// Save changes when exiting edit mode by clicking outside
+		stopEditing(true);
+	}, [stopEditing]);
+
+	return (
+		<InfiniteCanvas
+			nodes={nodes}
+			edges={edges}
+			nodeTypes={nodeTypes}
+			onNodesChange={onNodesChange}
+			onEdgesChange={onEdgesChange}
+			onConnect={onConnect}
+			onSelectionChange={onSelectionChange}
+			onInit={onInit}
+			onPaneClick={handlePaneClick}
+			backgroundVariant="dots"
+			backgroundGap={24}
+			showControls={false}
+		/>
+	);
+}
+
+// ============================================================================
+// Workspace Content Component
+// ============================================================================
 
 function WorkspaceContent() {
 	const searchParams = useSearchParams();
@@ -57,81 +124,82 @@ function WorkspaceContent() {
 		content: string;
 	} | null>(null);
 
-	// NEW: Fetch graph data on mount
-	useEffect(() => {
-		const loadGraph = async () => {
-			// Handle missing project ID
-			if (!projectId) {
-				setProjectExists(false);
+	// NEW: Fetch graph data function (extracted for use in multiple places)
+	const loadGraph = useCallback(async () => {
+		// Handle missing project ID
+		if (!projectId) {
+			setProjectExists(false);
+			setGraphLoaded(true);
+			return;
+		}
+
+		try {
+			const result = await getProjectGraphAction(projectId);
+
+			if (!result.success || !result.data) {
+				// Check if error is about project not found vs other errors
+				if (
+					result.error?.includes("not found") ||
+					result.error?.includes("Project")
+				) {
+					setProjectExists(false);
+				} else {
+					// Only log unexpected errors, not "project not found" (expected with placeholder IDs)
+					console.error("Failed to load graph:", result.error);
+				}
 				setGraphLoaded(true);
 				return;
 			}
 
-			try {
-				const result = await getProjectGraphAction(projectId);
+			const graph = result.data;
 
-				if (!result.success || !result.data) {
-					// Check if error is about project not found vs other errors
-					if (
-						result.error?.includes("not found") ||
-						result.error?.includes("Project")
-					) {
-						setProjectExists(false);
-					} else {
-						// Only log unexpected errors, not "project not found" (expected with placeholder IDs)
-						console.error("Failed to load graph:", result.error);
-					}
-					setGraphLoaded(true);
-					return;
-				}
-
-				const graph = result.data;
-
-				// Convert GraphNode[] to ReactFlow Node[]
-				const flowNodes: MindFlowNode[] = graph.nodes.map((node) => ({
+			// Convert GraphNode[] to ReactFlow Node[]
+			const flowNodes: MindFlowNode[] = graph.nodes.map((node) => ({
+				id: node.id,
+				type: node.role.toLowerCase(), // "user" or "assistant"
+				position: { x: node.positionX, y: node.positionY },
+				data: {
 					id: node.id,
-					type: node.role.toLowerCase(), // "user" or "assistant"
-					position: { x: node.positionX, y: node.positionY },
-					data: {
-						id: node.id,
-						role: node.role,
-						content: node.content,
-						isEditing: false,
-						isStreaming: false,
-						createdAt: node.createdAt,
-						metadata: (node.metadata || {}) as Record<string, unknown>,
-					},
-				}));
+					role: node.role,
+					content: node.content,
+					isEditing: false,
+					isStreaming: false,
+					createdAt: node.createdAt,
+					metadata: (node.metadata || {}) as Record<string, unknown>,
+				},
+			}));
 
-				// Convert GraphEdge[] to ReactFlow Edge[]
-				const flowEdges: Edge[] = graph.edges.map((edge) => ({
-					id: edge.id,
-					source: edge.source,
-					target: edge.target,
-					type: "smoothstep",
-					animated: false,
-				}));
+			// Convert GraphEdge[] to ReactFlow Edge[]
+			const flowEdges: Edge[] = graph.edges.map((edge) => ({
+				id: edge.id,
+				source: edge.source,
+				target: edge.target,
+				type: "smoothstep",
+				animated: false,
+			}));
 
-				setNodes(flowNodes);
-				setEdges(flowEdges);
-				setProjectExists(true);
-				setGraphLoaded(true);
-			} catch (error) {
-				console.error("Failed to load graph:", error);
-				setProjectExists(false);
-				setGraphLoaded(true);
-			}
-		};
-
-		loadGraph();
+			setNodes(flowNodes);
+			setEdges(flowEdges);
+			setProjectExists(true);
+			setGraphLoaded(true);
+		} catch (error) {
+			console.error("Failed to load graph:", error);
+			setProjectExists(false);
+			setGraphLoaded(true);
+		}
 	}, [projectId, setNodes, setEdges]);
+
+	// NEW: Fetch graph data on mount
+	useEffect(() => {
+		loadGraph();
+	}, [loadGraph]);
 
 	// NEW: Root node creation hook
 	const { isCreating, createRootNode } = useRootNodeCreation({
 		projectId,
-		onNodeCreated: (nodeId, x, y) => {
-			// Add new node to ReactFlow state
-			const newNode: MindFlowNode = {
+		onUserNodeCreated: (nodeId, x, y) => {
+			// Add user node to ReactFlow state
+			const userNode: MindFlowNode = {
 				id: nodeId,
 				type: "user",
 				position: { x, y },
@@ -145,8 +213,110 @@ function WorkspaceContent() {
 					metadata: { isRoot: true },
 				},
 			};
-			setNodes((prev) => [...prev, newNode]);
+			setNodes((prev) => [...prev, userNode]);
+		},
+		onAssistantNodeCreated: (nodeId, x, y, parentNodeId) => {
+			console.log("[page.tsx] onAssistantNodeCreated called:", {
+				nodeId,
+				x,
+				y,
+				parentNodeId,
+			});
+
+			// Add assistant node to ReactFlow state initially empty (will be updated after streaming)
+			const assistantNode: MindFlowNode = {
+				id: nodeId,
+				type: "assistant",
+				position: { x, y },
+				data: {
+					id: nodeId,
+					role: "ASSISTANT",
+					content: "",
+					isEditing: false,
+					isStreaming: true,
+					createdAt: new Date(),
+					metadata: { streaming: true },
+				},
+			};
+			setNodes((prev) => [...prev, assistantNode]);
+			console.log("[page.tsx] Assistant node added to state");
+
+			// Add edge from user node to assistant node
+			const edgeId = `${parentNodeId}-${nodeId}`;
+			setEdges((prev) => {
+				// Check if edge already exists to avoid duplicates
+				const edgeExists = prev.some((e) => e.id === edgeId);
+				if (edgeExists) {
+					console.log("[page.tsx] Edge already exists, skipping:", edgeId);
+					return prev;
+				}
+				const newEdges = [
+					...prev,
+					{
+						id: edgeId,
+						source: parentNodeId,
+						sourceHandle: "user-bottom", // Explicitly specify source handle ID
+						target: nodeId,
+						targetHandle: "ai-top", // Explicitly specify target handle ID
+						type: "smoothstep",
+						animated: false,
+					},
+				];
+				console.log("[page.tsx] Edge added to state:", {
+					edgeId,
+					source: parentNodeId,
+					sourceHandle: "user-bottom",
+					target: nodeId,
+					targetHandle: "ai-top",
+					totalEdges: newEdges.length,
+				});
+				return newEdges;
+			});
+
+			// Clear pending position after both nodes are created
 			setPendingPosition(null);
+
+			// Poll to update the assistant node content after streaming completes
+			// Just update the content, don't reload the entire graph
+			const pollInterval = setInterval(async () => {
+				try {
+					const result = await getProjectGraphAction(projectId);
+					if (result.success && result.data) {
+						const updatedNode = result.data.nodes.find((n) => n.id === nodeId);
+						if (updatedNode && updatedNode.content && updatedNode.content !== "") {
+							console.log("[page.tsx] Assistant node content updated:", {
+								nodeId,
+								contentLength: updatedNode.content.length,
+							});
+							// Update the node in ReactFlow state
+							setNodes((nds) =>
+								nds.map((node) =>
+									node.id === nodeId
+										? {
+												...node,
+												data: {
+													...node.data,
+													content: updatedNode.content,
+													isStreaming: false,
+													metadata: updatedNode.metadata as Record<string, unknown> | undefined,
+												},
+											}
+										: node,
+								),
+							);
+							// Don't call loadGraph() - keep the locally created edge
+							clearInterval(pollInterval);
+						}
+					}
+				} catch (error) {
+					console.error("[page.tsx] Error polling for node update:", error);
+				}
+			}, 1000); // Poll every second
+
+			// Stop polling after 10 seconds (timeout)
+			setTimeout(() => {
+				clearInterval(pollInterval);
+			}, 10000);
 		},
 		onError: (error) => {
 			// TODO: Show toast notification
@@ -155,7 +325,7 @@ function WorkspaceContent() {
 	});
 
 	// UI-NEW-004: Node editing hook
-	const { isUpdating, updateNodeContent } = useNodeEditing({
+	const { updateNodeContent } = useNodeEditing({
 		onContentUpdated: (nodeId, content) => {
 			// Update the node in ReactFlow state after save
 			setNodes((nds) =>
@@ -178,8 +348,6 @@ function WorkspaceContent() {
 	const {
 		highlightedNodes,
 		highlightedEdges,
-		setSelectedNodeId,
-		clearSelection,
 		handleNodeSelect,
 		handleSelectionClear,
 	} = usePathHighlightWithInspector({
@@ -187,7 +355,7 @@ function WorkspaceContent() {
 		edges,
 		highlightColor: "#2563eb",
 		dimmedColor: "#cbd5e1",
-		onNodeSelected: (nodeId) => {
+		onNodeSelected: (_nodeId) => {
 			// Open inspector panel when node is selected
 			setInspectorOpen(true);
 			setInspectorTab("thread");
@@ -406,8 +574,8 @@ function WorkspaceContent() {
 
 				{/* Infinite Canvas with ReactFlow integration */}
 				<NodeEditingProvider onUpdateContent={updateNodeContent}>
-					<InfiniteCanvas
-						nodes={highlightedNodes}
+					<CanvasWithEditHandler
+						nodes={highlightedNodes as MindFlowNode[]}
 						edges={highlightedEdges}
 						nodeTypes={nodeTypes}
 						onNodesChange={onNodesChange as any}
@@ -415,9 +583,6 @@ function WorkspaceContent() {
 						onConnect={onConnect}
 						onSelectionChange={onSelectionChange}
 						onInit={setReactFlowInstance}
-						backgroundVariant="dots"
-						backgroundGap={24}
-						showControls={false}
 					/>
 				</NodeEditingProvider>
 			</CanvasLayout>

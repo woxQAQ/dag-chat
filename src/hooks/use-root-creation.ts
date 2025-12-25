@@ -3,6 +3,9 @@
  *
  * Custom hook for handling root node creation interactions.
  * Manages the state and API calls for creating the first node in an empty project.
+ *
+ * After creating the user node, this hook automatically calls the AI API
+ * to generate an assistant response.
  */
 
 "use client";
@@ -17,11 +20,18 @@ import { createRootNode as createRootNodeAction } from "@/app/nodes/root-actions
 export interface UseRootNodeCreationOptions {
 	/** The project ID for the current workspace */
 	projectId: string;
-	/** Callback when the root node is successfully created */
-	onNodeCreated?: (
+	/** Callback when the root user node is successfully created */
+	onUserNodeCreated?: (
 		nodeId: string,
 		positionX: number,
 		positionY: number,
+	) => void;
+	/** Callback when the assistant node is created (from AI stream response) */
+	onAssistantNodeCreated?: (
+		nodeId: string,
+		positionX: number,
+		positionY: number,
+		parentNodeId: string,
 	) => void;
 	/** Callback when root node creation fails */
 	onError?: (error: string) => void;
@@ -48,6 +58,9 @@ export interface UseRootNodeCreationReturn {
  * Hook for managing root node creation interactions.
  *
  * Provides a function to create the root node with loading/error states.
+ * After creating the user node, automatically calls the AI API to generate
+ * an assistant response.
+ *
  * Follows the same pattern as useBranching (UI-NEW-002).
  *
  * @param options - Hook options
@@ -57,9 +70,15 @@ export interface UseRootNodeCreationReturn {
  * ```tsx
  * const { isCreating, createRootNode } = useRootNodeCreation({
  *   projectId: "project-uuid",
- *   onNodeCreated: (nodeId, x, y) => {
- *     // Add the new node to the graph
+ *   onUserNodeCreated: (nodeId, x, y) => {
+ *     // Add the user node to the graph
  *     setNodes((prev) => [...prev, { id: nodeId, position: { x, y } }]);
+ *   },
+ *   onAssistantNodeCreated: (nodeId, x, y, parentNodeId) => {
+ *     // Add the assistant node and edge to the graph
+ *     const assistantNode = { id: nodeId, type: "assistant", position: { x, y }, ... };
+ *     setNodes((prev) => [...prev, assistantNode]);
+ *     setEdges((prev) => [...prev, { id: `${parentNodeId}-${nodeId}`, source: parentNodeId, target: nodeId }]);
  *   },
  *   onError: (error) => {
  *     toast.error(error);
@@ -76,7 +95,8 @@ export interface UseRootNodeCreationReturn {
 export function useRootNodeCreation(
 	options: UseRootNodeCreationOptions,
 ): UseRootNodeCreationReturn {
-	const { projectId, onNodeCreated, onError } = options;
+	const { projectId, onUserNodeCreated, onAssistantNodeCreated, onError } =
+		options;
 	const [isCreating, setIsCreating] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -86,6 +106,7 @@ export function useRootNodeCreation(
 			setError(null);
 
 			try {
+				// Step 1: Create the root user node
 				const result = await createRootNodeAction({
 					projectId,
 					content,
@@ -93,16 +114,92 @@ export function useRootNodeCreation(
 					positionY,
 				});
 
-				if (result.success && result.data) {
-					onNodeCreated?.(
-						result.data.nodeId,
-						result.data.positionX,
-						result.data.positionY,
-					);
-				} else {
+				if (!result.success || !result.data) {
 					const errorMsg = result.error || "Failed to create root node";
 					setError(errorMsg);
 					onError?.(errorMsg);
+					setIsCreating(false);
+					return;
+				}
+
+				const userNodeId = result.data.nodeId;
+				const userNodeX = result.data.positionX;
+				const userNodeY = result.data.positionY;
+
+				// Notify user node creation
+				onUserNodeCreated?.(userNodeId, userNodeX, userNodeY);
+
+				// Step 2: Call AI API to generate assistant response
+				// Calculate position for assistant node (below user node)
+				const assistantY = userNodeY + 150;
+
+				try {
+					console.log("[use-root-creation] Calling AI API...", {
+						projectId,
+						parentNodeId: userNodeId,
+						message: content,
+					});
+
+					const response = await fetch("/api/chat", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							projectId,
+							parentNodeId: userNodeId,
+							message: content,
+							positionX: userNodeX,
+							positionY: assistantY,
+						}),
+					});
+
+					// Log response status
+					console.log("[use-root-creation] AI API response status:", response.status);
+
+					if (!response.ok) {
+						const errorData = (await response.json()) as { error?: string };
+						throw new Error(errorData.error || "Failed to call AI API");
+					}
+
+					// Get the assistant node ID from the response header
+					const assistantNodeId = response.headers.get("X-Node-Id");
+					console.log("[use-root-creation] Assistant node ID from header:", assistantNodeId);
+
+					// The assistant node should have been created by the API
+					// Notify the client to add it to the graph
+					if (assistantNodeId) {
+						onAssistantNodeCreated?.(
+							assistantNodeId,
+							userNodeX,
+							assistantY,
+							userNodeId,
+						);
+					} else {
+						console.warn("[use-root-creation] No assistant node ID returned from AI API");
+						console.log("[use-root-creation] Response headers:", Array.from(response.headers.entries()));
+					}
+
+					// Consume the stream response to ensure the request completes
+					// The actual streaming and node update happens server-side
+					const reader = response.body?.getReader();
+					if (reader) {
+						console.log("[use-root-creation] Consuming stream...");
+						let chunkCount = 0;
+						while (true) {
+							const { done, value } = await reader.read();
+							if (done) {
+								console.log("[use-root-creation] Stream complete. Total chunks:", chunkCount);
+								break;
+							}
+							chunkCount++;
+						}
+					}
+				} catch (aiError) {
+					// Log the AI API error but don't fail the user node creation
+					console.error("[use-root-creation] AI API error:", aiError);
+					// Optionally notify the user about the AI error
+					onError?.(`User node created, but AI response failed: ${aiError instanceof Error ? aiError.message : "Unknown error"}`);
 				}
 			} catch (err) {
 				const errorMsg =
@@ -113,7 +210,7 @@ export function useRootNodeCreation(
 				setIsCreating(false);
 			}
 		},
-		[projectId, onNodeCreated, onError],
+		[projectId, onUserNodeCreated, onAssistantNodeCreated, onError],
 	);
 
 	return {

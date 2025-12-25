@@ -71,14 +71,15 @@ export function AINode({
 			role="button"
 			tabIndex={0}
 		>
-			{/* Input Handle (Top) - Only visible when hovered */}
-			{isHovered && (
-				<Handle
-					type="target"
-					position={Position.Top}
-					className="w-3 h-3 bg-blue-400 border-2 border-white rounded-full"
-				/>
-			)}
+			{/* Input Handle (Top) - Always present, visible when hovered */}
+			<Handle
+				type="target"
+				position={Position.Top}
+				id="ai-top"
+				className={`w-3 h-3 bg-blue-400 border-2 border-white rounded-full transition-opacity ${
+					isHovered ? "opacity-100" : "opacity-0"
+				}`}
+			/>
 
 			{/* Node Header - AI Label */}
 			<div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200/50">
@@ -114,7 +115,7 @@ export function AINode({
 			</div>
 
 			{/* Node Content - Markdown */}
-			<div className="p-4 prose prose-sm prose-slate max-w-none">
+			<div className="p-4 prose prose-sm prose-gray max-w-none">
 				<ReactMarkdown
 					rehypePlugins={[rehypeHighlight]}
 					remarkPlugins={[remarkGfm]}
@@ -165,20 +166,75 @@ export function AINode({
 								{children}
 							</a>
 						),
+						// Custom styling for paragraphs to ensure text color
+						p: ({ children, ...props }) => (
+							<p className="text-slate-800" {...props}>
+								{children}
+							</p>
+						),
+						// Custom styling for lists
+						ul: ({ children, ...props }) => (
+							<ul className="text-slate-800" {...props}>
+								{children}
+							</ul>
+						),
+						ol: ({ children, ...props }) => (
+							<ol className="text-slate-800" {...props}>
+								{children}
+							</ol>
+						),
+						// Custom styling for list items
+						li: ({ children, ...props }) => (
+							<li className="text-slate-800" {...props}>
+								{children}
+							</li>
+						),
+						// Custom styling for headings
+						h1: ({ children, ...props }) => (
+							<h1 className="text-slate-900" {...props}>
+								{children}
+							</h1>
+						),
+						h2: ({ children, ...props }) => (
+							<h2 className="text-slate-900" {...props}>
+								{children}
+							</h2>
+						),
+						h3: ({ children, ...props }) => (
+							<h3 className="text-slate-900" {...props}>
+								{children}
+							</h3>
+						),
+						h4: ({ children, ...props }) => (
+							<h4 className="text-slate-900" {...props}>
+								{children}
+							</h4>
+						),
+						h5: ({ children, ...props }) => (
+							<h5 className="text-slate-900" {...props}>
+								{children}
+							</h5>
+						),
+						h6: ({ children, ...props }) => (
+							<h6 className="text-slate-900" {...props}>
+								{children}
+							</h6>
+						),
 					}}
 				>
 					{content || "*Empty response*"}
 				</ReactMarkdown>
 			</div>
 
-			{/* Output Handle (Bottom) - Only visible when hovered */}
-			{isHovered && (
-				<Handle
-					type="source"
-					position={Position.Bottom}
-					className="w-3 h-3 bg-blue-400 border-2 border-white rounded-full"
-				/>
-			)}
+			{/* Output Handle (Bottom) - Always present, visible when hovered */}
+			<Handle
+				type="source"
+				position={Position.Bottom}
+				id="ai-bottom"
+				className={`w-3 h-3 bg-blue-400 border-2 border-white rounded-full transition-opacity ${
+					isHovered ? "opacity-100" : "opacity-0"
+				}`}
+			/>
 
 			{/* Branch Button (+) - Only visible when hovered */}
 			{isHovered && onCreateChild && (

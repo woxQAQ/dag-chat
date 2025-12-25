@@ -83,28 +83,28 @@ export async function buildConversationContext(
 			-- Base case: start from the target node
 			SELECT
 				id,
-				parent_id,
+				"parentId",
 				role,
 				content,
 				0 as position_in_chain
 			FROM "nodes"
-			WHERE id = ${nodeId}::uuid
+			WHERE id = ${nodeId}
 
 			UNION ALL
 
 			-- Recursive case: traverse up to parent
 			SELECT
 				n.id,
-				n.parent_id,
+				n."parentId",
 				n.role,
 				n.content,
 				pt.position_in_chain + 1
 			FROM "nodes" n
-			INNER JOIN path_tree pt ON n.id = pt.parent_id
+			INNER JOIN path_tree pt ON n.id = pt."parentId"
 		)
 		SELECT
 			id,
-			parent_id,
+			"parentId",
 			role,
 			content,
 			position_in_chain

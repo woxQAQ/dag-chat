@@ -48,6 +48,13 @@ export async function POST(req: NextRequest) {
 		// Parse request body
 		const body = (await req.json()) as ChatRequest;
 
+		console.log("[/api/chat] Request body:", {
+			projectId: body.projectId,
+			parentNodeId: body.parentNodeId,
+			message: body.message?.substring(0, 50) + "...",
+			provider: body.provider,
+		});
+
 		const {
 			projectId,
 			parentNodeId,
@@ -74,7 +81,12 @@ export async function POST(req: NextRequest) {
 		}
 
 		// Build conversation context from root to parent node
+		console.log("[/api/chat] Building conversation context from parent node:", parentNodeId);
 		const context = await buildConversationContext(parentNodeId);
+		console.log("[/api/chat] Context built:", {
+			pathLength: context.pathLength,
+			totalTokens: context.totalTokens,
+		});
 
 		// Format messages for AI SDK
 		const aiMessages = formatContextForAI(context);
@@ -85,6 +97,7 @@ export async function POST(req: NextRequest) {
 			content: message,
 		});
 
+		console.log("[/api/chat] Calling streamChatWithNode...");
 		// Stream the response with node creation
 		const result = await streamChatWithNode({
 			messages: aiMessages,
@@ -101,19 +114,22 @@ export async function POST(req: NextRequest) {
 			},
 		});
 
+		console.log("[/api/chat] Assistant node created:", result.nodeId);
+
 		// Return the streaming response
 		// The nodeId is sent in a header for client reference
 		const streamResponse = result.toStreamResponse();
 		const headers = new Headers(streamResponse.headers);
 		headers.set("X-Node-Id", result.nodeId);
 
+		console.log("[/api/chat] Returning stream response with node ID in header");
 		return new Response(streamResponse.body, {
 			status: streamResponse.status,
 			statusText: streamResponse.statusText,
 			headers,
 		});
 	} catch (error) {
-		console.error("Chat API error:", error);
+		console.error("[/api/chat] Chat API error:", error);
 
 		const errorMessage =
 			error instanceof Error ? error.message : "Unknown error occurred";

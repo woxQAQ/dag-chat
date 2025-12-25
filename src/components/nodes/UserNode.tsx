@@ -83,14 +83,15 @@ export function UserNode({
 			role="button"
 			tabIndex={0}
 		>
-			{/* Input Handle (Top) - Only visible when hovered */}
-			{isHovered && (
-				<Handle
-					type="target"
-					position={Position.Top}
-					className="w-3 h-3 bg-slate-400 border-2 border-slate-100 rounded-full"
-				/>
-			)}
+			{/* Input Handle (Top) - Always present, visible when hovered */}
+			<Handle
+				type="target"
+				position={Position.Top}
+				id="user-top"
+				className={`w-3 h-3 bg-slate-400 border-2 border-slate-100 rounded-full transition-opacity ${
+					isHovered ? "opacity-100" : "opacity-0"
+				}`}
+			/>
 
 			{/* Node Header - User Label */}
 			<div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200/50">
@@ -137,14 +138,15 @@ export function UserNode({
 				)}
 			</div>
 
-			{/* Output Handle (Bottom) - Only visible when hovered */}
-			{isHovered && (
-				<Handle
-					type="source"
-					position={Position.Bottom}
-					className="w-3 h-3 bg-slate-400 border-2 border-slate-100 rounded-full"
-				/>
-			)}
+			{/* Output Handle (Bottom) - Always present, visible when hovered */}
+			<Handle
+				type="source"
+				position={Position.Bottom}
+				id="user-bottom"
+				className={`w-3 h-3 bg-slate-400 border-2 border-slate-100 rounded-full transition-opacity ${
+					isHovered ? "opacity-100" : "opacity-0"
+				}`}
+			/>
 
 			{/* Branch Button (+) - Only visible when hovered */}
 			{isHovered && onCreateChild && (

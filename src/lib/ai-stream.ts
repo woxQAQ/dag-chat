@@ -181,7 +181,7 @@ export async function streamChat(
 			role: "system" | "user" | "assistant";
 			content: string;
 		}>,
-		...(maxTokens !== undefined && { maxSteps: maxTokens }),
+		...(maxTokens !== undefined && { maxTokens }),
 		...(temperature !== undefined && { temperature }),
 	});
 
@@ -234,6 +234,14 @@ export async function streamChatWithNode(
 	const { messages, projectId, parentId, positionX, positionY, metadata } =
 		input;
 
+	console.log("[streamChatWithNode] Creating assistant node...", {
+		projectId,
+		parentId,
+		positionX,
+		positionY,
+		messagesCount: messages.length,
+	});
+
 	// Import dynamically to avoid circular dependency
 	const { createNode } = await import("./node-crud");
 
@@ -252,7 +260,10 @@ export async function streamChatWithNode(
 		},
 	});
 
+	console.log("[streamChatWithNode] Assistant node created:", node.id);
+
 	// Stream the response
+	console.log("[streamChatWithNode] Starting AI stream...");
 	const result = await streamChat({
 		messages,
 		provider: input.provider,
@@ -261,8 +272,14 @@ export async function streamChatWithNode(
 		temperature: input.temperature,
 	});
 
+	console.log("[streamChatWithNode] AI stream started, will update node on completion");
+
 	// Accumulate full text and update node when complete
 	result.text.then(async (fullText) => {
+		console.log("[streamChatWithNode] Stream complete, updating node content:", {
+			nodeId: node.id,
+			contentLength: fullText.length,
+		});
 		const { updateNodeContent } = await import("./node-crud");
 		await updateNodeContent(node.id, {
 			content: fullText,
@@ -272,6 +289,9 @@ export async function streamChatWithNode(
 				provider: input.provider || "deepseek",
 			},
 		});
+		console.log("[streamChatWithNode] Node content updated successfully");
+	}).catch((error) => {
+		console.error("[streamChatWithNode] Error updating node content:", error);
 	});
 
 	return {

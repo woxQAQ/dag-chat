@@ -8,7 +8,6 @@ import {
 	type Node,
 	ReactFlow,
 	type ReactFlowProps,
-	type OnMoveProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useState } from "react";
@@ -21,6 +20,15 @@ export { BackgroundVariant };
  * Union type for background variant options
  */
 export type CanvasBackgroundVariant = "dots" | "lines" | "cross";
+
+/**
+ * Viewport state type for move events
+ */
+export type Viewport = {
+	x: number;
+	y: number;
+	zoom: number;
+};
 
 /**
  * Props for InfiniteCanvas component
@@ -150,7 +158,10 @@ export function InfiniteCanvas({
 
 	// Handle canvas move start (panning begins)
 	const onMoveStart = useCallback(
-		(_event: React.MouseEvent, _viewport: OnMoveProps) => {
+		(
+			_event: React.MouseEvent<Element, MouseEvent> | TouchEvent | null,
+			_viewport: Viewport,
+		) => {
 			if (showDotsOnPanOnly) {
 				setIsPanning(true);
 			}
@@ -160,7 +171,10 @@ export function InfiniteCanvas({
 
 	// Handle canvas move end (panning ends)
 	const onMoveEnd = useCallback(
-		(_event: React.MouseEvent, _viewport: OnMoveProps) => {
+		(
+			_event: React.MouseEvent<Element, MouseEvent> | TouchEvent | null,
+			_viewport: Viewport,
+		) => {
 			if (showDotsOnPanOnly) {
 				setIsPanning(false);
 			}
@@ -195,8 +209,14 @@ export function InfiniteCanvas({
 			defaultViewport={initialViewport}
 			minZoom={0.1}
 			maxZoom={4}
-			onMoveStart={onMoveStart}
-			onMoveEnd={onMoveEnd}
+			onMoveStart={onMoveStart as any}
+			onMoveEnd={onMoveEnd as any}
+			onClick={(event) => {
+				// Call the onPaneClick prop if provided and click is on pane (not on a node)
+				if (restProps.onPaneClick && event.target === event.currentTarget) {
+					restProps.onPaneClick(event);
+				}
+			}}
 			{...restProps}
 		>
 			{shouldShowBackground && (
