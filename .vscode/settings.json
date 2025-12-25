@@ -1,5 +1,5 @@
 {
 	"explorer.fileNesting.patterns": {
-		"CLAUDE*.md": "CLAUDE*.md, AGENT_LOGGING, FEATURE_LIST,AGENT_TODO"
+		"CLAUDE*.md": "CLAUDE*.md, AGENT_LOGGING, FEATURE_LIST*,AGENT_TODO"
 	}
 }

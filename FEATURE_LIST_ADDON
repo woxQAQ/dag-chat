@@ -1,0 +1,44 @@
+[
+  {
+    "id": "UI-002-UPDATE",
+    "name": "核心组件: 无限画布 (Infinite Canvas) - 视觉优化",
+    "description": "变更背景实现：不再使用显性网格。改为默认纯白/透明，仅保留极低透明度(3-5%)的微弱点阵作为空间参照。可选高级特性：点阵仅在拖拽画布(Panning)时动态显示，静止时隐藏。",
+    "status": "未开发",
+    "priority": "P1",
+    "dependencies": ["UI-002"],
+    "refers_to": "UI-002"
+  },
+  {
+    "id": "UI-006-UPDATE",
+    "name": "交互: 底部工具栏 (Floating Toolbar) - 按钮裁剪",
+    "description": "移除 'Add Node' 按钮，避免产生无根节点。保留 Select (选择), Hand (漫游), Connect (连线), Layout (布局) 功能。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["UI-006"],
+    "refers_to": "UI-006"
+  },
+  {
+    "id": "UI-NEW-001",
+    "name": "交互: 初始节点创建 (Root Node Creation)",
+    "description": "实现双击空白画布创建第一个 User Node 的交互逻辑。这是新设计中唯一的根节点创建入口。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["UI-002", "API-003"]
+  },
+  {
+    "id": "UI-NEW-002",
+    "name": "交互: 分支生长 (Branching Interaction)",
+    "description": "实现基于父节点的派生交互：悬停节点显示连接锚点或 '+' 号，点击或拖拽生成新的 User Node (Child)。替代原有的全局添加按钮。",
+    "status": "未开发",
+    "priority": "P0",
+    "dependencies": ["UI-003", "API-003"]
+  },
+  {
+    "id": "UI-NEW-003",
+    "name": "界面: 空状态引导 (Empty State)",
+    "description": "当项目无节点时，在画布中央显示柔和提示文案 'Double click anywhere to start your thought flow'，引导用户进行首次操作。",
+    "status": "未开发",
+    "priority": "P1",
+    "dependencies": ["UI-002"]
+  }
+]
