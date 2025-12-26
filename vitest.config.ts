@@ -4,7 +4,10 @@ import { config } from "dotenv";
 import { defineConfig } from "vitest/config";
 
 // Load test environment variables BEFORE anything else
-config({ path: ".env.test" });
+// set override to forbid DATABASE_URL has been set in the environment
+config({ path: ".env.test", override: true });
+
+console.log(process.env);
 
 export default defineConfig({
 	plugins: [react()],
