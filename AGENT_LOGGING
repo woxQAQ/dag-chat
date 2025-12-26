@@ -1,5 +1,198 @@
 # Agent Logging - MindFlow Development
 
+## 2024-12-26
+
+### [UI-WORKSPACE-005] Workspace Navigation - COMPLETED
+**Branch:** feat/ui-workspace-005-navigation
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Custom Hook** (`src/hooks/use-workspace-navigation.ts`)
+   - `useWorkspaceNavigation()`: Manages workspace navigation state
+   - Returns: `{ projectName, isLoading, error, handleBack }`
+   - Fetches project data dynamically from API by projectId
+   - Provides back navigation to Dashboard
+   - Optional callbacks: `onProjectLoaded`, `onNavigateBack`
+   - `use-workspace-navigation.test.ts`: 10 comprehensive tests for the hook
+
+2. **Workspace Integration** (`src/app/workspace/page.tsx`)
+   - Added `useWorkspaceNavigation` hook import and usage
+   - Removed hardcoded project name "My MindFlow Project"
+   - Removed TODO `handleBack` function (now uses hook's implementation)
+   - TopHeader now receives dynamic `projectName` from API
+   - TopHeader's `onBack` uses the hook's `handleBack` function
+
+3. **Type Definitions**
+   - `UseWorkspaceNavigationOptions`: projectId, onProjectLoaded, onNavigateBack
+   - `UseWorkspaceNavigationResult`: projectName, isLoading, error, handleBack
+
+4. **Tests** (`src/hooks/use-workspace-navigation.test.ts`)
+   - 10 comprehensive tests covering:
+     - Initial state with valid and invalid projectId
+     - Project data fetching from API
+     - Empty project name handling (defaults to "Untitled Project")
+     - API error handling
+     - Network error handling
+     - ProjectId change refetching
+     - Back navigation with callback and router.push
+     - Fetch cancellation on unmount
+   - ✅ All 10 tests passing (10/10)
+
+#### Technical Details:
+- Uses Server Actions `getProject` from API-001 to fetch project data
+- React's `useEffect` with cleanup flag for cancellation
+- Next.js `useRouter` for navigation
+- Loading and error states for proper UX
+- Callbacks for extensibility (onProjectLoaded, onNavigateBack)
+
+#### Visual Design:
+- **Breadcrumb**: Already implemented in TopHeader - "Dashboard / Project Name"
+- **Project Name**: Dynamically fetched from API, displayed in breadcrumb
+- **Back Button**: Navigates to "/" (Dashboard)
+- **Loading State**: Shows "Untitled Project" while fetching, updates after load
+- **Error State**: Graceful degradation with "Untitled Project" on error
+
+#### File Structure:
+```
+src/hooks/
+├── use-workspace-navigation.ts (new)
+└── use-workspace-navigation.test.ts (new)
+
+src/app/workspace/
+└── page.tsx (modified - integrated useWorkspaceNavigation hook)
+```
+
+#### Usage Example:
+```tsx
+import { useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
+
+// In workspace component
+const { projectName, isLoading, error, handleBack } = useWorkspaceNavigation({
+  projectId,
+  onProjectLoaded: (name) => {
+    console.log("Project loaded:", name);
+  },
+  onNavigateBack: () => {
+    // Optional: perform cleanup before navigation
+  },
+});
+
+// In TopHeader
+<TopHeader
+  projectName={projectName}
+  onBack={handleBack}
+/>
+```
+
+#### Important Notes:
+- Project name defaults to "Untitled Project" when:
+  - No projectId is provided
+  - API returns empty name
+  - API call fails
+- The breadcrumb navigation (Dashboard / Project Name) is already implemented in TopHeader
+- Back button navigates to "/" (dashboard route)
+- Fetch is cancelled on component unmount to prevent memory leaks
+- The hook re-fetches project data when projectId changes
+
+#### Next Steps:
+- Feature UI-WORKSPACE-005 is complete. Users can now see dynamic project names in the workspace header and navigate back to dashboard.
+- The breadcrumb navigation was already implemented in UI-001 TopHeader component.
+- Dependent features can now proceed:
+  - UI-WORKSPACE-002: Export Functionality
+  - UI-WORKSPACE-003: Settings Functionality
+
+---
+
+## 2024-12-26
+
+### [UI-NEW-003] Empty State Guidance - VERIFIED ALREADY IMPLEMENTED
+**Branch:** feat/ui-new-003-empty-state-guidance
+**Status:** ✅ Verified Complete (Previously Implemented)
+
+#### Verification Summary:
+
+The UI-NEW-003 feature was already implemented as part of UI-NEW-001 (Root Node Creation).
+The `EmptyStateCanvas` component (`src/components/canvas/EmptyStateCanvas.tsx`) provides
+all required functionality for empty state guidance.
+
+#### Implementation Details:
+
+**Component:** `EmptyStateCanvas`
+**Location:** `src/components/canvas/EmptyStateCanvas.tsx`
+**Tests:** `src/components/canvas/EmptyStateCanvas.test.tsx` (15 tests, all passing)
+
+**Features Implemented:**
+1. **Default Message**: "Double click anywhere to start your thought flow"
+2. **Custom Message Support**: Via `message` prop
+3. **Conditional Display**: Via `show` prop
+4. **Double Click Handler**: Via `onDoubleClick` prop for creating first node
+5. **Soft Visual Design**:
+   - Color: text-slate-400 (#94a3b8) - muted gray
+   - Font: text-lg (1.125rem), font-light (300), tracking-wide
+   - Centered: flex items-center justify-center
+6. **Proper Z-Index**: z-index: 1 (above ReactFlow canvas)
+7. **Pointer Events Handling**: none when clickable to allow click-through
+
+#### Visual Design:
+- **Text Color**: #94a3b8 (slate-400) - soft, unobtrusive
+- **Font Size**: 1.125rem (text-lg)
+- **Font Weight**: 300 (font-light)
+- **Letter Spacing**: tracking-wide
+- **Position**: Absolute center (inset-0, flex-centered)
+- **Z-Index**: 1 (above canvas)
+
+#### Integration:
+- **Workspace Page**: `src/app/workspace/page.tsx` (lines 581-592)
+- **Condition**: Shows when `nodes.length === 0 && graphLoaded`
+- **Double Click**: Triggers prompt dialog for root node creation
+- **Error Messages**: Custom messages for missing/invalid projects
+
+#### Test Coverage:
+- ✅ Rendering with show prop (true/false)
+- ✅ Default message display
+- ✅ Custom message support
+- ✅ Z-index and positioning
+- ✅ Text styling
+- ✅ Double click handler
+- ✅ Mouse event passing
+- ✅ Pointer-events behavior
+- ✅ Conditional display based on nodes array
+- ✅ Empty and long custom messages
+
+**Total Tests**: 15 (all passing)
+
+#### Usage Example (from Workspace):
+```tsx
+<EmptyStateCanvas
+  show={nodes.length === 0 && graphLoaded}
+  message={
+    projectExists
+      ? undefined
+      : projectId
+        ? "Project not found. Please create a project first."
+        : "No project selected. Please select a project from the dashboard."
+  }
+  onDoubleClick={projectExists ? onPaneDoubleClick : undefined}
+/>
+```
+
+#### File Structure:
+```
+src/components/canvas/
+├── EmptyStateCanvas.tsx (implemented)
+├── EmptyStateCanvas.test.tsx (15 tests)
+└── index.ts (exported)
+```
+
+#### Conclusion:
+UI-NEW-003 is **complete and verified**. The feature was implemented as part of UI-NEW-001
+and has comprehensive test coverage. No additional work is required.
+
+**Status Update Required**: FEATURE_LIST_ADDON should be updated to reflect "complete" status.
+
+---
+
 ## 2024-12-25
 
 ### [UI-002-UPDATE] Canvas Visual Optimization - COMPLETED

@@ -33,6 +33,7 @@ import { useNodeEditing } from "@/hooks/use-node-editing";
 import { useNodeForking } from "@/hooks/use-node-forking";
 import { usePathHighlightWithInspector } from "@/hooks/use-path-highlight";
 import { useRootNodeCreation } from "@/hooks/use-root-creation";
+import { useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
 
 // ============================================================================
 // Canvas Wrapper Component with Edit Handling
@@ -107,6 +108,11 @@ function WorkspaceContent() {
 	const [saveStatus, _setSaveStatus] = useState<"saving" | "saved" | "unsaved">(
 		"saved",
 	);
+
+	// UI-WORKSPACE-005: Workspace navigation
+	const { projectName, handleBack } = useWorkspaceNavigation({
+		projectId,
+	});
 
 	// NEW: Graph data state
 	const [nodes, setNodes, onNodesChange] = useNodesState<MindFlowNode>([]);
@@ -496,11 +502,6 @@ function WorkspaceContent() {
 		// TODO: Implement auto layout in UI-002
 	};
 
-	const handleBack = () => {
-		console.log("Back to dashboard");
-		// TODO: Navigate to dashboard in UI-007
-	};
-
 	const handleShare = () => {
 		console.log("Share clicked");
 	};
@@ -518,7 +519,7 @@ function WorkspaceContent() {
 			<CanvasLayout
 				header={
 					<TopHeader
-						projectName="My MindFlow Project"
+						projectName={projectName}
 						onBack={handleBack}
 						saveStatus={saveStatus}
 						rightContent={

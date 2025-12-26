@@ -37,9 +37,10 @@
     "id": "UI-NEW-003",
     "name": "界面: 空状态引导 (Empty State)",
     "description": "当项目无节点时，在画布中央显示柔和提示文案 'Double click anywhere to start your thought flow'，引导用户进行首次操作。",
-    "status": "未开发",
+    "status": "complete",
     "priority": "P1",
-    "dependencies": ["UI-002"]
+    "dependencies": ["UI-002"],
+    "note": "Implemented as part of UI-NEW-001. Verified 2024-12-26."
   },
   {
     "id": "UI-NEW-004",
@@ -85,8 +86,9 @@
     "id": "UI-WORKSPACE-005",
     "name": "Workspace: 导航功能 (Navigation)",
     "description": "实现 workspace 页面导航功能：返回 Dashboard 导航、动态项目名称显示（从 API 获取）、面包屑导航。确保用户可以清晰地在 Dashboard 和 Workspace 之间切换。",
-    "status": "未开发",
+    "status": "complete",
     "priority": "P1",
-    "dependencies": ["UI-001", "UI-007"]
+    "dependencies": ["UI-001", "UI-007"],
+    "note": "Implemented useWorkspaceNavigation hook with dynamic project name fetching and back navigation. Verified 2024-12-26."
   }
 ]
