@@ -72,14 +72,12 @@ export function AINode({
 			role="button"
 			tabIndex={0}
 		>
-			{/* Input Handle (Top) - Always present, visible when hovered */}
+			{/* Input Handle (Top) - Hidden, no manual connections */}
 			<Handle
 				type="target"
 				position={Position.Top}
 				id="ai-top"
-				className={`w-3 h-3 bg-blue-400 border-2 border-white rounded-full transition-opacity ${
-					isHovered ? "opacity-100" : "opacity-0"
-				}`}
+				className="!opacity-0 !pointer-events-none"
 			/>
 
 			{/* Node Header - AI Label */}
@@ -227,14 +225,12 @@ export function AINode({
 				</ReactMarkdown>
 			</div>
 
-			{/* Output Handle (Bottom) - Always present, visible when hovered */}
+			{/* Output Handle (Bottom) - Hidden, no manual connections */}
 			<Handle
 				type="source"
 				position={Position.Bottom}
 				id="ai-bottom"
-				className={`w-3 h-3 bg-blue-400 border-2 border-white rounded-full transition-opacity ${
-					isHovered ? "opacity-100" : "opacity-0"
-				}`}
+				className="!opacity-0 !pointer-events-none"
 			/>
 
 			{/* Branch Button (+) - Only visible when hovered */}

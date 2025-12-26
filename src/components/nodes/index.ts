@@ -10,13 +10,6 @@ import { AINode } from "./AINode";
 import { UserNode } from "./UserNode";
 
 export { AINode } from "./AINode";
-export type { BranchingNodeProps } from "./BranchingNode";
-// UI-NEW-002: Branching interaction components
-export {
-	BranchingAINode,
-	BranchingUserNode,
-	createBranchingNode,
-} from "./BranchingNode";
 // UI-NEW-004: Content editing components
 export {
 	createEditableNode,
