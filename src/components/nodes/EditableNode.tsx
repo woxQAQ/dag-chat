@@ -76,7 +76,12 @@ export const EditableUserNode = memo<
 		isEditing: isNodeEditing,
 		setEditedContent: setContextEditedContent,
 		getEditedContent,
+		onCreateChild,
+		hoveredNodeId: contextHoveredNodeId,
 	} = useNodeEditingContext();
+
+	// Use context hover state if available, otherwise fall back to prop
+	const isActuallyHovered = contextHoveredNodeId === node.id || isHovered;
 
 	// Check if this node is currently being edited
 	const isEditing = isNodeEditing(node.data.id);
@@ -161,11 +166,12 @@ export const EditableUserNode = memo<
 		<BaseUserNode
 			data={dataWithEditingState}
 			selected={node.selected}
-			isHovered={isHovered}
+			isHovered={isActuallyHovered}
 			onEditToggle={handleEditToggle}
 			onEditSave={handleEditSave}
 			onEditCancel={handleEditCancel}
 			onContentChange={handleContentChange}
+			onCreateChild={() => onCreateChild(node.data.id)}
 			{...props}
 		/>
 	);
@@ -188,12 +194,20 @@ export const EditableUserNode = memo<
 export const EditableAINode = memo<
 	EditableNodeProps & Omit<AINodeProps, "data" | "selected">
 >(function EditableAINode({ node, isHovered = false, ...props }) {
+	// Get onCreateChild and hover state from context
+	const { onCreateChild, hoveredNodeId: contextHoveredNodeId } =
+		useNodeEditingContext();
+
+	// Use context hover state if available, otherwise fall back to prop
+	const isActuallyHovered = contextHoveredNodeId === node.id || isHovered;
+
 	// AI nodes don't support editing, so we just pass through the data
 	return (
 		<BaseAINode
 			data={node.data}
 			selected={node.selected}
-			isHovered={isHovered}
+			isHovered={isActuallyHovered}
+			onCreateChild={() => onCreateChild(node.data.id)}
 			{...props}
 		/>
 	);

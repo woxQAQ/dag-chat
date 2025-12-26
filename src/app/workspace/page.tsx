@@ -4,6 +4,7 @@ import {
 	addEdge,
 	type Connection,
 	type Edge,
+	type Node,
 	type NodeTypes,
 	type OnConnect,
 	type OnEdgesChange,
@@ -62,6 +63,8 @@ function CanvasWithEditHandler({
 	onEdgesChange,
 	onConnect,
 	onSelectionChange,
+	onNodeMouseEnter,
+	onNodeMouseLeave,
 	onInit,
 }: {
 	nodes: MindFlowNode[];
@@ -71,6 +74,8 @@ function CanvasWithEditHandler({
 	onEdgesChange: OnEdgesChange;
 	onConnect: OnConnect;
 	onSelectionChange: (params: { nodes: readonly { id: string }[] }) => void;
+	onNodeMouseEnter?: (event: React.MouseEvent, node: Node) => void;
+	onNodeMouseLeave?: () => void;
 	onInit: (instance: ReactFlowInstance | null) => void;
 }) {
 	const { stopEditing } = useNodeEditingContext();
@@ -91,6 +96,8 @@ function CanvasWithEditHandler({
 			onEdgesChange={onEdgesChange}
 			onConnect={onConnect}
 			onSelectionChange={onSelectionChange}
+			onNodeMouseEnter={onNodeMouseEnter}
+			onNodeMouseLeave={onNodeMouseLeave}
 			onInit={onInit}
 			onPaneClick={handlePaneClick}
 			backgroundVariant="dots"
@@ -113,6 +120,8 @@ function WorkspaceContent() {
 	const [inspectorOpen, setInspectorOpen] = useState(false);
 	// UI-004: Selected node ID for ThreadView
 	const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+	// UI-NEW-002: Track hovered node for showing branch button
+	const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
 	// UI-WORKSPACE-005: Workspace navigation
 	const { handleBack } = useWorkspaceNavigation({
@@ -499,6 +508,18 @@ function WorkspaceContent() {
 		[handleNodeSelect, handleSelectionClear],
 	);
 
+	// UI-NEW-002: Handle node hover for branch button
+	const onNodeMouseEnter = useCallback(
+		(_event: React.MouseEvent, node: Node) => {
+			setHoveredNodeId(node.id);
+		},
+		[],
+	);
+
+	const onNodeMouseLeave = useCallback(() => {
+		setHoveredNodeId(null);
+	}, []);
+
 	// UI-WORKSPACE-004: Auto layout handler
 	const handleLayout = useCallback(async () => {
 		if (!projectId) return;
@@ -560,6 +581,92 @@ function WorkspaceContent() {
 			return { x: parentX + xOffset, userY, aiY };
 		},
 		[nodes, edges],
+	);
+
+	// UI-NEW-002: Handle create child node callback
+	const handleCreateChild = useCallback(
+		async (parentId: string) => {
+			if (!projectId) {
+				console.error("Cannot create child node: no project ID");
+				return;
+			}
+
+			console.log("[workspace] Creating child node from:", parentId);
+
+			try {
+				// Calculate position for the new child node
+				const {
+					x: positionX,
+					userY,
+				} = calculateNodePosition(parentId);
+
+				// Create USER node as child (user needs to provide content)
+				const response = await fetch("/api/chat", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						projectId,
+						parentNodeId: parentId,
+						message: "", // Empty message, user will edit
+						positionX,
+						positionY: userY,
+						skipUserNode: false, // Create USER node for editing
+					}),
+				});
+
+				if (!response.ok) {
+					const errorData = (await response.json()) as { error?: string };
+					throw new Error(errorData.error || "Failed to create child node");
+				}
+
+				// Get the new node IDs from response headers
+				const userNodeId = response.headers.get("X-User-Node-Id");
+				console.log("[workspace] Child USER node created:", { userNodeId });
+
+				// Add USER node to ReactFlow state (empty, ready for editing)
+				if (userNodeId) {
+					const userNode: MindFlowNode = {
+						id: userNodeId,
+						type: "user",
+						position: { x: positionX, y: userY },
+						data: {
+							id: userNodeId,
+							role: "USER",
+							content: "",
+							isEditing: true, // Enter edit mode immediately
+							isStreaming: false,
+							createdAt: new Date(),
+							metadata: {},
+						},
+					};
+					setNodes((prev) => [...prev, userNode]);
+
+					// Add edge from parent to USER node
+					const userEdgeId = `${parentId}-${userNodeId}`;
+					setEdges((prev) => {
+						const edgeExists = prev.some((e) => e.id === userEdgeId);
+						if (edgeExists) return prev;
+						return [
+							...prev,
+							{
+								id: userEdgeId,
+								source: parentId,
+								sourceHandle: getSourceHandle(parentId),
+								target: userNodeId,
+								targetHandle: "user-top",
+								type: "smoothstep",
+								animated: false,
+							},
+						];
+					});
+				}
+			} catch (error) {
+				console.error("[workspace] Create child node error:", error);
+			}
+		},
+		[projectId, calculateNodePosition, getSourceHandle, setEdges, setNodes],
 	);
 
 	// UI-004: Send message handler for ThreadView
@@ -750,6 +857,9 @@ function WorkspaceContent() {
 				<NodeEditingProvider
 					onUpdateContent={updateNodeContent}
 					onNodeFork={forkUserNode}
+					onCreateChild={handleCreateChild}
+					hoveredNodeId={hoveredNodeId}
+					setHoveredNodeId={setHoveredNodeId}
 				>
 					<CanvasWithEditHandler
 						nodes={highlightedNodes as MindFlowNode[]}
@@ -760,6 +870,8 @@ function WorkspaceContent() {
 						onEdgesChange={onEdgesChange}
 						onConnect={onConnect}
 						onSelectionChange={onSelectionChange}
+						onNodeMouseEnter={onNodeMouseEnter}
+						onNodeMouseLeave={onNodeMouseLeave}
 						onInit={setReactFlowInstance}
 					/>
 				</NodeEditingProvider>

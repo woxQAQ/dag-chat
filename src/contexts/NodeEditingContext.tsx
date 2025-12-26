@@ -29,9 +29,21 @@ export interface NodeEditingContextValue {
 	 */
 	forkNode: (nodeId: string, content: string, x: number, y: number) => void;
 	/**
+	 * Callback to create a child node from a parent node (UI-NEW-002)
+	 */
+	onCreateChild: (parentId: string) => void;
+	/**
 	 * The ID of the node currently being edited, or null if no node is being edited
 	 */
 	editingNodeId: string | null;
+	/**
+	 * The ID of the node currently being hovered, or null if no node is being hovered (UI-NEW-002)
+	 */
+	hoveredNodeId: string | null;
+	/**
+	 * Set the hovered node ID
+	 */
+	setHoveredNodeId: (nodeId: string | null) => void;
 	/**
 	 * Start editing a node
 	 */
@@ -70,6 +82,9 @@ export interface NodeEditingProviderProps {
 	children: ReactNode;
 	onUpdateContent: (nodeId: string, content: string) => void;
 	onNodeFork?: (nodeId: string, content: string, x: number, y: number) => void;
+	onCreateChild?: (parentId: string) => void;
+	hoveredNodeId?: string | null;
+	setHoveredNodeId?: (nodeId: string | null) => void;
 }
 
 /**
@@ -89,6 +104,9 @@ export function NodeEditingProvider({
 	children,
 	onUpdateContent,
 	onNodeFork,
+	onCreateChild,
+	hoveredNodeId: externalHoveredNodeId,
+	setHoveredNodeId: externalSetHoveredNodeId,
 }: NodeEditingProviderProps) {
 	// Track the currently editing node
 	const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
@@ -138,7 +156,10 @@ export function NodeEditingProvider({
 	const value: NodeEditingContextValue = {
 		updateNodeContent: onUpdateContent,
 		forkNode: onNodeFork ?? (() => {}),
+		onCreateChild: onCreateChild ?? (() => {}),
 		editingNodeId,
+		hoveredNodeId: externalHoveredNodeId ?? null,
+		setHoveredNodeId: externalSetHoveredNodeId ?? (() => {}),
 		startEditing,
 		stopEditing,
 		isEditing,
