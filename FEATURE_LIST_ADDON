@@ -21,7 +21,7 @@
     "id": "UI-NEW-001",
     "name": "交互: 初始节点创建 (Root Node Creation)",
     "description": "实现双击空白画布创建第一个 User Node 的交互逻辑。这是新设计中唯一的根节点创建入口。",
-    "status": "未开发",
+    "status": "completed",
     "priority": "P0",
     "dependencies": ["UI-002", "API-003"]
   },
@@ -29,7 +29,7 @@
     "id": "UI-NEW-002",
     "name": "交互: 分支生长 (Branching Interaction)",
     "description": "实现基于父节点的派生交互：悬停节点显示连接锚点或 '+' 号，点击或拖拽生成新的 User Node (Child)。替代原有的全局添加按钮。",
-    "status": "未开发",
+    "status": "non tested",
     "priority": "P0",
     "dependencies": ["UI-003", "API-003"]
   },
@@ -46,7 +46,7 @@
     "id": "UI-NEW-004",
     "name": "交互: 节点内容编辑 (Node Content Editing)",
     "description": "实现节点内容编辑功能：双击节点进入编辑模式，修改内容后保存到数据库。需要实现 updateNodeContent Server Action，并在 UserNode 组件中连接 onEditToggle 和 onContentChange 回调。",
-    "status": "未开发",
+    "status": "completed",
     "priority": "P0",
     "dependencies": ["UI-003", "API-003"]
   },
@@ -54,7 +54,7 @@
     "id": "UI-WORKSPACE-001",
     "name": "Workspace: 分享功能 (Share)",
     "description": "实现项目分享功能：生成分享链接、设置访问权限（只读/编辑）、管理分享链接、查看分享历史。支持通过链接邀请他人协作或只读查看思维导图。",
-    "status": "未开发",
+    "status": "not planned",
     "priority": "P2",
     "dependencies": ["UI-001", "API-001"]
   },
@@ -62,7 +62,7 @@
     "id": "UI-WORKSPACE-002",
     "name": "Workspace: 导出功能 (Export)",
     "description": "实现项目导出功能：支持导出为 Markdown 文件（线性对话格式）、JSON 文件（完整节点树结构）、PNG 图片（当前画布视图）。提供导出选项对话框，包含格式选择和内容范围选择。",
-    "status": "未开发",
+    "status": "not planned",
     "priority": "P1",
     "dependencies": ["UI-002", "API-002"]
   },
@@ -70,7 +70,7 @@
     "id": "UI-WORKSPACE-003",
     "name": "Workspace: 设置功能 (Settings)",
     "description": "实现项目设置对话框：支持重命名项目、修改项目描述、设置默认 AI Provider、设置默认 AI Model、删除项目。提供设置面板入口，包含所有项目级别的配置选项。",
-    "status": "未开发",
+    "status": "not planned",
     "priority": "P1",
     "dependencies": ["UI-001", "API-001"]
   },
@@ -78,7 +78,7 @@
     "id": "UI-WORKSPACE-004",
     "name": "Workspace: 自动布局 (Auto Layout)",
     "description": "实现画布节点自动布局功能：使用树形布局算法自动排列节点位置，支持水平/垂直方向切换，处理节点重叠和间距。提供布局预览和撤销功能。",
-    "status": "未开发",
+    "status": "completed",
     "priority": "P2",
     "dependencies": ["UI-002", "API-003"]
   },
