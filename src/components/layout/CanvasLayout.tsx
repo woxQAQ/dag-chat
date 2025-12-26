@@ -38,13 +38,14 @@ export interface CanvasLayoutProps {
  * Provides the structural foundation for the canvas workspace with:
  * - Full-screen viewport container
  * - Grid background (dot pattern)
- * - Positioned slots for header, toolbar, and inspector panel
+ * - Positioned slots for header (floating), toolbar, and inspector panel
  * - Responsive canvas area that fills remaining space
+ * - Header is rendered as-is (uses fixed positioning in TopHeader)
  *
  * @example
  * ```tsx
  * <CanvasLayout
- *   header={<TopHeader />}
+ *   header={<TopHeader onBack={handleBack} />}
  *   toolbar={<FloatingToolbar />}
  *   inspector={<InspectorPanel />}
  *   inspectorOpen={true}
@@ -75,10 +76,8 @@ export function CanvasLayout({
 				}}
 			/>
 
-			{/* Top Header */}
-			{header && (
-				<div className="absolute top-0 left-0 right-0 z-20 h-14">{header}</div>
-			)}
+			{/* Header (rendered as-is for floating components) */}
+			{header}
 
 			{/* Main Canvas Area */}
 			<div className="absolute inset-0 z-10 overflow-hidden">{children}</div>
@@ -93,7 +92,7 @@ export function CanvasLayout({
 			{/* Right Inspector Panel */}
 			{inspector && (
 				<div
-					className={`absolute top-14 right-0 bottom-0 w-[400px] max-w-full z-25 transition-transform duration-250 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+					className={`absolute top-0 right-0 bottom-0 w-[400px] max-w-full z-25 transition-transform duration-250 ease-[cubic-bezier(0.4,0,0.2,1)] ${
 						inspectorOpen ? "translate-x-0" : "translate-x-full"
 					}`}
 				>

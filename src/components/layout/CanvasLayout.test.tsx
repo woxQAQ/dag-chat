@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom";
 import {
 	CanvasLayout,
@@ -66,56 +66,31 @@ describe("CanvasLayout", () => {
 });
 
 describe("TopHeader", () => {
-	it("should render with default project name", () => {
-		render(<TopHeader />);
-		expect(screen.getByText("Untitled Project")).toBeInTheDocument();
-	});
-
-	it("should render custom project name", () => {
-		render(<TopHeader projectName="My Project" />);
-		expect(screen.getByText("My Project")).toBeInTheDocument();
+	it("should not render when onBack is not provided", () => {
+		const { container } = render(<TopHeader />);
+		expect(container.firstChild).toBe(null);
 	});
 
 	it("should render back button when onBack is provided", () => {
 		const onBack = () => {};
-		render(<TopHeader onBack={onBack} />);
-		expect(screen.getByLabelText("Go back")).toBeInTheDocument();
-	});
-
-	it("should not render back button when onBack is not provided", () => {
-		render(<TopHeader />);
-		expect(screen.queryByLabelText("Go back")).not.toBeInTheDocument();
-	});
-
-	it("should display save status", () => {
-		const { rerender } = render(<TopHeader saveStatus="saving" />);
-		expect(screen.getByText("Saving...")).toBeInTheDocument();
-
-		rerender(<TopHeader saveStatus="saved" />);
-		expect(screen.getByText("Saved")).toBeInTheDocument();
-
-		rerender(<TopHeader saveStatus="unsaved" />);
-		expect(screen.getByText("Unsaved")).toBeInTheDocument();
-	});
-
-	it("should render default action buttons", () => {
-		render(<TopHeader />);
-		expect(screen.getByLabelText("Share project")).toBeInTheDocument();
-		expect(screen.getByLabelText("Export project")).toBeInTheDocument();
-		expect(screen.getByLabelText("Project settings")).toBeInTheDocument();
-	});
-
-	it("should render custom right content", () => {
-		render(<TopHeader rightContent={<div data-testid="custom">Custom</div>} />);
-		expect(screen.getByTestId("custom")).toBeInTheDocument();
-		expect(screen.queryByLabelText("Share project")).not.toBeInTheDocument();
+		const { container } = render(<TopHeader onBack={onBack} />);
+		expect(container.querySelector("button")).toBeInTheDocument();
+		expect(screen.getByLabelText("Go back to dashboard")).toBeInTheDocument();
 	});
 
 	it("should call onBack when back button is clicked", () => {
-		const onBack = () => {};
+		const onBack = vi.fn();
 		render(<TopHeader onBack={onBack} />);
-		const backButton = screen.getByLabelText("Go back");
-		expect(backButton).toBeInTheDocument();
+		const backButton = screen.getByLabelText("Go back to dashboard");
+		backButton.click();
+		expect(onBack).toHaveBeenCalledTimes(1);
+	});
+
+	it("should use fixed positioning for floating effect", () => {
+		const onBack = () => {};
+		const { container } = render(<TopHeader onBack={onBack} />);
+		const wrapper = container.firstElementChild;
+		expect(wrapper).toHaveClass("fixed", "top-4", "left-4", "z-40");
 	});
 });
 
@@ -205,9 +180,10 @@ describe("InspectorPanel", () => {
 
 describe("Layout Integration", () => {
 	it("should render all layout components together", () => {
+		const onBack = () => {};
 		render(
 			<CanvasLayout
-				header={<TopHeader projectName="Test Project" />}
+				header={<TopHeader onBack={onBack} />}
 				toolbar={<FloatingToolbar mode="select" />}
 				inspector={<InspectorPanel />}
 				inspectorOpen={true}
@@ -216,7 +192,7 @@ describe("Layout Integration", () => {
 			</CanvasLayout>,
 		);
 
-		expect(screen.getByText("Test Project")).toBeInTheDocument();
+		expect(screen.getByLabelText("Go back to dashboard")).toBeInTheDocument();
 		expect(screen.getByLabelText("Select mode (V)")).toBeInTheDocument();
 		expect(screen.getByText("Thread")).toBeInTheDocument();
 		expect(screen.getByText("Canvas Content")).toBeInTheDocument();

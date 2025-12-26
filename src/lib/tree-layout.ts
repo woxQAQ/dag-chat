@@ -170,7 +170,8 @@ function buildTreeStructure(nodes: LayoutInputNode[]): LayoutNode[] {
 
 	// Second pass: build parent-child relationships
 	for (const node of nodes) {
-		const layoutNode = nodeMap.get(node.id)!;
+		const layoutNode = nodeMap.get(node.id);
+		if (!layoutNode) continue; // Should never happen since we just added all nodes
 
 		if (node.parentId) {
 			const parent = nodeMap.get(node.parentId);
@@ -281,43 +282,6 @@ function collectResults(nodes: LayoutNode[], results: LayoutResult[]): void {
 }
 
 /**
- * Detect if any nodes overlap in the layout.
- *
- * Uses simple bounding box collision detection.
- *
- * @param layout - Layout results to check
- * @returns True if collisions detected
- */
-function detectCollisions(layout: LayoutResult[]): boolean {
-	// Build map of positions for O(1) lookup
-	const nodePositions = new Map<string, { x: number; y: number }>();
-	for (const node of layout) {
-		nodePositions.set(node.nodeId, {
-			x: node.positionX,
-			y: node.positionY,
-		});
-	}
-
-	// Check each node against all others
-	for (const node of layout) {
-		for (const [otherId, otherPos] of nodePositions) {
-			if (node.nodeId === otherId) continue;
-
-			const dx = Math.abs(node.positionX - otherPos.x);
-			const dy = Math.abs(node.positionY - otherPos.y);
-
-			// Check if nodes overlap (with some margin)
-			// Nodes on same level shouldn't overlap horizontally
-			if (dy < 50 && dx < NODE_WIDTH - SIBLING_HORIZONTAL_GAP) {
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-/**
  * Resolve collisions by shifting conflicting nodes.
  *
  * This is a simple implementation that handles collisions within each
@@ -334,12 +298,12 @@ function resolveCollisions(layout: LayoutResult[]): LayoutResult[] {
 		if (!nodesByY.has(node.positionY)) {
 			nodesByY.set(node.positionY, []);
 		}
-		nodesByY.get(node.positionY)!.push(node);
+		nodesByY.get(node.positionY)?.push(node);
 	}
 
 	// Resolve collisions within each Y level
 	const resolved: LayoutResult[] = [];
-	for (const [y, nodes] of nodesByY) {
+	for (const [_y, nodes] of nodesByY) {
 		// Sort by X position
 		const sorted = [...nodes].sort((a, b) => a.positionX - b.positionX);
 
@@ -347,7 +311,7 @@ function resolveCollisions(layout: LayoutResult[]): LayoutResult[] {
 
 		for (const node of sorted) {
 			const nodeLeft = node.positionX - NODE_WIDTH / 2;
-			const nodeRight = node.positionX + NODE_WIDTH / 2;
+			const _nodeRight = node.positionX + NODE_WIDTH / 2;
 
 			// Find the rightmost occupied range that overlaps
 			let shiftX = 0;

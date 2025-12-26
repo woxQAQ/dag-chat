@@ -111,14 +111,11 @@ function WorkspaceContent() {
 	// Tool and inspector state (existing)
 	const [toolMode, setToolMode] = useState<ToolMode>("select");
 	const [inspectorOpen, setInspectorOpen] = useState(false);
-	const [saveStatus, _setSaveStatus] = useState<"saving" | "saved" | "unsaved">(
-		"saved",
-	);
 	// UI-004: Selected node ID for ThreadView
 	const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
 	// UI-WORKSPACE-005: Workspace navigation
-	const { projectName, handleBack } = useWorkspaceNavigation({
+	const { handleBack } = useWorkspaceNavigation({
 		projectId,
 	});
 
@@ -519,18 +516,6 @@ function WorkspaceContent() {
 		}
 	}, [projectId, loadGraph]);
 
-	const handleShare = () => {
-		console.log("Share clicked");
-	};
-
-	const handleExport = () => {
-		console.log("Export clicked");
-	};
-
-	const handleSettings = () => {
-		console.log("Settings clicked");
-	};
-
 	// Helper function to calculate node position with smart layout
 	const calculateNodePosition = useCallback(
 		(parentNodeId: string): { x: number; userY: number; aiY: number } => {
@@ -726,38 +711,7 @@ function WorkspaceContent() {
 	return (
 		<>
 			<CanvasLayout
-				header={
-					<TopHeader
-						projectName={projectName}
-						onBack={handleBack}
-						saveStatus={saveStatus}
-						rightContent={
-							<>
-								<button
-									type="button"
-									className="px-3 py-1.5 border-0 bg-transparent text-slate-500 cursor-pointer rounded-md hover:bg-slate-200/60 hover:text-slate-800 transition-all duration-120 text-sm font-medium whitespace-nowrap"
-									onClick={handleShare}
-								>
-									Share
-								</button>
-								<button
-									type="button"
-									className="px-3 py-1.5 border-0 bg-transparent text-slate-500 cursor-pointer rounded-md hover:bg-slate-200/60 hover:text-slate-800 transition-all duration-120 text-sm font-medium whitespace-nowrap"
-									onClick={handleExport}
-								>
-									Export
-								</button>
-								<button
-									type="button"
-									className="px-3 py-1.5 border-0 bg-transparent text-slate-500 cursor-pointer rounded-md hover:bg-slate-200/60 hover:text-slate-800 transition-all duration-120 text-sm font-medium whitespace-nowrap"
-									onClick={handleSettings}
-								>
-									Settings
-								</button>
-							</>
-						}
-					/>
-				}
+				header={<TopHeader onBack={handleBack} />}
 				toolbar={
 					<FloatingToolbar
 						mode={toolMode}

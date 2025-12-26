@@ -7,7 +7,20 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { calculateTreeLayout, type LayoutInputNode } from "./tree-layout";
+import {
+	calculateTreeLayout,
+	type LayoutInputNode,
+	type LayoutResult,
+} from "./tree-layout";
+
+// Helper function to find a node by ID with proper error handling
+function findNodeById(result: LayoutResult[], id: string): LayoutResult {
+	const node = result.find((n) => n.nodeId === id);
+	if (!node) {
+		throw new Error(`Node with id "${id}" not found in result`);
+	}
+	return node;
+}
 
 describe("Tree Layout Algorithm", () => {
 	/**
@@ -50,10 +63,10 @@ describe("Tree Layout Algorithm", () => {
 		expect(result.length).toBe(4);
 
 		// Find each node by ID
-		const root = result.find((n) => n.nodeId === "root")!;
-		const child1 = result.find((n) => n.nodeId === "child1")!;
-		const child2 = result.find((n) => n.nodeId === "child2")!;
-		const child3 = result.find((n) => n.nodeId === "child3")!;
+		const root = findNodeById(result, "root");
+		const child1 = findNodeById(result, "child1");
+		const child2 = findNodeById(result, "child2");
+		const child3 = findNodeById(result, "child3");
 
 		// All should be centered at approximately the same X
 		const centerX = 175; // NODE_WIDTH / 2
@@ -82,9 +95,9 @@ describe("Tree Layout Algorithm", () => {
 
 		expect(result.length).toBe(3);
 
-		const root = result.find((n) => n.nodeId === "root")!;
-		const child1 = result.find((n) => n.nodeId === "child1")!;
-		const child2 = result.find((n) => n.nodeId === "child2")!;
+		const root = findNodeById(result, "root");
+		const child1 = findNodeById(result, "child1");
+		const child2 = findNodeById(result, "child2");
 
 		// Children should be spaced apart with gap
 		const expectedChild1X = 175; // Center of first child's subtree
@@ -116,9 +129,9 @@ describe("Tree Layout Algorithm", () => {
 
 		expect(result.length).toBe(4);
 
-		const child1 = result.find((n) => n.nodeId === "child1")!;
-		const child2 = result.find((n) => n.nodeId === "child2")!;
-		const child3 = result.find((n) => n.nodeId === "child3")!;
+		const child1 = findNodeById(result, "child1");
+		const child2 = findNodeById(result, "child2");
+		const child3 = findNodeById(result, "child3");
 
 		// All children at same Y level
 		expect(child1.positionY).toBe(150);
@@ -146,15 +159,11 @@ describe("Tree Layout Algorithm", () => {
 		expect(result.length).toBe(5);
 
 		// Check vertical spacing
-		const root = result.find((n) => n.nodeId === "root")!;
-		const child1 = result.find((n) => n.nodeId === "child1")!;
-		const grandchild1 = result.find((n) => n.nodeId === "grandchild1")!;
-		const greatgrandchild1 = result.find(
-			(n) => n.nodeId === "greatgrandchild1",
-		)!;
-		const greatgreatgrandchild1 = result.find(
-			(n) => n.nodeId === "greatgreatgrandchild1",
-		)!;
+		const root = findNodeById(result, "root");
+		const child1 = findNodeById(result, "child1");
+		const grandchild1 = findNodeById(result, "grandchild1");
+		const greatgrandchild1 = findNodeById(result, "greatgrandchild1");
+		const greatgreatgrandchild1 = findNodeById(result, "greatgreatgrandchild1");
 
 		expect(root.positionY).toBe(0);
 		expect(child1.positionY).toBe(150);
@@ -205,9 +214,9 @@ describe("Tree Layout Algorithm", () => {
 		];
 		const result = calculateTreeLayout(nodes);
 
-		const root = result.find((n) => n.nodeId === "root")!;
-		const child1 = result.find((n) => n.nodeId === "child1")!;
-		const child2 = result.find((n) => n.nodeId === "child2")!;
+		const root = findNodeById(result, "root");
+		const child1 = findNodeById(result, "child1");
+		const child2 = findNodeById(result, "child2");
 
 		// Root should be centered above its children
 		// child1 has subtree width of 2 children (350 + 50 + 350 = 750)
@@ -234,8 +243,8 @@ describe("Tree Layout Algorithm", () => {
 
 		expect(result.length).toBe(4);
 
-		const root1 = result.find((n) => n.nodeId === "root1")!;
-		const root2 = result.find((n) => n.nodeId === "root2")!;
+		const root1 = findNodeById(result, "root1");
+		const root2 = findNodeById(result, "root2");
 
 		// Second tree should be to the right of first tree
 		expect(root2.positionX).toBeGreaterThan(root1.positionX);
@@ -375,10 +384,10 @@ describe("Tree Layout Algorithm", () => {
 		expect(result.length).toBe(9);
 
 		// Verify hierarchical structure is maintained
-		const root = result.find((n) => n.nodeId === "root")!;
-		const a = result.find((n) => n.nodeId === "a")!;
-		const a1 = result.find((n) => n.nodeId === "a1")!;
-		const a1_1 = result.find((n) => n.nodeId === "a1-1")!;
+		const root = findNodeById(result, "root");
+		const a = findNodeById(result, "a");
+		const a1 = findNodeById(result, "a1");
+		const a1_1 = findNodeById(result, "a1-1");
 
 		// Each level should be below the previous
 		expect(root.positionY).toBeLessThan(a.positionY);

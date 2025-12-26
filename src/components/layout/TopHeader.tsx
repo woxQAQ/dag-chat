@@ -1,30 +1,20 @@
-import type { ReactNode } from "react";
+/**
+ * TopHeader - Minimal floating back button for MindFlow workspace.
+ *
+ * Simplified to only contain the "Back" functionality.
+ * Uses absolute positioning with transparent background to maximize canvas area.
+ *
+ * Features:
+ * - Floating back button in top-left corner
+ * - Transparent background with glassmorphism on hover
+ * - Does not occupy vertical space (absolute positioning)
+ */
 
 export interface TopHeaderProps {
-	/**
-	 * Project name or breadcrumb text
-	 */
-	projectName?: string;
-
 	/**
 	 * Back button click handler
 	 */
 	onBack?: () => void;
-
-	/**
-	 * Save status indicator
-	 */
-	saveStatus?: "saving" | "saved" | "unsaved";
-
-	/**
-	 * Left side content (custom)
-	 */
-	leftContent?: ReactNode;
-
-	/**
-	 * Right side content (custom actions)
-	 */
-	rightContent?: ReactNode;
 
 	/**
 	 * Additional CSS class name
@@ -33,106 +23,43 @@ export interface TopHeaderProps {
 }
 
 /**
- * TopHeader - Minimal top navigation bar for MindFlow workspace.
- *
- * Features:
- * - Left: Back button and project name/breadcrumb
- * - Center: Save status indicator (implicit/subtle)
- * - Right: Share, Export, Settings actions
- * - Transparent background with subtle blur
- * - 48-60px height
+ * TopHeader component
  *
  * @example
  * ```tsx
- * <TopHeader
- *   projectName="My Project"
- *   onBack={() => router.push('/dashboard')}
- *   saveStatus="saved"
- * />
+ * <TopHeader onBack={() => router.push('/dashboard')} />
  * ```
  */
-export function TopHeader({
-	projectName = "Untitled Project",
-	onBack,
-	saveStatus = "saved",
-	leftContent,
-	rightContent,
-	className = "",
-}: TopHeaderProps) {
-	const saveStatusColor = {
-		saving: "text-blue-500",
-		saved: "text-green-500",
-		unsaved: "text-amber-500",
-	}[saveStatus];
+export function TopHeader({ onBack, className = "" }: TopHeaderProps) {
+	if (!onBack) {
+		return null;
+	}
 
 	return (
-		<header
-			className={`flex h-14 items-center justify-between px-4 bg-white/80 backdrop-blur-sm border-b border-slate-200/60 ${className}`}
+		<nav
+			className={`fixed top-4 left-4 z-40 ${className}`}
+			aria-label="Back navigation"
 		>
-			{/* Left Section */}
-			<div className="flex items-center gap-3 flex-1 min-w-0">
-				{onBack && (
-					<button
-						type="button"
-						className="flex items-center justify-center w-8 h-8 p-0 border-0 bg-transparent text-slate-500 cursor-pointer rounded-md hover:bg-slate-200/60 hover:text-slate-800 transition-all duration-120 text-lg"
-						onClick={onBack}
-						aria-label="Go back"
-					>
-						←
-					</button>
-				)}
-				{leftContent || (
-					<div className="flex items-center gap-2 text-sm text-slate-500">
-						<span className="whitespace-nowrap overflow-hidden text-ellipsis">
-							Dashboard
-						</span>
-						<span className="text-slate-300">/</span>
-						<span className="whitespace-nowrap overflow-hidden text-ellipsis text-slate-800 font-medium">
-							{projectName}
-						</span>
-					</div>
-				)}
-			</div>
-
-			{/* Center Section - Save Status */}
-			<div className="flex justify-center flex-0">
-				<span
-					className={`text-xs ${saveStatusColor} transition-opacity duration-200`}
+			<button
+				type="button"
+				className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 backdrop-blur-md border border-slate-200/60 text-slate-600 hover:bg-white hover:text-slate-800 hover:shadow-lg transition-all duration-200 shadow-sm"
+				onClick={onBack}
+				aria-label="Go back to dashboard"
+			>
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					aria-hidden="true"
 				>
-					{saveStatus === "saving" && "Saving..."}
-					{saveStatus === "saved" && "Saved"}
-					{saveStatus === "unsaved" && "Unsaved"}
-				</span>
-			</div>
-
-			{/* Right Section - Actions */}
-			<div className="flex items-center gap-2 flex-1 justify-end">
-				{rightContent || (
-					<>
-						<button
-							type="button"
-							className="px-3 py-1.5 border-0 bg-transparent text-slate-500 cursor-pointer rounded-md hover:bg-slate-200/60 hover:text-slate-800 transition-all duration-120 text-sm font-medium whitespace-nowrap"
-							aria-label="Share project"
-						>
-							Share
-						</button>
-						<button
-							type="button"
-							className="px-3 py-1.5 border-0 bg-transparent text-slate-500 cursor-pointer rounded-md hover:bg-slate-200/60 hover:text-slate-800 transition-all duration-120 text-sm font-medium whitespace-nowrap"
-							aria-label="Export project"
-						>
-							Export
-						</button>
-						<button
-							type="button"
-							className="px-3 py-1.5 border-0 bg-transparent text-slate-500 cursor-pointer rounded-md hover:bg-slate-200/60 hover:text-slate-800 transition-all duration-120 text-sm font-medium whitespace-nowrap"
-							aria-label="Project settings"
-						>
-							Settings
-						</button>
-					</>
-				)}
-			</div>
-		</header>
+					<path d="M19 12H5M12 19l-7-7 7-7" />
+				</svg>
+			</button>
+		</nav>
 	);
 }
