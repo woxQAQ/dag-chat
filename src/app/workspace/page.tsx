@@ -136,13 +136,17 @@ function WorkspaceContent() {
 	const [graphLoaded, setGraphLoaded] = useState(false);
 	const [projectExists, setProjectExists] = useState(true);
 
-	// NEW: Prompt dialog state
+	// NEW: Prompt dialog state for root node creation
 	const [showPromptDialog, setShowPromptDialog] = useState(false);
 	const [pendingPosition, setPendingPosition] = useState<{
 		x: number;
 		y: number;
 		content: string;
 	} | null>(null);
+
+	// NEW: Branch dialog state for creating child nodes
+	const [showBranchDialog, setShowBranchDialog] = useState(false);
+	const [branchParentId, setBranchParentId] = useState<string | null>(null);
 
 	// NEW: Fetch graph data function (extracted for use in multiple places)
 	const loadGraph = useCallback(async () => {
@@ -603,21 +607,41 @@ function WorkspaceContent() {
 		[nodes, edges],
 	);
 
-	// UI-NEW-002: Handle create child node callback
+	// UI-NEW-002: Handle create child node callback - show dialog instead of creating directly
 	const handleCreateChild = useCallback(
-		async (parentId: string) => {
+		(parentId: string) => {
 			if (!projectId) {
 				console.error("Cannot create child node: no project ID");
 				return;
 			}
 
-			console.log("[workspace] Creating child node from:", parentId);
+			console.log("[workspace] Opening branch dialog for parent:", parentId);
+			setBranchParentId(parentId);
+			setShowBranchDialog(true);
+		},
+		[projectId],
+	);
+
+	// Handle branch dialog submit - create child node with user's message
+	const handleBranchPromptSubmit = useCallback(
+		async (prompt: string) => {
+			if (!projectId || !branchParentId) {
+				console.error(
+					"Cannot create child node: missing project ID or parent ID",
+				);
+				return;
+			}
+
+			console.log(
+				"[workspace] Creating child node with prompt from:",
+				branchParentId,
+			);
 
 			try {
 				// Calculate position for the new child node
-				const { x: positionX, userY } = calculateNodePosition(parentId);
+				const { x: positionX, userY } = calculateNodePosition(branchParentId);
 
-				// Create USER node as child (user needs to provide content)
+				// Create USER node as child with the provided message
 				const response = await fetch("/api/chat", {
 					method: "POST",
 					headers: {
@@ -625,8 +649,8 @@ function WorkspaceContent() {
 					},
 					body: JSON.stringify({
 						projectId,
-						parentNodeId: parentId,
-						message: "", // Empty message, user will edit
+						parentNodeId: branchParentId,
+						message: prompt,
 						positionX,
 						positionY: userY,
 						skipUserNode: false, // Create USER node for editing
@@ -640,9 +664,13 @@ function WorkspaceContent() {
 
 				// Get the new node IDs from response headers
 				const userNodeId = response.headers.get("X-User-Node-Id");
-				console.log("[workspace] Child USER node created:", { userNodeId });
+				const aiNodeId = response.headers.get("X-Node-Id");
+				console.log("[workspace] Child nodes created:", {
+					userNodeId,
+					aiNodeId,
+				});
 
-				// Add USER node to ReactFlow state (empty, ready for editing)
+				// Add USER node to ReactFlow state
 				if (userNodeId) {
 					const userNode: MindFlowNode = {
 						id: userNodeId,
@@ -651,8 +679,8 @@ function WorkspaceContent() {
 						data: {
 							id: userNodeId,
 							role: "USER",
-							content: "",
-							isEditing: true, // Enter edit mode immediately
+							content: prompt,
+							isEditing: false,
 							isStreaming: false,
 							createdAt: new Date(),
 							metadata: {},
@@ -661,7 +689,7 @@ function WorkspaceContent() {
 					setNodes((prev) => [...prev, userNode]);
 
 					// Add edge from parent to USER node
-					const userEdgeId = `${parentId}-${userNodeId}`;
+					const userEdgeId = `${branchParentId}-${userNodeId}`;
 					setEdges((prev) => {
 						const edgeExists = prev.some((e) => e.id === userEdgeId);
 						if (edgeExists) return prev;
@@ -669,8 +697,8 @@ function WorkspaceContent() {
 							...prev,
 							{
 								id: userEdgeId,
-								source: parentId,
-								sourceHandle: getSourceHandle(parentId),
+								source: branchParentId,
+								sourceHandle: getSourceHandle(branchParentId),
 								target: userNodeId,
 								targetHandle: "user-top",
 								type: "smoothstep",
@@ -679,12 +707,74 @@ function WorkspaceContent() {
 						];
 					});
 				}
+
+				// Add ASSISTANT node to ReactFlow state and start streaming
+				if (aiNodeId) {
+					const { x: aiX, aiY } = calculateNodePosition(branchParentId);
+					const assistantNode: MindFlowNode = {
+						id: aiNodeId,
+						type: "assistant",
+						position: { x: aiX, y: aiY },
+						data: {
+							id: aiNodeId,
+							role: "ASSISTANT",
+							content: "",
+							isEditing: false,
+							isStreaming: true,
+							createdAt: new Date(),
+							metadata: { streaming: true },
+						},
+					};
+					setNodes((prev) => [...prev, assistantNode]);
+
+					// Add edge from USER node to ASSISTANT node
+					if (userNodeId) {
+						const aiEdgeId = `${userNodeId}-${aiNodeId}`;
+						setEdges((prev) => {
+							const edgeExists = prev.some((e) => e.id === aiEdgeId);
+							if (edgeExists) return prev;
+							return [
+								...prev,
+								{
+									id: aiEdgeId,
+									source: userNodeId,
+									sourceHandle: "user-bottom",
+									target: aiNodeId,
+									targetHandle: "ai-top",
+									type: "smoothstep",
+									animated: false,
+								},
+							];
+						});
+
+						// Start SSE streaming for real-time content updates
+						startStream(aiNodeId);
+					}
+				}
+
+				// Close dialog
+				setShowBranchDialog(false);
+				setBranchParentId(null);
 			} catch (error) {
 				console.error("[workspace] Create child node error:", error);
 			}
 		},
-		[projectId, calculateNodePosition, getSourceHandle, setEdges, setNodes],
+		[
+			projectId,
+			branchParentId,
+			calculateNodePosition,
+			getSourceHandle,
+			setEdges,
+			setNodes,
+			startStream,
+		],
 	);
+
+	// Handle branch dialog close
+	const handleBranchDialogClose = useCallback(() => {
+		setShowBranchDialog(false);
+		setBranchParentId(null);
+	}, []);
 
 	// UI-004: Send message handler for ThreadView
 	const handleSendMessage = useCallback(
@@ -894,11 +984,23 @@ function WorkspaceContent() {
 				</NodeEditingProvider>
 			</CanvasLayout>
 
-			{/* Prompt Input Dialog */}
+			{/* Prompt Input Dialog for root node creation */}
 			<PromptInputDialog
 				isOpen={showPromptDialog}
 				onClose={handlePromptClose}
 				onSubmit={handlePromptSubmit}
+			/>
+
+			{/* Branch Dialog for creating child nodes */}
+			<PromptInputDialog
+				isOpen={showBranchDialog}
+				onClose={handleBranchDialogClose}
+				onSubmit={handleBranchPromptSubmit}
+				placeholder="Enter your message to continue the conversation..."
+				maxLength={4000}
+				title="Branch Conversation"
+				description="Create a new branch from this point in the conversation"
+				submitButtonText="Create Branch"
 			/>
 		</>
 	);

@@ -24,6 +24,12 @@ export interface PromptInputDialogProps {
 	placeholder?: string;
 	/** Maximum character count (default: 4000) */
 	maxLength?: number;
+	/** Optional title */
+	title?: string;
+	/** Optional description */
+	description?: string;
+	/** Optional submit button text */
+	submitButtonText?: string;
 }
 
 // ============================================================================
@@ -54,6 +60,9 @@ export function PromptInputDialog({
 	onSubmit,
 	placeholder = "Enter your prompt to start the conversation...",
 	maxLength = 4000,
+	title,
+	description,
+	submitButtonText,
 }: PromptInputDialogProps) {
 	const [prompt, setPrompt] = useState("");
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -125,10 +134,10 @@ export function PromptInputDialog({
 				{/* Header */}
 				<div className="px-6 py-4 border-b border-slate-200">
 					<h2 className="text-xl font-semibold text-slate-800">
-						Start Your Thought Flow
+						{title || "Start Your Thought Flow"}
 					</h2>
 					<p className="text-sm text-slate-500 mt-1">
-						Enter your first prompt to begin the conversation
+						{description || "Enter your first prompt to begin the conversation"}
 					</p>
 				</div>
 
@@ -172,7 +181,7 @@ export function PromptInputDialog({
 						disabled={!canSubmit}
 						className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed rounded-lg transition-colors"
 					>
-						Create Node
+						{submitButtonText || "Create Node"}
 					</button>
 				</div>
 

@@ -185,7 +185,8 @@ describe("Node Components", () => {
 
 		it("should apply selected styles when selected is true", () => {
 			const { container } = render(<AINode {...defaultProps} selected />);
-			const nodeContainer = container.firstChild as HTMLElement;
+			// Find the actual node container (inside the wrapper div)
+			const nodeContainer = container.querySelector('[role="button"]');
 			expect(nodeContainer).toHaveClass("border-blue-500");
 		});
 
