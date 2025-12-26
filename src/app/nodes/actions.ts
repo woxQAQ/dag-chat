@@ -46,6 +46,19 @@ export interface ActionState<T> {
 	error?: string;
 }
 
+export interface NodeData {
+	id: string;
+	projectId: string;
+	parentId: string | null;
+	role: "SYSTEM" | "USER" | "ASSISTANT";
+	content: string;
+	positionX: number;
+	positionY: number;
+	metadata: unknown;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
 // Re-export ContextBuilder types for client components
 export type { ContextMessage, ContextResult } from "@/lib/context-builder";
 // Re-export GraphData types for client components
@@ -115,6 +128,47 @@ export async function getProjectGraphAction(
 		return {
 			success: false,
 			error: error instanceof Error ? error.message : "Failed to load graph",
+		};
+	}
+}
+
+/**
+ * Gets node data by ID(s).
+ *
+ * This Server Action fetches one or more nodes for client components.
+ * Useful for updating the canvas with new nodes without reloading the entire graph.
+ *
+ * @param nodeIds - Single node ID or array of node IDs to fetch
+ * @returns ActionState with node data array or error
+ */
+export async function getNodesAction(
+	nodeIds: string | string[],
+): Promise<ActionState<NodeData[]>> {
+	try {
+		const ids = Array.isArray(nodeIds) ? nodeIds : [nodeIds];
+		const { getNode } = await import("@/lib/node-crud");
+
+		const nodes = await Promise.all(ids.map((id) => getNode(id)));
+
+		return {
+			success: true,
+			data: nodes.map((node) => ({
+				id: node.id,
+				projectId: node.projectId,
+				parentId: node.parentId,
+				role: node.role,
+				content: node.content,
+				positionX: node.positionX,
+				positionY: node.positionY,
+				metadata: node.metadata,
+				createdAt: node.createdAt,
+				updatedAt: node.updatedAt,
+			})),
+		};
+	} catch (error) {
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : "Failed to load nodes",
 		};
 	}
 }

@@ -361,30 +361,134 @@ function WorkspaceContent() {
 
 	// UI-NEW-005: Node forking hook (non-destructive editing)
 	const { forkUserNode } = useNodeForking({
-		onNodeForked: async (_userNodeId, aiNodeId) => {
-			// The fork action returns both the USER node and AI node IDs
-			// Reload the graph to get the actual node data (position, content)
-			await loadGraph();
+		onNodeForked: async (userNodeId, aiNodeId) => {
+			console.log("[workspace] Node forked:", { userNodeId, aiNodeId });
 
-			// Apply auto-layout to organize the tree structure after forking
-			const layoutResult = await applyAutoLayoutAction(projectId);
-			if (layoutResult.success && layoutResult.data) {
-				console.log(
-					`[fork] Auto-layout applied: ${layoutResult.data.updatedCount} nodes`,
-				);
-				// Reload graph again to get the new positions from layout
+			try {
+				// Get the newly created nodes to add them to the graph
+				// Use Server Action to fetch node data instead of importing server module
+				const { getNodesAction } = await import("@/app/nodes/actions");
+
+				const nodeIds = aiNodeId ? [userNodeId, aiNodeId] : [userNodeId];
+				const result = await getNodesAction(nodeIds);
+
+				if (!result.success || !result.data) {
+					throw new Error(result.error || "Failed to fetch nodes");
+				}
+
+				const userNode = result.data[0];
+				const aiNode = aiNodeId ? result.data[1] : null;
+
+				// Fetch and add the new USER node
+				const flowUserNode: MindFlowNode = {
+					id: userNode.id,
+					type: "user",
+					position: { x: userNode.positionX, y: userNode.positionY },
+					data: {
+						id: userNode.id,
+						role: userNode.role,
+						content: userNode.content,
+						isEditing: false,
+						isStreaming: false,
+						createdAt: userNode.createdAt,
+						metadata: (userNode.metadata || {}) as Record<string, unknown>,
+					},
+				};
+
+				// Add USER node if not already in state
+				setNodes((prev) => {
+					if (prev.some((n) => n.id === userNodeId)) return prev;
+					return [...prev, flowUserNode];
+				});
+
+				// Add edge from parent to USER node
+				if (userNode.parentId) {
+					const parentId = userNode.parentId; // Type narrowing
+					const userEdgeId = `${parentId}-${userNodeId}`;
+					setEdges((prev) => {
+						if (prev.some((e) => e.id === userEdgeId)) return prev;
+						return [
+							...prev,
+							{
+								id: userEdgeId,
+								source: parentId,
+								sourceHandle: getSourceHandle(parentId),
+								target: userNodeId,
+								targetHandle: "user-top",
+								type: "smoothstep",
+								animated: false,
+							},
+						];
+					});
+				}
+
+				// Fetch and add the ASSISTANT node if it exists
+				if (aiNode && aiNodeId) {
+					const flowAiNode: MindFlowNode = {
+						id: aiNode.id,
+						type: "assistant",
+						position: { x: aiNode.positionX, y: aiNode.positionY },
+						data: {
+							id: aiNode.id,
+							role: aiNode.role,
+							content: aiNode.content,
+							isEditing: false,
+							isStreaming: true, // Mark as streaming
+							createdAt: aiNode.createdAt,
+							metadata: (aiNode.metadata || {}) as Record<string, unknown>,
+						},
+					};
+
+					// Add ASSISTANT node if not already in state
+					setNodes((prev) => {
+						if (prev.some((n) => n.id === aiNodeId)) return prev;
+						return [...prev, flowAiNode];
+					});
+
+					// Add edge from USER node to ASSISTANT node
+					const aiEdgeId = `${userNodeId}-${aiNodeId}`;
+					setEdges((prev) => {
+						if (prev.some((e) => e.id === aiEdgeId)) return prev;
+						return [
+							...prev,
+							{
+								id: aiEdgeId,
+								source: userNodeId,
+								sourceHandle: "user-bottom",
+								target: aiNodeId,
+								targetHandle: "ai-top",
+								type: "smoothstep",
+								animated: false,
+							},
+						];
+					});
+
+					// Start SSE streaming for the AI node
+					console.log(
+						"[workspace] Starting stream for forked AI node:",
+						aiNodeId,
+					);
+					// Small delay to ensure node is in ReactFlow state before starting stream
+					await new Promise((resolve) => setTimeout(resolve, 100));
+					startStream(aiNodeId);
+				}
+
+				// Apply auto-layout to organize the tree structure after forking
+				console.log("[workspace] Applying auto-layout...");
+				const layoutResult = await applyAutoLayoutAction(projectId);
+				if (layoutResult.success && layoutResult.data) {
+					console.log(
+						`[fork] Auto-layout applied: ${layoutResult.data.updatedCount} nodes`,
+					);
+					// Reload graph to get the new positions from layout
+					// Use a small delay to ensure layout is persisted
+					await new Promise((resolve) => setTimeout(resolve, 200));
+					await loadGraph();
+				}
+			} catch (error) {
+				console.error("[workspace] Error in onNodeForked:", error);
+				// Fallback: reload the entire graph if something goes wrong
 				await loadGraph();
-			}
-
-			// Start SSE streaming for the AI node if it was created
-			if (aiNodeId) {
-				console.log(
-					"[workspace] Starting stream for forked AI node:",
-					aiNodeId,
-				);
-				// Small delay to ensure node is in ReactFlow state before starting stream
-				await new Promise((resolve) => setTimeout(resolve, 100));
-				startStream(aiNodeId);
 			}
 		},
 		onError: (error) => {
