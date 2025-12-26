@@ -25,6 +25,7 @@ export interface UseRootNodeCreationOptions {
 		nodeId: string,
 		positionX: number,
 		positionY: number,
+		content: string,
 	) => void;
 	/** Callback when the assistant node is created (from AI stream response) */
 	onAssistantNodeCreated?: (
@@ -126,103 +127,96 @@ export function useRootNodeCreation(
 				const userNodeX = result.data.positionX;
 				const userNodeY = result.data.positionY;
 
-				// Notify user node creation
-				onUserNodeCreated?.(userNodeId, userNodeX, userNodeY);
+				// Notify user node creation with content
+				onUserNodeCreated?.(userNodeId, userNodeX, userNodeY, content);
 
-				// Step 2: Call AI API to generate assistant response
+				// Close modal immediately after USER node is created
+				// Don't wait for AI response
+				setIsCreating(false);
+
+				// Step 2: Call AI API in background to generate assistant response
 				// Calculate position for assistant node (below user node)
 				const assistantY = userNodeY + 150;
 
-				try {
-					console.log("[use-root-creation] Calling AI API...", {
+				// Don't await - let it run in background
+				fetch("/api/chat", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
 						projectId,
 						parentNodeId: userNodeId,
 						message: content,
-					});
-
-					const response = await fetch("/api/chat", {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({
-							projectId,
-							parentNodeId: userNodeId,
-							message: content,
-							positionX: userNodeX,
-							positionY: assistantY,
-						}),
-					});
-
-					// Log response status
-					console.log(
-						"[use-root-creation] AI API response status:",
-						response.status,
-					);
-
-					if (!response.ok) {
-						const errorData = (await response.json()) as { error?: string };
-						throw new Error(errorData.error || "Failed to call AI API");
-					}
-
-					// Get the assistant node ID from the response header
-					const assistantNodeId = response.headers.get("X-Node-Id");
-					console.log(
-						"[use-root-creation] Assistant node ID from header:",
-						assistantNodeId,
-					);
-
-					// The assistant node should have been created by the API
-					// Notify the client to add it to the graph
-					if (assistantNodeId) {
-						onAssistantNodeCreated?.(
-							assistantNodeId,
-							userNodeX,
-							assistantY,
-							userNodeId,
-						);
-					} else {
-						console.warn(
-							"[use-root-creation] No assistant node ID returned from AI API",
-						);
+						positionX: userNodeX,
+						positionY: assistantY,
+						skipUserNode: true, // USER node already created by createRootNodeAction
+					}),
+				})
+					.then(async (response) => {
 						console.log(
-							"[use-root-creation] Response headers:",
-							Array.from(response.headers.entries()),
+							"[use-root-creation] AI API response status:",
+							response.status,
 						);
-					}
 
-					// Consume the stream response to ensure the request completes
-					// The actual streaming and node update happens server-side
-					const reader = response.body?.getReader();
-					if (reader) {
-						console.log("[use-root-creation] Consuming stream...");
-						let chunkCount = 0;
-						while (true) {
-							const { done, value } = await reader.read();
-							if (done) {
-								console.log(
-									"[use-root-creation] Stream complete. Total chunks:",
-									chunkCount,
-								);
-								break;
-							}
-							chunkCount++;
+						if (!response.ok) {
+							const errorData = (await response.json()) as { error?: string };
+							throw new Error(errorData.error || "Failed to call AI API");
 						}
-					}
-				} catch (aiError) {
-					// Log the AI API error but don't fail the user node creation
-					console.error("[use-root-creation] AI API error:", aiError);
-					// Optionally notify the user about the AI error
-					onError?.(
-						`User node created, but AI response failed: ${aiError instanceof Error ? aiError.message : "Unknown error"}`,
-					);
-				}
+
+						// Get the assistant node ID from the response header
+						const assistantNodeId = response.headers.get("X-Node-Id");
+						console.log(
+							"[use-root-creation] Assistant node ID from header:",
+							assistantNodeId,
+						);
+
+						// Notify the client to add the assistant node to the graph
+						if (assistantNodeId) {
+							onAssistantNodeCreated?.(
+								assistantNodeId,
+								userNodeX,
+								assistantY,
+								userNodeId,
+							);
+						} else {
+							console.warn(
+								"[use-root-creation] No assistant node ID returned from AI API",
+							);
+						}
+
+						// Consume the stream response in background to ensure the request completes
+						// The actual streaming and node update happens server-side
+						const reader = response.body?.getReader();
+						if (reader) {
+							console.log("[use-root-creation] Consuming stream in background...");
+							let chunkCount = 0;
+							while (true) {
+								const { done, value } = await reader.read();
+								if (done) {
+									console.log(
+										"[use-root-creation] Stream complete. Total chunks:",
+										chunkCount,
+									);
+									break;
+								}
+								chunkCount++;
+							}
+						}
+					})
+					.catch((aiError) => {
+						// Log the AI API error but don't affect the user node creation
+						console.error("[use-root-creation] AI API error:", aiError);
+						// Optionally notify the user about the AI error
+						onError?.(
+							`User node created, but AI response failed: ${aiError instanceof Error ? aiError.message : "Unknown error"}`,
+						);
+					});
 			} catch (err) {
 				const errorMsg =
 					err instanceof Error ? err.message : "An unexpected error occurred";
 				setError(errorMsg);
 				onError?.(errorMsg);
-			} finally {
 				setIsCreating(false);
 			}
 		},

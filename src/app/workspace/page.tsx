@@ -33,6 +33,7 @@ import { useNodeEditing } from "@/hooks/use-node-editing";
 import { useNodeForking } from "@/hooks/use-node-forking";
 import { usePathHighlightWithInspector } from "@/hooks/use-path-highlight";
 import { useRootNodeCreation } from "@/hooks/use-root-creation";
+import { useNodeStream } from "@/hooks/use-node-stream";
 import { useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
 
 // ============================================================================
@@ -204,8 +205,8 @@ function WorkspaceContent() {
 	// NEW: Root node creation hook
 	const { isCreating, createRootNode } = useRootNodeCreation({
 		projectId,
-		onUserNodeCreated: (nodeId, x, y) => {
-			// Add user node to ReactFlow state
+		onUserNodeCreated: (nodeId, x, y, content) => {
+			// Add user node to ReactFlow state with content from callback
 			const userNode: MindFlowNode = {
 				id: nodeId,
 				type: "user",
@@ -213,7 +214,7 @@ function WorkspaceContent() {
 				data: {
 					id: nodeId,
 					role: "USER",
-					content: pendingPosition?.content || "",
+					content: content, // Use content from callback parameter
 					isEditing: false,
 					isStreaming: false,
 					createdAt: new Date(),
@@ -230,7 +231,7 @@ function WorkspaceContent() {
 				parentNodeId,
 			});
 
-			// Add assistant node to ReactFlow state initially empty (will be updated after streaming)
+			// Add assistant node to ReactFlow state initially empty
 			const assistantNode: MindFlowNode = {
 				id: nodeId,
 				type: "assistant",
@@ -251,85 +252,27 @@ function WorkspaceContent() {
 			// Add edge from user node to assistant node
 			const edgeId = `${parentNodeId}-${nodeId}`;
 			setEdges((prev) => {
-				// Check if edge already exists to avoid duplicates
 				const edgeExists = prev.some((e) => e.id === edgeId);
-				if (edgeExists) {
-					console.log("[page.tsx] Edge already exists, skipping:", edgeId);
-					return prev;
-				}
-				const newEdges = [
+				if (edgeExists) return prev;
+				return [
 					...prev,
 					{
 						id: edgeId,
 						source: parentNodeId,
-						sourceHandle: "user-bottom", // Explicitly specify source handle ID
+						sourceHandle: getSourceHandle(parentNodeId),
 						target: nodeId,
-						targetHandle: "ai-top", // Explicitly specify target handle ID
+						targetHandle: "ai-top",
 						type: "smoothstep",
 						animated: false,
 					},
 				];
-				console.log("[page.tsx] Edge added to state:", {
-					edgeId,
-					source: parentNodeId,
-					sourceHandle: "user-bottom",
-					target: nodeId,
-					targetHandle: "ai-top",
-					totalEdges: newEdges.length,
-				});
-				return newEdges;
 			});
 
 			// Clear pending position after both nodes are created
 			setPendingPosition(null);
 
-			// Poll to update the assistant node content after streaming completes
-			// Just update the content, don't reload the entire graph
-			const pollInterval = setInterval(async () => {
-				try {
-					const result = await getProjectGraphAction(projectId);
-					if (result.success && result.data) {
-						const updatedNode = result.data.nodes.find((n) => n.id === nodeId);
-						if (
-							updatedNode &&
-							updatedNode.content &&
-							updatedNode.content !== ""
-						) {
-							console.log("[page.tsx] Assistant node content updated:", {
-								nodeId,
-								contentLength: updatedNode.content.length,
-							});
-							// Update the node in ReactFlow state
-							setNodes((nds) =>
-								nds.map((node) =>
-									node.id === nodeId
-										? {
-												...node,
-												data: {
-													...node.data,
-													content: updatedNode.content,
-													isStreaming: false,
-													metadata: updatedNode.metadata as
-														| Record<string, unknown>
-														| undefined,
-												},
-											}
-										: node,
-								),
-							);
-							// Don't call loadGraph() - keep the locally created edge
-							clearInterval(pollInterval);
-						}
-					}
-				} catch (error) {
-					console.error("[page.tsx] Error polling for node update:", error);
-				}
-			}, 1000); // Poll every second
-
-			// Stop polling after 10 seconds (timeout)
-			setTimeout(() => {
-				clearInterval(pollInterval);
-			}, 10000);
+			// Start SSE streaming for real-time content updates
+			startStream(nodeId);
 		},
 		onError: (error) => {
 			// TODO: Show toast notification
@@ -357,6 +300,49 @@ function WorkspaceContent() {
 		},
 	});
 
+	// SSE streaming hook for real-time node content updates
+	const { startStream } = useNodeStream({
+		onContentUpdate: (nodeId, content) => {
+			console.log("[workspace] SSE content update:", {
+				nodeId,
+				contentLength: content.length,
+			});
+			setNodes((nds) =>
+				nds.map((node) =>
+					node.id === nodeId
+						? {
+								...node,
+								data: {
+									...node.data,
+									content,
+									isStreaming: true,
+								},
+							}
+						: node,
+				),
+			);
+		},
+		onComplete: (nodeId) => {
+			console.log("[workspace] SSE streaming complete:", nodeId);
+			setNodes((nds) =>
+				nds.map((node) =>
+					node.id === nodeId
+						? {
+								...node,
+								data: {
+									...node.data,
+									isStreaming: false,
+								},
+							}
+						: node,
+				),
+			);
+		},
+		onError: (nodeId, error) => {
+			console.error("[workspace] SSE streaming error:", { nodeId, error });
+		},
+	});
+
 	// UI-NEW-005: Node forking hook (non-destructive editing)
 	const { forkUserNode } = useNodeForking({
 		onNodeForked: (userNodeId, aiNodeId) => {
@@ -369,6 +355,13 @@ function WorkspaceContent() {
 			console.error("Node fork error:", error);
 		},
 	});
+
+	// Helper function to get the correct source handle based on node type
+	const getSourceHandle = (nodeId: string): string => {
+		const node = nodes.find((n) => n.id === nodeId);
+		if (!node) return "user-bottom"; // Fallback
+		return node.type === "assistant" ? "ai-bottom" : "user-bottom";
+	};
 
 	// UI-005: Path highlighting hook
 	const {
@@ -518,6 +511,49 @@ function WorkspaceContent() {
 		console.log("Settings clicked");
 	};
 
+	// Helper function to calculate node position with smart layout
+	const calculateNodePosition = useCallback(
+		(parentNodeId: string): { x: number; userY: number; aiY: number } => {
+			const parentNode = nodes.find((n) => n.id === parentNodeId);
+			if (!parentNode) {
+				return { x: 0, userY: 150, aiY: 300 };
+			}
+
+			const parentX = parentNode.position.x;
+			const parentY = parentNode.position.y;
+
+			// Count existing children (branches) of the parent node
+			const existingChildren = edges.filter((e) => e.source === parentNodeId);
+			const branchCount = existingChildren.length;
+
+			// Calculate horizontal offset based on branch count
+			// Branch 0: center (no offset)
+			// Branch 1: shift left
+			// Branch 2: shift right
+			// Branch 3+: continue alternating
+			const horizontalSpacing = 250; // Distance between branches
+			let xOffset = 0;
+
+			if (branchCount === 0) {
+				xOffset = 0; // First branch, center
+			} else if (branchCount === 1) {
+				xOffset = -horizontalSpacing; // Second branch, left
+			} else if (branchCount === 2) {
+				xOffset = horizontalSpacing; // Third branch, right
+			} else {
+				// For more branches, alternate left/right
+				xOffset = (branchCount % 2 === 0 ? 1 : -1) * Math.ceil(branchCount / 2) * horizontalSpacing;
+			}
+
+			// Calculate vertical positions
+			const userY = parentY + 180;
+			const aiY = userY + 180;
+
+			return { x: parentX + xOffset, userY, aiY };
+		},
+		[nodes, edges],
+	);
+
 	// UI-004: Send message handler for ThreadView
 	const handleSendMessage = useCallback(
 		async (message: string, parentNodeId: string) => {
@@ -533,11 +569,8 @@ function WorkspaceContent() {
 			});
 
 			try {
-				// Calculate position for the new AI node
-				// Place it below the selected node with some horizontal offset
-				const parentNode = nodes.find((n) => n.id === parentNodeId);
-				const positionX = parentNode?.position.x || 0;
-				const positionY = (parentNode?.position.y || 0) + 200;
+				// Calculate position for the new nodes with smart layout
+				const { x: positionX, userY, aiY } = calculateNodePosition(parentNodeId);
 
 				const response = await fetch("/api/chat", {
 					method: "POST",
@@ -549,7 +582,7 @@ function WorkspaceContent() {
 						parentNodeId,
 						message,
 						positionX,
-						positionY,
+						positionY: aiY,
 					}),
 				});
 
@@ -558,18 +591,102 @@ function WorkspaceContent() {
 					throw new Error(errorData.error || "Failed to send message");
 				}
 
-				// Get the new node ID from response header
-				const newNodeId = response.headers.get("X-Node-Id");
-				console.log("[workspace] AI node created:", newNodeId);
+				// Get the new node IDs from response headers
+				const aiNodeId = response.headers.get("X-Node-Id");
+				const userNodeId = response.headers.get("X-User-Node-Id");
+				console.log("[workspace] Nodes created:", { userNodeId, aiNodeId });
 
-				// Reload the graph to get the updated data
-				await loadGraph();
+				// Add USER node to ReactFlow state (only if X-User-Node-Id header is present)
+				// If header is missing, it means the API skipped USER node creation (skipUserNode=true)
+				if (userNodeId) {
+					const userNode: MindFlowNode = {
+						id: userNodeId,
+						type: "user",
+						position: { x: positionX, y: userY },
+						data: {
+							id: userNodeId,
+							role: "USER",
+							content: message,
+							isEditing: false,
+							isStreaming: false,
+							createdAt: new Date(),
+							metadata: {},
+						},
+					};
+					setNodes((prev) => [...prev, userNode]);
+
+					// Add edge from parent to USER node
+					const userEdgeId = `${parentNodeId}-${userNodeId}`;
+					setEdges((prev) => {
+						const edgeExists = prev.some((e) => e.id === userEdgeId);
+						if (edgeExists) return prev;
+						return [
+							...prev,
+							{
+								id: userEdgeId,
+								source: parentNodeId,
+								sourceHandle: getSourceHandle(parentNodeId),
+								target: userNodeId,
+								targetHandle: "user-top",
+								type: "smoothstep",
+								animated: false,
+							},
+						];
+					});
+				}
+
+				// Add ASSISTANT node to ReactFlow state (placeholder, will be updated by polling)
+				if (aiNodeId) {
+					const assistantNode: MindFlowNode = {
+						id: aiNodeId,
+						type: "assistant",
+						position: { x: positionX, y: aiY },
+						data: {
+							id: aiNodeId,
+							role: "ASSISTANT",
+							content: "",
+							isEditing: false,
+							isStreaming: true,
+							createdAt: new Date(),
+							metadata: { streaming: true },
+						},
+					};
+					setNodes((prev) => [...prev, assistantNode]);
+
+					// Add edge from USER node to ASSISTANT node
+					if (userNodeId) {
+						const aiEdgeId = `${userNodeId}-${aiNodeId}`;
+						setEdges((prev) => {
+							const edgeExists = prev.some((e) => e.id === aiEdgeId);
+							if (edgeExists) return prev;
+							return [
+								...prev,
+								{
+									id: aiEdgeId,
+									source: userNodeId,
+									sourceHandle: "user-bottom",
+									target: aiNodeId,
+									targetHandle: "ai-top",
+									type: "smoothstep",
+									animated: false,
+								},
+							];
+						});
+
+						// Start SSE streaming for real-time content updates
+						startStream(aiNodeId);
+					}
+
+					// Update selectedNodeId to the new ASSISTANT node
+					// This triggers ThreadView to refresh with the new conversation context
+					setSelectedNodeId(aiNodeId);
+				}
 			} catch (error) {
 				console.error("[workspace] Send message error:", error);
 				throw error;
 			}
 		},
-		[projectId, nodes, loadGraph],
+		[projectId, calculateNodePosition, startStream],
 	);
 
 	return (

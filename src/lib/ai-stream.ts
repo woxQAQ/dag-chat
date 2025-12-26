@@ -276,16 +276,18 @@ export async function streamChatWithNode(
 		"[streamChatWithNode] AI stream started, will update node on completion",
 	);
 
-	// Accumulate full text and update node when complete
+	// Note: Node content will be updated by the API route during streaming
+	// This function now primarily creates the node and returns the streaming result
 	result.text
 		.then(async (fullText) => {
 			console.log(
-				"[streamChatWithNode] Stream complete, updating node content:",
+				"[streamChatWithNode] Stream complete, ensuring final node update:",
 				{
 					nodeId: node.id,
 					contentLength: fullText.length,
 				},
 			);
+			// Final fallback update in case API route didn't complete
 			const { updateNodeContent } = await import("./node-crud");
 			await updateNodeContent(node.id, {
 				content: fullText,
