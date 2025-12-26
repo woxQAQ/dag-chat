@@ -1,6 +1,10 @@
 import path from "node:path";
 import react from "@vitejs/plugin-react";
+import { config } from "dotenv";
 import { defineConfig } from "vitest/config";
+
+// Load test environment variables
+config({ path: ".env.test" });
 
 export default defineConfig({
 	plugins: [react()],

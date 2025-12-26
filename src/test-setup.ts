@@ -7,8 +7,9 @@ import "@testing-library/jest-dom";
 
 // Setup Prisma for testing
 beforeAll(async () => {
-	// Prisma client is already initialized in lib/prisma.ts
-	// No additional setup needed for now
+	// Clear test database before running tests
+	await prisma.node.deleteMany({});
+	await prisma.project.deleteMany({});
 });
 
 afterAll(async () => {

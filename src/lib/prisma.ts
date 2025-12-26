@@ -4,7 +4,12 @@ import { config } from "dotenv";
 import { Pool } from "pg";
 
 // Load environment variables for database connection
-config({ path: ".env.local" });
+// Use .env.test for testing, .env.local for development
+if (process.env.NODE_ENV === "test" || process.env.VITEST === "vitest") {
+	config({ path: ".env.test" });
+} else {
+	config({ path: ".env.local" });
+}
 
 const globalForPrisma = globalThis as unknown as {
 	prisma: PrismaClient | undefined;

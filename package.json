@@ -9,6 +9,7 @@
 		"lint": "biome lint .",
 		"format": "biome format . --write",
 		"check": "biome check . --write",
+		"test:setup": "bash scripts/setup-test-db.sh",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:ui": "vitest --ui",
