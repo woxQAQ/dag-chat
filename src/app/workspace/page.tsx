@@ -24,6 +24,7 @@ import {
 	type ToolMode,
 	TopHeader,
 } from "@/components/layout";
+import { ThreadView } from "@/components/thread";
 import { createEditableNode, type MindFlowNode } from "@/components/nodes";
 import {
 	NodeEditingProvider,
@@ -108,6 +109,8 @@ function WorkspaceContent() {
 	const [saveStatus, _setSaveStatus] = useState<"saving" | "saved" | "unsaved">(
 		"saved",
 	);
+	// UI-004: Selected node ID for ThreadView
+	const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
 	// UI-WORKSPACE-005: Workspace navigation
 	const { projectName, handleBack } = useWorkspaceNavigation({
@@ -380,12 +383,16 @@ function WorkspaceContent() {
 		edges,
 		highlightColor: "#2563eb",
 		dimmedColor: "#cbd5e1",
-		onNodeSelected: (_nodeId) => {
+		onNodeSelected: (nodeId) => {
+			// Update selected node ID for ThreadView
+			setSelectedNodeId(nodeId);
 			// Open inspector panel when node is selected
 			setInspectorOpen(true);
 			setInspectorTab("thread");
 		},
 		onSelectionCleared: () => {
+			// Clear selected node ID
+			setSelectedNodeId(null);
 			// Optional: close inspector when selection is cleared
 			// setInspectorOpen(false);
 		},
@@ -514,6 +521,60 @@ function WorkspaceContent() {
 		console.log("Settings clicked");
 	};
 
+	// UI-004: Send message handler for ThreadView
+	const handleSendMessage = useCallback(
+		async (message: string, parentNodeId: string) => {
+			if (!projectId) {
+				console.error("Cannot send message: no project ID");
+				return;
+			}
+
+			console.log("[workspace] Sending message:", {
+				message: `${message.substring(0, 50)}...`,
+				parentNodeId,
+				projectId,
+			});
+
+			try {
+				// Calculate position for the new AI node
+				// Place it below the selected node with some horizontal offset
+				const parentNode = nodes.find((n) => n.id === parentNodeId);
+				const positionX = parentNode?.position.x || 0;
+				const positionY = (parentNode?.position.y || 0) + 200;
+
+				const response = await fetch("/api/chat", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						projectId,
+						parentNodeId,
+						message,
+						positionX,
+						positionY,
+					}),
+				});
+
+				if (!response.ok) {
+					const errorData = (await response.json()) as { error?: string };
+					throw new Error(errorData.error || "Failed to send message");
+				}
+
+				// Get the new node ID from response header
+				const newNodeId = response.headers.get("X-Node-Id");
+				console.log("[workspace] AI node created:", newNodeId);
+
+				// Reload the graph to get the updated data
+				await loadGraph();
+			} catch (error) {
+				console.error("[workspace] Send message error:", error);
+				throw error;
+			}
+		},
+		[projectId, nodes, loadGraph],
+	);
+
 	return (
 		<>
 			<CanvasLayout
@@ -562,11 +623,11 @@ function WorkspaceContent() {
 						onTabChange={setInspectorTab}
 						onClose={() => setInspectorOpen(false)}
 						threadContent={
-							<div className="p-4">
-								<p className="text-sm text-slate-600">
-									Thread view will be implemented in UI-004.
-								</p>
-							</div>
+							<ThreadView
+								nodeId={selectedNodeId}
+								projectId={projectId}
+								onSendMessage={handleSendMessage}
+							/>
 						}
 						propertiesContent={
 							<div className="p-4">

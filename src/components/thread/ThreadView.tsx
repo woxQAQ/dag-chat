@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { buildConversationContext } from "@/lib/context-builder";
+import { getConversationContextAction } from "@/app/nodes/actions";
+import type { ContextResult } from "@/app/nodes/actions";
 import { ThreadInput } from "./ThreadInput";
 import { ThreadMessage as ThreadMessageComponent } from "./ThreadMessage";
 import type { ThreadMessage, ThreadViewProps } from "./types";
@@ -13,7 +14,7 @@ import type { ThreadMessage, ThreadViewProps } from "./types";
  * Users can continue the conversation from the bottom of the thread.
  *
  * Features:
- * - Fetches conversation context using buildConversationContext()
+ * - Fetches conversation context using getConversationContextAction() Server Action
  * - Displays messages in chronological order (root → selected node)
  * - Role-based styling (USER right-aligned, ASSISTANT left-aligned)
  * - Markdown rendering for AI responses
@@ -71,9 +72,17 @@ export function ThreadView({
 			setError(null);
 
 			try {
-				const context = await buildConversationContext(nodeId);
+				const result = await getConversationContextAction(nodeId);
 
 				if (cancelled) return;
+
+				if (!result.success || !result.data) {
+					setError(result.error || "Failed to load conversation");
+					setMessages([]);
+					return;
+				}
+
+				const context: ContextResult = result.data;
 
 				// Convert ContextMessage to ThreadMessage
 				const threadMessages: ThreadMessage[] = context.messages.map((msg) => ({

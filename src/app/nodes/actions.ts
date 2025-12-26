@@ -49,9 +49,52 @@ export interface ActionState<T> {
 // Re-export GraphData types for client components
 export type { GraphData, GraphEdge, GraphNode } from "@/lib/graph-retrieval";
 
+// Re-export ContextBuilder types for client components
+export type { ContextMessage, ContextResult } from "@/lib/context-builder";
+
 // ============================================================================
 // Server Actions
 // ============================================================================
+
+import type { ContextResult } from "@/lib/context-builder";
+
+/**
+ * UI-004: Builds conversation context from root to target node.
+ *
+ * This Server Action wraps SVC-001's buildConversationContext for client components.
+ * Used by ThreadView to display linear conversation flow.
+ *
+ * @param nodeId - The target node ID to build context to
+ * @returns ActionState with context messages, path length, and token count
+ *
+ * @example
+ * ```tsx
+ * const result = await getConversationContextAction("node-uuid");
+ * if (result.success) {
+ *   const { messages, pathLength, totalTokens } = result.data;
+ * }
+ * ```
+ */
+export async function getConversationContextAction(
+	nodeId: string,
+): Promise<ActionState<ContextResult>> {
+	try {
+		const { buildConversationContext } = await import(
+			"@/lib/context-builder"
+		);
+		const context = await buildConversationContext(nodeId);
+		return {
+			success: true,
+			data: context,
+		};
+	} catch (error) {
+		return {
+			success: false,
+			error:
+				error instanceof Error ? error.message : "Failed to load conversation",
+		};
+	}
+}
 
 /**
  * Gets the project graph data for rendering on the canvas.
