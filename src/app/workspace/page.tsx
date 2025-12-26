@@ -595,10 +595,7 @@ function WorkspaceContent() {
 
 			try {
 				// Calculate position for the new child node
-				const {
-					x: positionX,
-					userY,
-				} = calculateNodePosition(parentId);
+				const { x: positionX, userY } = calculateNodePosition(parentId);
 
 				// Create USER node as child (user needs to provide content)
 				const response = await fetch("/api/chat", {

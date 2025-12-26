@@ -171,7 +171,6 @@ export const EditableUserNode = memo<
 			onEditSave={handleEditSave}
 			onEditCancel={handleEditCancel}
 			onContentChange={handleContentChange}
-			onCreateChild={() => onCreateChild(node.data.id)}
 			{...props}
 		/>
 	);
