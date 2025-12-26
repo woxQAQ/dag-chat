@@ -28,10 +28,6 @@ export default defineConfig({
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
 			// Mock CSS imports
-			"highlight.js/styles/github-dark.css": path.resolve(
-				__dirname,
-				"./src/__mocks__/empty.ts",
-			),
 			"@xyflow/react/dist/style.css": path.resolve(
 				__dirname,
 				"./src/__mocks__/empty.ts",

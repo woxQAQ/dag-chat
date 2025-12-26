@@ -1,9 +1,7 @@
 "use client";
 
 import { Handle, Position } from "@xyflow/react";
-import ReactMarkdown from "react-markdown";
-import rehypeHighlight from "rehype-highlight";
-import remarkGfm from "remark-gfm";
+import { MarkdownRenderer } from "../markdown/MarkdownRenderer";
 import type { AINodeProps } from "./types";
 
 /**
@@ -172,114 +170,7 @@ export function AINode({
 
 					{/* Node Content - Markdown */}
 					<div className="p-4 prose prose-sm prose-gray max-w-none">
-						<ReactMarkdown
-							rehypePlugins={[rehypeHighlight]}
-							remarkPlugins={[remarkGfm]}
-							components={{
-								// Custom styling for code blocks
-								pre: ({ className, children, ...props }) => (
-									<pre
-										className={className}
-										style={{
-											background: "#f1f5f9",
-											padding: "1rem",
-											borderRadius: "0.5rem",
-											overflowX: "auto",
-										}}
-										{...props}
-									>
-										{children}
-									</pre>
-								),
-								// Custom styling for inline code
-								code: ({ className, children, ...props }) => {
-									const isInline = !className;
-									if (isInline) {
-										return (
-											<code
-												className="bg-slate-100 text-blue-600 px-1.5 py-0.5 rounded text-sm font-mono"
-												{...props}
-											>
-												{children}
-											</code>
-										);
-									}
-									return (
-										<code className={className} {...props}>
-											{children}
-										</code>
-									);
-								},
-								// Custom styling for links
-								a: ({ children, href, ...props }) => (
-									<a
-										href={href}
-										className="text-blue-600 hover:text-blue-800 underline"
-										target="_blank"
-										rel="noopener noreferrer"
-										{...props}
-									>
-										{children}
-									</a>
-								),
-								// Custom styling for paragraphs to ensure text color
-								p: ({ children, ...props }) => (
-									<p className="text-slate-800" {...props}>
-										{children}
-									</p>
-								),
-								// Custom styling for lists
-								ul: ({ children, ...props }) => (
-									<ul className="text-slate-800" {...props}>
-										{children}
-									</ul>
-								),
-								ol: ({ children, ...props }) => (
-									<ol className="text-slate-800" {...props}>
-										{children}
-									</ol>
-								),
-								// Custom styling for list items
-								li: ({ children, ...props }) => (
-									<li className="text-slate-800" {...props}>
-										{children}
-									</li>
-								),
-								// Custom styling for headings
-								h1: ({ children, ...props }) => (
-									<h1 className="text-slate-900" {...props}>
-										{children}
-									</h1>
-								),
-								h2: ({ children, ...props }) => (
-									<h2 className="text-slate-900" {...props}>
-										{children}
-									</h2>
-								),
-								h3: ({ children, ...props }) => (
-									<h3 className="text-slate-900" {...props}>
-										{children}
-									</h3>
-								),
-								h4: ({ children, ...props }) => (
-									<h4 className="text-slate-900" {...props}>
-										{children}
-									</h4>
-								),
-								h5: ({ children, ...props }) => (
-									<h5 className="text-slate-900" {...props}>
-										{children}
-									</h5>
-								),
-								h6: ({ children, ...props }) => (
-									<h6 className="text-slate-900" {...props}>
-										{children}
-									</h6>
-								),
-							}}
-						>
-							{content || "*Empty response*"}
-						</ReactMarkdown>
+						<MarkdownRenderer content={content || "*Empty response*"} />
 					</div>
 
 					{/* Output Handle (Bottom) - Hidden, no manual connections */}

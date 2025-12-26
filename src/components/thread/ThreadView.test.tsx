@@ -20,10 +20,7 @@ vi.mock("react-markdown", () => ({
 	),
 }));
 
-// Mock rehype-highlight and remark-gfm
-vi.mock("rehype-highlight", () => ({
-	default: [],
-}));
+// Mock remark-gfm
 vi.mock("remark-gfm", () => ({
 	default: [],
 }));

@@ -1,8 +1,6 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
-import rehypeHighlight from "rehype-highlight";
-import remarkGfm from "remark-gfm";
+import { MarkdownRenderer } from "../markdown/MarkdownRenderer";
 import type { ThreadMessageProps } from "./types";
 
 /**
@@ -159,94 +157,7 @@ export function ThreadMessage({
 				{/* Content with markdown */}
 				<div className="bg-white border border-slate-200 rounded-2xl rounded-tl-md px-4 py-3 shadow-sm">
 					<div className="prose prose-sm prose-slate max-w-none">
-						<ReactMarkdown
-							rehypePlugins={[rehypeHighlight]}
-							remarkPlugins={[remarkGfm]}
-							components={{
-								// Custom styling for code blocks
-								pre: ({ className, children, ...props }) => (
-									<pre
-										className={className}
-										style={{
-											background: "#f1f5f9",
-											padding: "0.75rem",
-											borderRadius: "0.5rem",
-											overflowX: "auto",
-											fontSize: "0.813rem",
-										}}
-										{...props}
-									>
-										{children}
-									</pre>
-								),
-								// Custom styling for inline code
-								code: ({ className, children, ...props }) => {
-									const isInline = !className;
-									if (isInline) {
-										return (
-											<code
-												className="bg-slate-100 text-blue-600 px-1 py-0.5 rounded text-sm font-mono"
-												{...props}
-											>
-												{children}
-											</code>
-										);
-									}
-									return (
-										<code className={className} {...props}>
-											{children}
-										</code>
-									);
-								},
-								// Custom styling for links
-								a: ({ children, href, ...props }) => (
-									<a
-										href={href}
-										className="text-blue-600 hover:text-blue-800 underline"
-										target="_blank"
-										rel="noopener noreferrer"
-										{...props}
-									>
-										{children}
-									</a>
-								),
-								// Paragraph styling
-								p: ({ children, ...props }) => (
-									<p className="mb-2 last:mb-0" {...props}>
-										{children}
-									</p>
-								),
-								// List styling
-								ul: ({ children, ...props }) => (
-									<ul className="mb-2 pl-4" {...props}>
-										{children}
-									</ul>
-								),
-								ol: ({ children, ...props }) => (
-									<ol className="mb-2 pl-4" {...props}>
-										{children}
-									</ol>
-								),
-								// Headings styling
-								h1: ({ children, ...props }) => (
-									<h1 className="text-lg font-semibold mb-2" {...props}>
-										{children}
-									</h1>
-								),
-								h2: ({ children, ...props }) => (
-									<h2 className="text-base font-semibold mb-2" {...props}>
-										{children}
-									</h2>
-								),
-								h3: ({ children, ...props }) => (
-									<h3 className="text-sm font-semibold mb-1" {...props}>
-										{children}
-									</h3>
-								),
-							}}
-						>
-							{content || "*Empty response*"}
-						</ReactMarkdown>
+						<MarkdownRenderer content={content || "*Empty response*"} />
 					</div>
 				</div>
 			</div>

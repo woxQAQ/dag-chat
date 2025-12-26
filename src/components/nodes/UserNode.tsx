@@ -33,7 +33,7 @@ export function UserNode({
 	onEditToggle,
 	onEditSave,
 	onEditCancel,
-	onCreateChild,
+	onCreateChild: _onCreateChild,
 }: UserNodeProps) {
 	const { content, isEditing = false } = data;
 
