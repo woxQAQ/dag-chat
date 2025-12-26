@@ -20,7 +20,6 @@ import {
 	CanvasLayout,
 	FloatingToolbar,
 	InspectorPanel,
-	type InspectorTab,
 	type ToolMode,
 	TopHeader,
 } from "@/components/layout";
@@ -105,7 +104,6 @@ function WorkspaceContent() {
 	// Tool and inspector state (existing)
 	const [toolMode, setToolMode] = useState<ToolMode>("select");
 	const [inspectorOpen, setInspectorOpen] = useState(false);
-	const [inspectorTab, setInspectorTab] = useState<InspectorTab>("thread");
 	const [saveStatus, _setSaveStatus] = useState<"saving" | "saved" | "unsaved">(
 		"saved",
 	);
@@ -388,7 +386,6 @@ function WorkspaceContent() {
 			setSelectedNodeId(nodeId);
 			// Open inspector panel when node is selected
 			setInspectorOpen(true);
-			setInspectorTab("thread");
 		},
 		onSelectionCleared: () => {
 			// Clear selected node ID
@@ -619,8 +616,6 @@ function WorkspaceContent() {
 				}
 				inspector={
 					<InspectorPanel
-						activeTab={inspectorTab}
-						onTabChange={setInspectorTab}
 						onClose={() => setInspectorOpen(false)}
 						threadContent={
 							<ThreadView
@@ -628,13 +623,6 @@ function WorkspaceContent() {
 								projectId={projectId}
 								onSendMessage={handleSendMessage}
 							/>
-						}
-						propertiesContent={
-							<div className="p-4">
-								<p className="text-sm text-slate-600">
-									Node properties will be displayed here.
-								</p>
-							</div>
 						}
 					/>
 				}

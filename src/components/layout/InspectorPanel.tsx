@@ -1,27 +1,10 @@
 import type { ReactNode } from "react";
 
-export type InspectorTab = "thread" | "properties";
-
 export interface InspectorPanelProps {
-	/**
-	 * Currently active tab
-	 */
-	activeTab?: InspectorTab;
-
-	/**
-	 * Callback when tab changes
-	 */
-	onTabChange?: (tab: InspectorTab) => void;
-
 	/**
 	 * Thread tab content (linear conversation flow)
 	 */
 	threadContent?: ReactNode;
-
-	/**
-	 * Properties tab content (node metadata)
-	 */
-	propertiesContent?: ReactNode;
 
 	/**
 	 * Panel close handler
@@ -38,8 +21,7 @@ export interface InspectorPanelProps {
  * InspectorPanel - Right slide-out panel for MindFlow workspace.
  *
  * Features:
- * - Thread tab: Shows linear conversation flow from Root to selected node
- * - Properties tab: Shows node metadata (created time, token count, model params)
+ * - Shows linear conversation flow from Root to selected node
  * - Smooth slide-in/slide-out animation
  * - Backdrop overlay
  * - Close button
@@ -47,18 +29,13 @@ export interface InspectorPanelProps {
  * @example
  * ```tsx
  * <InspectorPanel
- *   activeTab="thread"
- *   onTabChange={(tab) => setActiveTab(tab)}
- *   threadContent={<ThreadView messages={messages} />}
- *   propertiesContent={<NodeProperties node={selectedNode} />}
+ *   threadContent={<ThreadView nodeId={selectedNodeId} />}
+ *   onClose={() => setOpen(false)}
  * />
  * ```
  */
 export function InspectorPanel({
-	activeTab = "thread",
-	onTabChange,
 	threadContent,
-	propertiesContent,
 	onClose,
 	className = "",
 }: InspectorPanelProps) {
@@ -68,30 +45,7 @@ export function InspectorPanel({
 		>
 			{/* Header */}
 			<div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-				<div className="flex gap-1">
-					<button
-						type="button"
-						className={`px-3 py-1.5 text-sm font-medium border-0 rounded-md cursor-pointer transition-colors ${
-							activeTab === "thread"
-								? "bg-blue-50 text-blue-600"
-								: "bg-transparent text-slate-500 hover:bg-slate-100"
-						}`}
-						onClick={() => onTabChange?.("thread")}
-					>
-						Thread
-					</button>
-					<button
-						type="button"
-						className={`px-3 py-1.5 text-sm font-medium border-0 rounded-md cursor-pointer transition-colors ${
-							activeTab === "properties"
-								? "bg-blue-50 text-blue-600"
-								: "bg-transparent text-slate-500 hover:bg-slate-100"
-						}`}
-						onClick={() => onTabChange?.("properties")}
-					>
-						Properties
-					</button>
-				</div>
+				<h2 className="text-sm font-medium text-slate-700">Thread</h2>
 
 				<button
 					type="button"
@@ -115,16 +69,10 @@ export function InspectorPanel({
 
 			{/* Content */}
 			<div className="flex-1 overflow-y-auto">
-				{activeTab === "thread" && threadContent}
-				{activeTab === "properties" && propertiesContent}
-
-				{/* Empty state */}
-				{!threadContent && !propertiesContent && (
+				{threadContent || (
 					<div className="flex items-center justify-center h-full px-4">
 						<p className="text-sm text-slate-400">
-							{activeTab === "thread"
-								? "Select a node to view conversation thread"
-								: "Select a node to view properties"}
+							Select a node to view conversation thread
 						</p>
 					</div>
 				)}
