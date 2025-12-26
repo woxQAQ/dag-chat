@@ -51,7 +51,7 @@ function buildParentMap(edges: Edge[]): Map<string, string> {
  * @param parentMap - Map of child ID to parent ID
  * @returns Root node ID or null if no root found
  */
-function findRootNodeId(
+function _findRootNodeId(
 	nodes: Node[],
 	parentMap: Map<string, string>,
 ): string | null {

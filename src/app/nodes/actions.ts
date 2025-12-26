@@ -46,11 +46,10 @@ export interface ActionState<T> {
 	error?: string;
 }
 
-// Re-export GraphData types for client components
-export type { GraphData, GraphEdge, GraphNode } from "@/lib/graph-retrieval";
-
 // Re-export ContextBuilder types for client components
 export type { ContextMessage, ContextResult } from "@/lib/context-builder";
+// Re-export GraphData types for client components
+export type { GraphData, GraphEdge, GraphNode } from "@/lib/graph-retrieval";
 
 // ============================================================================
 // Server Actions
@@ -79,9 +78,7 @@ export async function getConversationContextAction(
 	nodeId: string,
 ): Promise<ActionState<ContextResult>> {
 	try {
-		const { buildConversationContext } = await import(
-			"@/lib/context-builder"
-		);
+		const { buildConversationContext } = await import("@/lib/context-builder");
 		const context = await buildConversationContext(nodeId);
 		return {
 			success: true,

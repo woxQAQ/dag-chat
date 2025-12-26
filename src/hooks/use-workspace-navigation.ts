@@ -14,8 +14,8 @@
  * ```
  */
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { getProject } from "@/app/projects/actions";
 
 export interface UseWorkspaceNavigationOptions {
@@ -109,9 +109,7 @@ export function useWorkspaceNavigation({
 			} catch (err) {
 				if (cancelled) return;
 
-				setError(
-					err instanceof Error ? err.message : "Failed to load project",
-				);
+				setError(err instanceof Error ? err.message : "Failed to load project");
 			} finally {
 				if (!cancelled) {
 					setIsLoading(false);

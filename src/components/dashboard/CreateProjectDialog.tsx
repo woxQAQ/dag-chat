@@ -67,6 +67,7 @@ export function CreateProjectDialog({
 			aria-modal="true"
 			aria-labelledby="create-project-title"
 		>
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: Inner div prevents backdrop click */}
 			<div
 				className="bg-white rounded-xl shadow-xl w-full max-w-md"
 				onClick={(e) => e.stopPropagation()}

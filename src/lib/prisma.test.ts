@@ -1,5 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
+
+// Clean up all test data after all tests in this file complete
+afterAll(async () => {
+	await prisma.node.deleteMany({});
+	await prisma.project.deleteMany({});
+});
 
 describe("Database Schema - Project", () => {
 	let _projectId: string;

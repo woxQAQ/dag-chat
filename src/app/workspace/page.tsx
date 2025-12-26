@@ -2,8 +2,12 @@
 
 import {
 	addEdge,
+	type Connection,
 	type Edge,
 	type NodeTypes,
+	type OnConnect,
+	type OnEdgesChange,
+	type OnNodesChange,
 	type ReactFlowInstance,
 	useEdgesState,
 	useNodesState,
@@ -23,17 +27,17 @@ import {
 	type ToolMode,
 	TopHeader,
 } from "@/components/layout";
-import { ThreadView } from "@/components/thread";
 import { createEditableNode, type MindFlowNode } from "@/components/nodes";
+import { ThreadView } from "@/components/thread";
 import {
 	NodeEditingProvider,
 	useNodeEditingContext,
 } from "@/contexts/NodeEditingContext";
 import { useNodeEditing } from "@/hooks/use-node-editing";
 import { useNodeForking } from "@/hooks/use-node-forking";
+import { useNodeStream } from "@/hooks/use-node-stream";
 import { usePathHighlightWithInspector } from "@/hooks/use-path-highlight";
 import { useRootNodeCreation } from "@/hooks/use-root-creation";
-import { useNodeStream } from "@/hooks/use-node-stream";
 import { useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
 
 // ============================================================================
@@ -62,9 +66,9 @@ function CanvasWithEditHandler({
 	nodes: MindFlowNode[];
 	edges: Edge[];
 	nodeTypes: NodeTypes;
-	onNodesChange: any;
-	onEdgesChange: any;
-	onConnect: (params: any) => void;
+	onNodesChange: OnNodesChange<MindFlowNode>;
+	onEdgesChange: OnEdgesChange;
+	onConnect: OnConnect;
 	onSelectionChange: (params: { nodes: readonly { id: string }[] }) => void;
 	onInit: (instance: ReactFlowInstance | null) => void;
 }) {
@@ -81,7 +85,8 @@ function CanvasWithEditHandler({
 			nodes={nodes}
 			edges={edges}
 			nodeTypes={nodeTypes}
-			onNodesChange={onNodesChange}
+			// biome-ignore lint/suspicious/noExplicitAny: ReactFlow onNodesChange type compatibility with MindFlowNode
+			onNodesChange={onNodesChange as any}
 			onEdgesChange={onEdgesChange}
 			onConnect={onConnect}
 			onSelectionChange={onSelectionChange}
@@ -345,7 +350,7 @@ function WorkspaceContent() {
 
 	// UI-NEW-005: Node forking hook (non-destructive editing)
 	const { forkUserNode } = useNodeForking({
-		onNodeForked: (userNodeId, aiNodeId) => {
+		onNodeForked: (_userNodeId, _aiNodeId) => {
 			// The fork action returns both the USER node and AI node IDs
 			// However, we need to reload the graph to get the actual node data (position, content)
 			// since the server action creates these nodes
@@ -357,11 +362,14 @@ function WorkspaceContent() {
 	});
 
 	// Helper function to get the correct source handle based on node type
-	const getSourceHandle = (nodeId: string): string => {
-		const node = nodes.find((n) => n.id === nodeId);
-		if (!node) return "user-bottom"; // Fallback
-		return node.type === "assistant" ? "ai-bottom" : "user-bottom";
-	};
+	const getSourceHandle = useCallback(
+		(nodeId: string): string => {
+			const node = nodes.find((n) => n.id === nodeId);
+			if (!node) return "user-bottom"; // Fallback
+			return node.type === "assistant" ? "ai-bottom" : "user-bottom";
+		},
+		[nodes],
+	);
 
 	// UI-005: Path highlighting hook
 	const {
@@ -474,7 +482,7 @@ function WorkspaceContent() {
 
 	// NEW: Handle connections (for future use)
 	const onConnect = useCallback(
-		(params: any) => {
+		(params: Connection) => {
 			setEdges((eds) => addEdge(params, eds));
 		},
 		[setEdges],
@@ -542,7 +550,10 @@ function WorkspaceContent() {
 				xOffset = horizontalSpacing; // Third branch, right
 			} else {
 				// For more branches, alternate left/right
-				xOffset = (branchCount % 2 === 0 ? 1 : -1) * Math.ceil(branchCount / 2) * horizontalSpacing;
+				xOffset =
+					(branchCount % 2 === 0 ? 1 : -1) *
+					Math.ceil(branchCount / 2) *
+					horizontalSpacing;
 			}
 
 			// Calculate vertical positions
@@ -570,7 +581,11 @@ function WorkspaceContent() {
 
 			try {
 				// Calculate position for the new nodes with smart layout
-				const { x: positionX, userY, aiY } = calculateNodePosition(parentNodeId);
+				const {
+					x: positionX,
+					userY,
+					aiY,
+				} = calculateNodePosition(parentNodeId);
 
 				const response = await fetch("/api/chat", {
 					method: "POST",
@@ -686,7 +701,14 @@ function WorkspaceContent() {
 				throw error;
 			}
 		},
-		[projectId, calculateNodePosition, startStream],
+		[
+			projectId,
+			calculateNodePosition,
+			startStream,
+			getSourceHandle,
+			setEdges,
+			setNodes,
+		],
 	);
 
 	return (
@@ -767,6 +789,7 @@ function WorkspaceContent() {
 						nodes={highlightedNodes as MindFlowNode[]}
 						edges={highlightedEdges}
 						nodeTypes={nodeTypes}
+						// biome-ignore lint/suspicious/noExplicitAny: ReactFlow onNodesChange type compatibility with custom MindFlowNode
 						onNodesChange={onNodesChange as any}
 						onEdgesChange={onEdgesChange}
 						onConnect={onConnect}

@@ -189,10 +189,12 @@ export function useRootNodeCreation(
 						// The actual streaming and node update happens server-side
 						const reader = response.body?.getReader();
 						if (reader) {
-							console.log("[use-root-creation] Consuming stream in background...");
+							console.log(
+								"[use-root-creation] Consuming stream in background...",
+							);
 							let chunkCount = 0;
 							while (true) {
-								const { done, value } = await reader.read();
+								const { done } = await reader.read();
 								if (done) {
 									console.log(
 										"[use-root-creation] Stream complete. Total chunks:",

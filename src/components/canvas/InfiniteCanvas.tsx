@@ -209,7 +209,9 @@ export function InfiniteCanvas({
 			defaultViewport={initialViewport}
 			minZoom={0.1}
 			maxZoom={4}
+			// biome-ignore lint/suspicious/noExplicitAny: ReactFlow onMoveStart/onMoveEnd types not properly exported
 			onMoveStart={onMoveStart as any}
+			// biome-ignore lint/suspicious/noExplicitAny: ReactFlow onMoveStart/onMoveEnd types not properly exported
 			onMoveEnd={onMoveEnd as any}
 			onClick={(event) => {
 				// Call the onPaneClick prop if provided and click is on pane (not on a node)

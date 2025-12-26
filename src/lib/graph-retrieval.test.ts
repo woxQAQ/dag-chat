@@ -10,6 +10,12 @@ import {
 } from "./graph-retrieval";
 import { prisma } from "./prisma";
 
+// Clean up all test data after all tests in this file complete
+afterAll(async () => {
+	await prisma.node.deleteMany({});
+	await prisma.project.deleteMany({});
+});
+
 describe("Graph Retrieval Service", () => {
 	let projectId: string;
 	let rootNodeId: string;

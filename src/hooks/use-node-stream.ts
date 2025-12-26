@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 export interface UseNodeStreamOptions {
 	/** Callback when node content is updated */
@@ -57,7 +57,9 @@ export interface UseNodeStreamReturn {
  * }, [aiNodeId]);
  * ```
  */
-export function useNodeStream(options: UseNodeStreamOptions = {}): UseNodeStreamReturn {
+export function useNodeStream(
+	options: UseNodeStreamOptions = {},
+): UseNodeStreamReturn {
 	const { onContentUpdate, onComplete, onError } = options;
 
 	// Track active streams using a Map
@@ -121,7 +123,11 @@ export function useNodeStream(options: UseNodeStreamOptions = {}): UseNodeStream
 
 				// Handle connection errors
 				eventSource.onerror = (error) => {
-					console.error("[useNodeStream] EventSource error for node:", nodeId, error);
+					console.error(
+						"[useNodeStream] EventSource error for node:",
+						nodeId,
+						error,
+					);
 					streamingStateRef.current.set(nodeId, false);
 					eventSource.close();
 					streamsRef.current.delete(nodeId);
@@ -130,7 +136,11 @@ export function useNodeStream(options: UseNodeStreamOptions = {}): UseNodeStream
 
 				streamsRef.current.set(nodeId, eventSource);
 			} catch (error) {
-				console.error("[useNodeStream] Failed to create EventSource for node:", nodeId, error);
+				console.error(
+					"[useNodeStream] Failed to create EventSource for node:",
+					nodeId,
+					error,
+				);
 				streamingStateRef.current.set(nodeId, false);
 				onError?.(nodeId, "Failed to connect to stream");
 			}

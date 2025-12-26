@@ -5,7 +5,7 @@
  * Clients can subscribe to a specific node to receive content updates.
  */
 
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 	const encoder = new TextEncoder();
 	const stream = new ReadableStream({
 		async start(controller) {
-				const sendEvent = (
+			const sendEvent = (
 				data: { content: string; streaming: boolean } | { error: string },
 				event?: string,
 			) => {
@@ -58,7 +58,9 @@ export async function GET(request: NextRequest) {
 
 				if (!node) {
 					controller.enqueue(
-						encoder.encode(`event: error\ndata: ${JSON.stringify({ error: "Node not found" })}\n\n`),
+						encoder.encode(
+							`event: error\ndata: ${JSON.stringify({ error: "Node not found" })}\n\n`,
+						),
 					);
 					controller.close();
 					return;
@@ -78,10 +80,7 @@ export async function GET(request: NextRequest) {
 
 				// If already completed, close the connection
 				if (!isStreaming) {
-					sendEvent(
-						{ content: node.content, streaming: false },
-						"complete",
-					);
+					sendEvent({ content: node.content, streaming: false }, "complete");
 					controller.close();
 					return;
 				}
@@ -103,17 +102,14 @@ export async function GET(request: NextRequest) {
 
 						if (!updatedNode) {
 							clearInterval(pollTimer);
-							sendEvent(
-								{ error: "Node not found" },
-								"error",
-							);
+							sendEvent({ error: "Node not found" }, "error");
 							controller.close();
 							return;
 						}
 
-						const updatedMetadata = updatedNode.metadata as
-							| { streaming?: boolean }
-							| null;
+						const updatedMetadata = updatedNode.metadata as {
+							streaming?: boolean;
+						} | null;
 						const isStillStreaming = updatedMetadata?.streaming ?? false;
 						const contentChanged = updatedNode.content !== previousContent;
 
@@ -152,10 +148,7 @@ export async function GET(request: NextRequest) {
 					} catch (error) {
 						console.error("[SSE] Poll error:", error);
 						clearInterval(pollTimer);
-						sendEvent(
-							{ error: "Failed to fetch updates" },
-							"error",
-						);
+						sendEvent({ error: "Failed to fetch updates" }, "error");
 						controller.close();
 					}
 				}, pollInterval);
@@ -176,7 +169,7 @@ export async function GET(request: NextRequest) {
 		headers: {
 			"Content-Type": "text/event-stream",
 			"Cache-Control": "no-cache, no-transform",
-			"Connection": "keep-alive",
+			Connection: "keep-alive",
 			"X-Accel-Buffering": "no", // Disable nginx buffering
 		},
 	});

@@ -234,7 +234,10 @@ export const EditableAINode = memo<
  * ```
  */
 export function createEditableNode() {
-	return function EditableNode(props: any) {
+	return function EditableNode(
+		// biome-ignore lint/suspicious/noExplicitAny: ReactFlow node props are complex and dynamically typed
+		props: any,
+	) {
 		// Props from React Flow contain data, selected, etc. directly
 		const node: MindFlowNode = {
 			id: props.data.id,

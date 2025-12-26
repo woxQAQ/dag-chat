@@ -4,8 +4,8 @@
  * Tests for the branching interaction components and hooks.
  */
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { BranchingAINode, BranchingUserNode } from "./BranchingNode";
 import type { MindFlowNode } from "./types";
 
@@ -100,6 +100,8 @@ describe("BranchingUserNode", () => {
 		const mockParentClick = vi.fn();
 
 		render(
+			// biome-ignore lint/a11y/noStaticElementInteractions: Test wrapper for event propagation
+			// biome-ignore lint/a11y/useKeyWithClickEvents: Not needed for test wrapper
 			<div onClick={mockParentClick}>
 				<BranchingUserNode
 					node={mockNode}

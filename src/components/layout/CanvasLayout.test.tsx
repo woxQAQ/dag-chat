@@ -170,44 +170,25 @@ describe("FloatingToolbar", () => {
 });
 
 describe("InspectorPanel", () => {
-	it("should render with thread tab active by default", () => {
+	it("should render with Thread header", () => {
 		render(<InspectorPanel />);
 		expect(screen.getByText("Thread")).toBeInTheDocument();
-		expect(screen.getByText("Properties")).toBeInTheDocument();
 	});
 
-	it("should display empty state for thread when no content", () => {
-		render(<InspectorPanel activeTab="thread" />);
+	it("should display empty state when no content", () => {
+		render(<InspectorPanel />);
 		expect(
 			screen.getByText("Select a node to view conversation thread"),
-		).toBeInTheDocument();
-	});
-
-	it("should display empty state for properties when no content", () => {
-		render(<InspectorPanel activeTab="properties" />);
-		expect(
-			screen.getByText("Select a node to view properties"),
 		).toBeInTheDocument();
 	});
 
 	it("should render thread content when provided", () => {
 		render(
 			<InspectorPanel
-				activeTab="thread"
 				threadContent={<div data-testid="thread-content">Thread</div>}
 			/>,
 		);
 		expect(screen.getByTestId("thread-content")).toBeInTheDocument();
-	});
-
-	it("should render properties content when provided", () => {
-		render(
-			<InspectorPanel
-				activeTab="properties"
-				propertiesContent={<div data-testid="props-content">Props</div>}
-			/>,
-		);
-		expect(screen.getByTestId("props-content")).toBeInTheDocument();
 	});
 
 	it("should render close button", () => {
@@ -220,13 +201,6 @@ describe("InspectorPanel", () => {
 		render(<InspectorPanel onClose={onClose} />);
 		expect(screen.getByLabelText("Close panel")).toBeInTheDocument();
 	});
-
-	it("should call onTabChange when tab is clicked", () => {
-		const onTabChange = () => {};
-		render(<InspectorPanel onTabChange={onTabChange} />);
-		expect(screen.getByText("Thread")).toBeInTheDocument();
-		expect(screen.getByText("Properties")).toBeInTheDocument();
-	});
 });
 
 describe("Layout Integration", () => {
@@ -235,7 +209,7 @@ describe("Layout Integration", () => {
 			<CanvasLayout
 				header={<TopHeader projectName="Test Project" />}
 				toolbar={<FloatingToolbar mode="select" />}
-				inspector={<InspectorPanel activeTab="thread" />}
+				inspector={<InspectorPanel />}
 				inspectorOpen={true}
 			>
 				<div>Canvas Content</div>

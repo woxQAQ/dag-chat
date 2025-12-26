@@ -2,7 +2,7 @@
  * Tests for API-001: Project CRUD Service
  */
 
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
 import {
 	type CreateProjectInput,
@@ -21,6 +21,12 @@ describe("Project CRUD Service", () => {
 		// Delete all nodes first (cascade from projects)
 		await prisma.node.deleteMany({});
 		// Then delete all projects
+		await prisma.project.deleteMany({});
+	});
+
+	// Clean up all test data after all tests in this file complete
+	afterAll(async () => {
+		await prisma.node.deleteMany({});
 		await prisma.project.deleteMany({});
 	});
 
@@ -572,6 +578,7 @@ describe("Project CRUD Service", () => {
 
 			const counts = result.projects
 				.map((p) => p._nodeCount)
+				// biome-ignore lint/style/noNonNullAssertion: _nodeCount is non-null in this test context
 				.sort((a, b) => a! - b!);
 			expect(counts).toEqual([0, 1, 2]);
 		});

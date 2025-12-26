@@ -10,6 +10,7 @@ const globalForPrisma = globalThis as unknown as {
 	prisma: PrismaClient | undefined;
 };
 
+// biome-ignore lint/style/noNonNullAssertion: DATABASE_URL is required and validated at runtime
 const connectionString = process.env.DATABASE_URL!;
 
 const createPrismaClient = () => {

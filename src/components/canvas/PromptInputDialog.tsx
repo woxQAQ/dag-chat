@@ -115,6 +115,8 @@ export function PromptInputDialog({
 	const canSubmit = prompt.trim().length > 0;
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: Modal backdrop with click-to-close
+		// biome-ignore lint/a11y/useKeyWithClickEvents: Escape key is handled separately in onKeyDown
 		<div
 			className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
 			onClick={handleBackdropClick}

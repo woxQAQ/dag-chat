@@ -4,7 +4,7 @@
 
 import { act, renderHook } from "@testing-library/react";
 import type { Edge, Node } from "@xyflow/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	calculatePathHighlight,
 	type PathHighlightResult,

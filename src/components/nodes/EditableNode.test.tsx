@@ -23,10 +23,14 @@ vi.mock("@xyflow/react", async () => {
 function renderEditableUserNode(
 	node: MindFlowNode,
 	onUpdateContent = vi.fn(),
+	onNodeFork = vi.fn(),
 	isHovered = false,
 ) {
 	return render(
-		<NodeEditingProvider onUpdateContent={onUpdateContent}>
+		<NodeEditingProvider
+			onUpdateContent={onUpdateContent}
+			onNodeFork={onNodeFork}
+		>
 			<EditableUserNode node={node} isHovered={isHovered} />
 		</NodeEditingProvider>,
 	);
@@ -67,14 +71,17 @@ describe("EditableNode", () => {
 			expect(onUpdateContent).not.toHaveBeenCalled();
 		});
 
-		it("should call onUpdateContent when exiting edit mode with changed content", async () => {
+		it("should call onNodeFork when exiting edit mode with changed content", async () => {
 			const onUpdateContent = vi.fn();
+			const onNodeFork = vi.fn();
 
-			renderEditableUserNode(mockNode, onUpdateContent);
+			renderEditableUserNode(mockNode, onUpdateContent, onNodeFork);
 
 			// Double-click to enter edit mode
 			const nodeDiv = screen.getByText("Initial content").closest("div");
-			fireEvent.doubleClick(nodeDiv!);
+			if (nodeDiv) {
+				fireEvent.doubleClick(nodeDiv);
+			}
 
 			// Find the textarea
 			const textarea = screen.getByRole("textbox");
@@ -92,11 +99,15 @@ describe("EditableNode", () => {
 				ctrlKey: true,
 			});
 
-			// onUpdateContent should be called
-			expect(onUpdateContent).toHaveBeenCalledWith(
+			// onNodeFork should be called for USER nodes (non-destructive editing)
+			expect(onNodeFork).toHaveBeenCalledWith(
 				"node-123",
 				"Updated content",
+				expect.any(Number),
+				expect.any(Number),
 			);
+			// onUpdateContent should NOT be called for USER nodes
+			expect(onUpdateContent).not.toHaveBeenCalled();
 		});
 
 		it("should not call onUpdateContent when content hasn't changed", async () => {
@@ -106,7 +117,9 @@ describe("EditableNode", () => {
 
 			// Double-click to enter edit mode
 			const nodeDiv = screen.getByText("Initial content").closest("div");
-			fireEvent.doubleClick(nodeDiv!);
+			if (nodeDiv) {
+				fireEvent.doubleClick(nodeDiv);
+			}
 
 			// Find the textarea
 			const textarea = screen.getByRole("textbox");
@@ -130,7 +143,9 @@ describe("EditableNode", () => {
 
 			// Double-click to enter edit mode
 			const nodeDiv = screen.getByText("Initial content").closest("div");
-			fireEvent.doubleClick(nodeDiv!);
+			if (nodeDiv) {
+				fireEvent.doubleClick(nodeDiv);
+			}
 
 			// Should show editing badge
 			expect(screen.getByText("Editing")).toBeInTheDocument();
@@ -166,6 +181,7 @@ describe("EditableNode", () => {
 
 		it("should pass onUpdateContent to the wrapped component", async () => {
 			const onUpdateContent = vi.fn();
+			const onNodeFork = vi.fn();
 			const EditableComponent = createEditableNode();
 
 			const props = {
@@ -176,14 +192,19 @@ describe("EditableNode", () => {
 			};
 
 			render(
-				<NodeEditingProvider onUpdateContent={onUpdateContent}>
+				<NodeEditingProvider
+					onUpdateContent={onUpdateContent}
+					onNodeFork={onNodeFork}
+				>
 					<EditableComponent {...props} />
 				</NodeEditingProvider>,
 			);
 
 			// Double-click to enter edit mode
 			const nodeDiv = screen.getByText("Initial content").closest("div");
-			fireEvent.doubleClick(nodeDiv!);
+			if (nodeDiv) {
+				fireEvent.doubleClick(nodeDiv);
+			}
 
 			// Find the textarea
 			const textarea = screen.getByRole("textbox");
@@ -200,10 +221,12 @@ describe("EditableNode", () => {
 				ctrlKey: true,
 			});
 
-			// onUpdateContent should be called
-			expect(onUpdateContent).toHaveBeenCalledWith(
+			// onNodeFork should be called for USER nodes (non-destructive editing)
+			expect(onNodeFork).toHaveBeenCalledWith(
 				"node-123",
 				"Updated content",
+				expect.any(Number),
+				expect.any(Number),
 			);
 		});
 	});
@@ -216,7 +239,9 @@ describe("EditableNode", () => {
 
 			// Double-click to enter edit mode
 			const nodeDiv = screen.getByText("Initial content").closest("div");
-			fireEvent.doubleClick(nodeDiv!);
+			if (nodeDiv) {
+				fireEvent.doubleClick(nodeDiv);
+			}
 
 			// Find the textarea
 			const textarea = screen.getByRole("textbox");

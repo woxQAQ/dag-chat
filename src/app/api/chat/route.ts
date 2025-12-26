@@ -53,13 +53,6 @@ export async function POST(req: NextRequest) {
 		// Parse request body
 		const body = (await req.json()) as ChatRequest;
 
-		console.log("[/api/chat] Request body:", {
-			projectId: body.projectId,
-			parentNodeId: body.parentNodeId,
-			message: body.message?.substring(0, 50) + "...",
-			provider: body.provider,
-		});
-
 		const {
 			projectId,
 			parentNodeId,
@@ -72,7 +65,7 @@ export async function POST(req: NextRequest) {
 			skipUserNode = false,
 		} = body;
 
-		// Validate required fields
+		// Validate required fields BEFORE using them
 		if (!projectId) {
 			return Response.json({ error: "projectId is required" }, { status: 400 });
 		}
@@ -85,6 +78,14 @@ export async function POST(req: NextRequest) {
 		if (!message || typeof message !== "string") {
 			return Response.json({ error: "message is required" }, { status: 400 });
 		}
+
+		// Log after validation (safe to use message.substring now)
+		console.log("[/api/chat] Request body:", {
+			projectId,
+			parentNodeId,
+			message: `${message.substring(0, 50)}...`,
+			provider,
+		});
 
 		// Build conversation context from root to parent node
 		console.log(
@@ -115,7 +116,10 @@ export async function POST(req: NextRequest) {
 		if (skipUserNode) {
 			// USER node already created, use parentNodeId directly
 			userNodeId = parentNodeId;
-			console.log("[/api/chat] Skipping USER node creation, using existing:", userNodeId);
+			console.log(
+				"[/api/chat] Skipping USER node creation, using existing:",
+				userNodeId,
+			);
 		} else {
 			// Import createNode to create the user message node first
 			const { createNode } = await import("@/lib/node-crud");
@@ -173,7 +177,10 @@ export async function POST(req: NextRequest) {
 		const streamResponse = result.toStreamResponse();
 		const reader = streamResponse.body?.getReader();
 
-		console.log("[/api/chat] Starting to stream updates to node:", assistantNodeId);
+		console.log(
+			"[/api/chat] Starting to stream updates to node:",
+			assistantNodeId,
+		);
 
 		if (reader) {
 			const decoder = new TextDecoder();

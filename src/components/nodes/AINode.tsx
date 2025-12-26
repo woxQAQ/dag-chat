@@ -61,6 +61,7 @@ export function AINode({
 	const model = (metadata?.model as string) || "";
 
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: ReactFlow node requires div for positioning
 		<div
 			className={`relative min-w-[320px] max-w-[500px] rounded-xl bg-white border-2 transition-all duration-200 ${
 				selected

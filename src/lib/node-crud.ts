@@ -262,7 +262,10 @@ export async function updateNode(
 			...(input.positionX !== undefined ? { positionX: input.positionX } : {}),
 			...(input.positionY !== undefined ? { positionY: input.positionY } : {}),
 			...(input.metadata !== undefined
-				? { metadata: input.metadata as any }
+				? {
+						// biome-ignore lint/suspicious/noExplicitAny: Prisma JsonValue type compatibility
+						metadata: input.metadata as any,
+					}
 				: {}),
 		},
 	});
@@ -355,7 +358,10 @@ export async function updateNodeContent(
 		data: {
 			content: input.content,
 			...(input.metadata !== undefined
-				? { metadata: input.metadata as any }
+				? {
+						// biome-ignore lint/suspicious/noExplicitAny: Prisma JsonValue type compatibility
+						metadata: input.metadata as any,
+					}
 				: {}),
 		},
 	});

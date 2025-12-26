@@ -53,6 +53,7 @@ export const EmptyStateCanvas = memo<EmptyStateCanvasProps>(
 		const hasClickHandler = !!onDoubleClick;
 
 		return (
+			// biome-ignore lint/a11y/noStaticElementInteractions: Canvas area requires double-click interaction
 			<div
 				className="absolute inset-0 flex items-center justify-center"
 				style={{ zIndex: 1 }} // Above ReactFlow canvas (which has z-index: 0 by default)

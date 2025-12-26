@@ -124,7 +124,10 @@ export function createBranchingNode(
 	role: "user" | "assistant",
 	onCreateChild: (parentId: string) => void,
 ) {
-	return function BranchingNode(props: any) {
+	return function BranchingNode(
+		// biome-ignore lint/suspicious/noExplicitAny: ReactFlow node props are complex and dynamically typed
+		props: any,
+	) {
 		// Props from React Flow contain data, selected, etc. directly
 		// We need to wrap them in our expected format
 		const node: MindFlowNode = {

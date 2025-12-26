@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getConversationContextAction } from "@/app/nodes/actions";
 import type { ContextResult } from "@/app/nodes/actions";
+import { getConversationContextAction } from "@/app/nodes/actions";
 import { ThreadInput } from "./ThreadInput";
 import { ThreadMessage as ThreadMessageComponent } from "./ThreadMessage";
 import type { ThreadMessage, ThreadViewProps } from "./types";

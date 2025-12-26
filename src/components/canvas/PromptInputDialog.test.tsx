@@ -4,7 +4,7 @@
  * Tests for the PromptInputDialog component.
  */
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { PromptInputDialog } from "./PromptInputDialog";
 
@@ -120,7 +120,9 @@ describe("PromptInputDialog", () => {
 			);
 
 			const backdrop = container.querySelector(".bg-black\\/50");
-			fireEvent.click(backdrop!);
+			if (backdrop) {
+				fireEvent.click(backdrop);
+			}
 
 			expect(handleClose).toHaveBeenCalledTimes(1);
 		});

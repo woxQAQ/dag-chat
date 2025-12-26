@@ -4,7 +4,7 @@
  * Tests for the useBranching hook.
  */
 
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useBranching } from "./use-branching";
 
@@ -186,6 +186,7 @@ describe("useBranching", () => {
 	});
 
 	it("should set isCreating to true during creation", async () => {
+		// biome-ignore lint/suspicious/noExplicitAny: Promise resolve type is complex
 		let resolveCreation: (value: any) => void;
 
 		vi.mocked(createChildNodeAutoPosition).mockImplementation(
@@ -212,7 +213,7 @@ describe("useBranching", () => {
 
 		// Resolve the promise
 		await act(async () => {
-			resolveCreation!({
+			resolveCreation?.({
 				success: true,
 				data: { nodeId: "new-node", positionX: 100, positionY: 200 },
 			});

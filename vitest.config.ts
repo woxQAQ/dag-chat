@@ -10,6 +10,8 @@ export default defineConfig({
 		include: ["**/*.test.{ts,tsx}"],
 		exclude: ["node_modules", "dist"],
 		setupFiles: ["./src/test-setup.ts"],
+		// Run test files sequentially to prevent database pollution
+		fileParallelism: false,
 	},
 	resolve: {
 		alias: {

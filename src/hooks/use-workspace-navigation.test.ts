@@ -141,9 +141,7 @@ describe("useWorkspaceNavigation", () => {
 		});
 
 		it("should handle network errors", async () => {
-			vi.mocked(getProject).mockRejectedValue(
-				new Error("Network error"),
-			);
+			vi.mocked(getProject).mockRejectedValue(new Error("Network error"));
 
 			const { result } = renderHook(() =>
 				useWorkspaceNavigation({ projectId: "project-123" }),
@@ -186,8 +184,7 @@ describe("useWorkspaceNavigation", () => {
 				});
 
 			const { result, rerender } = renderHook(
-				({ projectId }) =>
-					useWorkspaceNavigation({ projectId }),
+				({ projectId }) => useWorkspaceNavigation({ projectId }),
 				{
 					initialProps: { projectId: "project-1" },
 				},
@@ -269,7 +266,8 @@ describe("useWorkspaceNavigation", () => {
 
 	describe("cleanup", () => {
 		it("should cancel fetch on unmount", async () => {
-			let resolveFetch: (value: any) => void;
+			// biome-ignore lint/suspicious/noExplicitAny: Promise resolve type is complex
+			let resolveFetch!: (value: any) => void;
 
 			vi.mocked(getProject).mockReturnValue(
 				new Promise((resolve) => {
@@ -287,7 +285,7 @@ describe("useWorkspaceNavigation", () => {
 			unmount();
 
 			// Resolve the fetch
-			resolveFetch!({
+			resolveFetch?.({
 				success: true,
 				data: {
 					id: "project-123",

@@ -66,7 +66,9 @@ describe("EmptyStateCanvas", () => {
 
 			const container =
 				screen.getByText(/double click/i).parentElement?.parentElement;
-			fireEvent.doubleClick(container!);
+			if (container) {
+				fireEvent.doubleClick(container);
+			}
 
 			expect(handleClick).toHaveBeenCalledTimes(1);
 		});
@@ -77,10 +79,12 @@ describe("EmptyStateCanvas", () => {
 
 			const container =
 				screen.getByText(/double click/i).parentElement?.parentElement;
-			fireEvent.doubleClick(container!, {
-				clientX: 100,
-				clientY: 200,
-			});
+			if (container) {
+				fireEvent.doubleClick(container, {
+					clientX: 100,
+					clientY: 200,
+				});
+			}
 
 			expect(handleClick).toHaveBeenCalledWith(
 				expect.objectContaining({

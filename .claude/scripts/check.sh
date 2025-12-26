@@ -4,6 +4,7 @@ if [ $? -ne 0 ]; then
   echo '{
     "decision": "block",
     "reason": "Code contains type errors. Please fix them first.",
+    "continue": true
   }'
   exit 0
 fi
@@ -13,15 +14,17 @@ if [ $? -ne 0 ]; then
   echo '{
     "decision": "block",
     "reason": "Code contains linting errors. Please fix them first.",
+    "continue": true
   }'
   exit 0
 fi
 
-resule=$(pnpm test)
+result=$(pnpm test)
 if [ $? -ne 0 ]; then
   echo '{
     "decision": "block",
     "reason": "Code contains test errors. Please fix them first.",
+    "continue": true
   }'
   exit 0
 fi

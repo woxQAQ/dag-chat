@@ -117,6 +117,7 @@ describe("useRootNodeCreation", () => {
 			mockNodeId,
 			mockPositionX,
 			mockPositionY,
+			mockContent,
 		);
 
 		// Verify AI API was called
@@ -131,6 +132,7 @@ describe("useRootNodeCreation", () => {
 				message: mockContent,
 				positionX: mockPositionX,
 				positionY: mockPositionY + 150,
+				skipUserNode: true,
 			}),
 		});
 
@@ -212,6 +214,7 @@ describe("useRootNodeCreation", () => {
 	});
 
 	it("should set isCreating to true during creation", async () => {
+		// biome-ignore lint/suspicious/noExplicitAny: Promise resolve type is complex
 		let resolveCreation: (value: any) => void;
 
 		vi.mocked(createRootNode).mockImplementation(
@@ -239,7 +242,7 @@ describe("useRootNodeCreation", () => {
 
 		// Resolve the promise
 		await act(async () => {
-			resolveCreation!({
+			resolveCreation?.({
 				success: true,
 				data: {
 					nodeId: "new-root-node",

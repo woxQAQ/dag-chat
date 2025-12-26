@@ -16,21 +16,17 @@ vi.mock("@xyflow/react", () => ({
 		children,
 		nodes,
 		edges,
-		onMoveStart,
-		onMoveEnd,
 	}: {
 		children?: React.ReactNode;
+		// biome-ignore lint/suspicious/noExplicitAny: Mock component for testing
 		nodes?: any[];
+		// biome-ignore lint/suspicious/noExplicitAny: Mock component for testing
 		edges?: any[];
-		onMoveStart?: () => void;
-		onMoveEnd?: () => void;
 	}) => (
 		<div
 			data-testid="react-flow"
 			data-nodes={nodes?.length ?? 0}
 			data-edges={edges?.length ?? 0}
-			onMoveStart={onMoveStart}
-			onMoveEnd={onMoveEnd}
 		>
 			{children}
 		</div>

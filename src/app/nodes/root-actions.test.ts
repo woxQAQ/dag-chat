@@ -4,7 +4,7 @@
  * Tests for the createRootNode Server Action.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { createProject } from "@/lib/project-crud";
 import { createRootNode } from "./root-actions";
@@ -27,6 +27,12 @@ describe("createRootNode Server Action", () => {
 		// Create a test project for each test
 		const project = await createProject({ name: "Test Project" });
 		testProjectId = project.id;
+	});
+
+	// Clean up all test data after all tests in this file complete
+	afterAll(async () => {
+		await prisma.node.deleteMany({});
+		await prisma.project.deleteMany({});
 	});
 
 	describe("Success Cases", () => {
