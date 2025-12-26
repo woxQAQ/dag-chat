@@ -15,6 +15,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { getProjectGraphAction } from "@/app/nodes/actions";
+import { applyAutoLayoutAction } from "@/app/workspace/layout-actions";
 import {
 	EmptyStateCanvas,
 	InfiniteCanvas,
@@ -501,11 +502,22 @@ function WorkspaceContent() {
 		[handleNodeSelect, handleSelectionClear],
 	);
 
-	// Existing handlers (unchanged)
-	const handleLayout = () => {
-		console.log("Auto layout clicked");
-		// TODO: Implement auto layout in UI-002
-	};
+	// UI-WORKSPACE-004: Auto layout handler
+	const handleLayout = useCallback(async () => {
+		if (!projectId) return;
+
+		const result = await applyAutoLayoutAction(projectId);
+
+		if (result.success && result.data) {
+			// Reload graph to get new positions
+			await loadGraph();
+			// Optional: show feedback - you can add a toast notification here
+			console.log(`Layout applied: ${result.data.updatedCount} nodes`);
+		} else {
+			console.error("Auto-layout failed:", result.error);
+			// Optional: show error toast
+		}
+	}, [projectId, loadGraph]);
 
 	const handleShare = () => {
 		console.log("Share clicked");

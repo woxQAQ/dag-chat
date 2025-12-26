@@ -120,7 +120,7 @@ export function CreateProjectDialog({
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 							placeholder="My Conversation"
-							className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+							className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-100 disabled:text-slate-500"
 							maxLength={100}
 							required
 							disabled={isCreating}
@@ -143,7 +143,7 @@ export function CreateProjectDialog({
 							onChange={(e) => setDescription(e.target.value)}
 							placeholder="What's this project about?"
 							rows={3}
-							className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+							className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none disabled:bg-slate-100 disabled:text-slate-500"
 							maxLength={1000}
 							disabled={isCreating}
 						/>

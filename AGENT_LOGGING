@@ -2,6 +2,86 @@
 
 ## 2024-12-26
 
+### [UI-WORKSPACE-004] Auto Layout - COMPLETED
+**Branch:** feat/ui-workspace-004-auto-layout
+**Status:** ✅ Complete
+
+#### Changes Made:
+
+1. **Tree Layout Algorithm** (`src/lib/tree-layout.ts`)
+   - `calculateTreeLayout(nodes)`: Main entry point for vertical tree layout
+   - `buildTreeStructure(nodes)`: Converts flat nodes to hierarchical tree
+   - `calculateSubtreeWidths(node)`: Computes subtree widths via post-order traversal
+   - `assignPositions(node, x, y)`: Assigns coordinates via pre-order traversal
+   - `detectCollisions(layout)`: Checks for overlapping nodes
+   - `resolveCollisions(layout)`: Shifts conflicting subtrees (per Y-level)
+   - `tree-layout.test.ts`: 15 comprehensive unit tests
+
+2. **Server Action** (`src/app/workspace/layout-actions.ts`)
+   - `applyAutoLayoutAction(projectId)`: Server Action for applying auto-layout
+   - Fetches all nodes via `getProjectGraphAction`
+   - Calculates layout using `calculateTreeLayout`
+   - Persists positions via `batchUpdatePositions`
+   - Revalidates `/workspace` path
+   - `layout-actions.test.ts`: 5 integration tests
+
+3. **Workspace Integration** (`src/app/workspace/page.tsx`)
+   - Added import for `applyAutoLayoutAction`
+   - Updated `handleLayout` function to call Server Action
+   - Reloads graph after layout is applied
+   - Provides console feedback on success/error
+
+#### Technical Details:
+- **Layout Algorithm**: Vertical tree layout inspired by Reingold-Tilford
+- **Constants**: `PARENT_CHILD_VERTICAL_OFFSET = 150`, `NODE_WIDTH = 350`, `SIBLING_HORIZONTAL_GAP = 50`, `TREE_ROOT_GAP = 400`
+- **Collision Resolution**: Per-Y-level collision detection and shifting
+- **Complexity**: O(n) for typical cases, O(n²) for collision detection (mitigated by Y-level grouping)
+
+#### Visual Design:
+- **Vertical Orientation**: Root at top, children below (classic conversation flow)
+- **Centered Parents**: Parents centered above their children
+- **Proper Spacing**: 150px vertical gap, 50px horizontal gap between siblings
+- **Multiple Roots**: Separate trees laid out left-to-right with 400px gap
+
+#### File Structure:
+```
+src/
+├── lib/
+│   ├── tree-layout.ts (new)
+│   └── tree-layout.test.ts (new)
+├── app/
+│   └── workspace/
+│       ├── layout-actions.ts (new)
+│       ├── layout-actions.test.ts (new)
+│       └── page.tsx (modified)
+```
+
+#### Usage:
+1. Click Layout button in Floating Toolbar (bottom center)
+2. Algorithm calculates new positions for all nodes in project
+3. Positions are persisted to database
+4. Canvas refreshes with new layout
+
+#### Important Notes:
+- Layout applies to ALL nodes in a project (entire conversation tree)
+- No preview/undo - layout is applied immediately and saved
+- Works with empty projects (returns success with 0 updates)
+- Handles multiple root nodes (disconnected trees)
+- Handles orphan nodes (treated as separate roots)
+
+#### Test Results:
+- **Unit Tests**: 15/15 passed (tree-layout.test.ts)
+- **Integration Tests**: 5/5 passed (layout-actions.test.ts)
+- **Total**: 460/460 tests passed (all project tests)
+
+#### Next Steps:
+- Manual testing in development environment
+- Optional: Add toast notifications for success/error feedback
+- Optional: Add undo/redo functionality
+- Optional: Support horizontal layout direction
+
+---
+
 ### [UI-WORKSPACE-005] Workspace Navigation - COMPLETED
 **Branch:** feat/ui-workspace-005-navigation
 **Status:** ✅ Complete
