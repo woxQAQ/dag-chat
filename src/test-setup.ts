@@ -12,9 +12,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-	// Cleanup after all tests
-	// Clean up nodes first due to foreign key constraints
-	await prisma.node.deleteMany({});
-	await prisma.project.deleteMany({});
+	// Disconnect Prisma client after all tests
 	await prisma.$disconnect();
 });
