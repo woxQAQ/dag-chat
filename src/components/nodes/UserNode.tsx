@@ -75,7 +75,7 @@ export function UserNode({
 	return (
 		// biome-ignore lint/a11y/useSemanticElements: ReactFlow node requires div for positioning
 		<div
-			className={`relative min-w-[280px] max-w-[400px] rounded-xl bg-slate-100 border-2 transition-all duration-200 ${
+			className={`relative w-[320px] rounded-xl bg-slate-100 border-2 transition-all duration-200 ${
 				selected
 					? "border-blue-500 shadow-[0_0_0_2px_#2563EB,0_10px_15px_-3px_rgba(0,0,0,0.1)]"
 					: "border-slate-200 shadow-[0_1px_3px_0_rgba(0,0,0,0.1)]"

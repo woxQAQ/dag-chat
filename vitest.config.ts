@@ -3,11 +3,15 @@ import react from "@vitejs/plugin-react";
 import { config } from "dotenv";
 import { defineConfig } from "vitest/config";
 
-// Load test environment variables
+// Load test environment variables BEFORE anything else
 config({ path: ".env.test" });
 
 export default defineConfig({
 	plugins: [react()],
+	// Ensure VITEST is set for src/lib/prisma.ts environment detection
+	define: {
+		"process.env.VITEST": '"vitest"',
+	},
 	test: {
 		globals: true,
 		environment: "happy-dom",

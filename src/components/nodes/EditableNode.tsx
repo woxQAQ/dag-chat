@@ -23,7 +23,6 @@
 
 import { memo, useCallback } from "react";
 import { useNodeEditingContext } from "@/contexts/NodeEditingContext";
-import { calculateForkPosition } from "@/lib/position-calculator";
 import { AINode as BaseAINode } from "./AINode";
 import type { AINodeProps, MindFlowNode, UserNodeProps } from "./types";
 import { UserNode as BaseUserNode } from "./UserNode";
@@ -76,7 +75,6 @@ export const EditableUserNode = memo<
 		isEditing: isNodeEditing,
 		setEditedContent: setContextEditedContent,
 		getEditedContent,
-		onCreateChild,
 		hoveredNodeId: contextHoveredNodeId,
 	} = useNodeEditingContext();
 
@@ -115,12 +113,9 @@ export const EditableUserNode = memo<
 		if (currentContent !== node.data.content) {
 			// For USER nodes: ALWAYS fork (non-destructive editing)
 			if (node.data.role === "USER") {
-				// Calculate position for forked node (to the right of original)
-				// Use node position if available, otherwise default to (0, 0)
-				const posX = node.position?.x ?? 0;
-				const posY = node.position?.y ?? 0;
-				const forkPosition = calculateForkPosition(posX, posY);
-				forkNode(node.data.id, currentContent, forkPosition.x, forkPosition.y);
+				// Fork position will be auto-calculated by server
+				// Auto-layout will organize the tree after fork
+				forkNode(node.data.id, currentContent, 0, 0);
 			} else {
 				// For other node types (ASSISTANT, SYSTEM): fall back to in-place update
 				// Note: ASSISTANT nodes should not be editable, but we handle it for safety
@@ -133,8 +128,6 @@ export const EditableUserNode = memo<
 		node.data.id,
 		node.data.content,
 		node.data.role,
-		node.position?.x,
-		node.position?.y,
 		currentContent,
 		updateNodeContent,
 		forkNode,

@@ -357,11 +357,31 @@ function WorkspaceContent() {
 
 	// UI-NEW-005: Node forking hook (non-destructive editing)
 	const { forkUserNode } = useNodeForking({
-		onNodeForked: (_userNodeId, _aiNodeId) => {
+		onNodeForked: async (_userNodeId, aiNodeId) => {
 			// The fork action returns both the USER node and AI node IDs
-			// However, we need to reload the graph to get the actual node data (position, content)
-			// since the server action creates these nodes
-			loadGraph();
+			// Reload the graph to get the actual node data (position, content)
+			await loadGraph();
+
+			// Apply auto-layout to organize the tree structure after forking
+			const layoutResult = await applyAutoLayoutAction(projectId);
+			if (layoutResult.success && layoutResult.data) {
+				console.log(
+					`[fork] Auto-layout applied: ${layoutResult.data.updatedCount} nodes`,
+				);
+				// Reload graph again to get the new positions from layout
+				await loadGraph();
+			}
+
+			// Start SSE streaming for the AI node if it was created
+			if (aiNodeId) {
+				console.log(
+					"[workspace] Starting stream for forked AI node:",
+					aiNodeId,
+				);
+				// Small delay to ensure node is in ReactFlow state before starting stream
+				await new Promise((resolve) => setTimeout(resolve, 100));
+				startStream(aiNodeId);
+			}
 		},
 		onError: (error) => {
 			console.error("Node fork error:", error);

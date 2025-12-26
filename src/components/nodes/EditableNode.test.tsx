@@ -8,7 +8,7 @@ import { NodeEditingProvider } from "@/contexts/NodeEditingContext";
 import { createEditableNode, EditableUserNode } from "./EditableNode";
 import type { MindFlowNode } from "./types";
 
-// Mock the Handle component from @xyflow/react
+// Mock the Handle component and useReactFlow from @xyflow/react
 vi.mock("@xyflow/react", async () => {
 	const actual = await vi.importActual("@xyflow/react");
 	return {
@@ -16,6 +16,10 @@ vi.mock("@xyflow/react", async () => {
 		Handle: ({ id, className }: { id: string; className: string }) => (
 			<div data-testid={`handle-${id}`} className={className} />
 		),
+		useReactFlow: () => ({
+			getNodes: () => [],
+			getEdges: () => [],
+		}),
 	};
 });
 
