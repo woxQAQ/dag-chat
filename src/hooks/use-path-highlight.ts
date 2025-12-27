@@ -23,7 +23,7 @@
  */
 
 import type { Edge, Node } from "@xyflow/react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
 	applyEdgeHighlightStyles,
 	applyNodeHighlightStyles,
@@ -69,6 +69,10 @@ export interface UsePathHighlightResult {
  * - All other nodes and edges are dimmed (30% opacity)
  * - Edges on the path are animated
  *
+ * Performance optimization: Caches the highlight calculation and only
+ * recalculates when the selectedNodeId actually changes, not on every
+ * nodes/edges update. This reduces unnecessary re-renders significantly.
+ *
  * @param options - Configuration options
  * @returns Path highlighting state and controls
  */
@@ -88,9 +92,28 @@ export function usePathHighlight(
 		null,
 	);
 
-	// Memoized path highlight calculation
+	// Cache for highlight calculation - only recalculate when selection changes
+	const prevSelectedIdRef = useRef<string | null>(null);
+	const cachedResultRef = useRef<PathHighlightResult>({
+		highlightedNodeIds: new Set<string>(),
+		highlightedEdgeIds: new Set<string>(),
+		dimmedNodeIds: new Set<string>(),
+		dimmedEdgeIds: new Set<string>(),
+		pathNodeIds: [],
+	});
+
+	// Memoized path highlight calculation with caching
 	const highlightResult = useMemo((): PathHighlightResult => {
-		return calculatePathHighlight(selectedNodeId, nodes, edges);
+		// Only recalculate if selectedNodeId actually changed
+		if (selectedNodeId !== prevSelectedIdRef.current) {
+			const result = calculatePathHighlight(selectedNodeId, nodes, edges);
+			cachedResultRef.current = result;
+			prevSelectedIdRef.current = selectedNodeId;
+			return result;
+		}
+
+		// Return cached result if selection hasn't changed
+		return cachedResultRef.current;
 	}, [selectedNodeId, nodes, edges]);
 
 	// Apply styles to nodes

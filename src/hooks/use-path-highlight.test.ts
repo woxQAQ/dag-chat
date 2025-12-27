@@ -80,6 +80,7 @@ function createMockHighlightResult(
 describe("usePathHighlight", () => {
 	beforeEach(() => {
 		// Reset mocks before each test
+		vi.clearAllMocks();
 		vi.mocked(calculatePathHighlight).mockReturnValue(
 			createMockHighlightResult(null),
 		);
@@ -187,7 +188,7 @@ describe("usePathHighlight", () => {
 		expect(() => rerender({ highlightColor: "#00ff00" })).not.toThrow();
 	});
 
-	it("should update when nodes or edges change", () => {
+	it("should cache highlight result and only recalculate when selection changes", () => {
 		const nodes = createMockNodes();
 		const edges = createMockEdges();
 		const mockResult = createMockHighlightResult("child-2");
@@ -202,14 +203,15 @@ describe("usePathHighlight", () => {
 			result.current.setSelectedNodeId("child-2");
 		});
 
-		// Verify calculatePathHighlight was called
+		// Verify calculatePathHighlight was called once
+		expect(calculatePathHighlight).toHaveBeenCalledTimes(1);
 		expect(calculatePathHighlight).toHaveBeenCalledWith(
 			"child-2",
 			nodes,
 			edges,
 		);
 
-		// Update nodes
+		// Update nodes while selection stays the same
 		const newNodes = [
 			...nodes,
 			{
@@ -222,12 +224,17 @@ describe("usePathHighlight", () => {
 
 		rerender({ nodes: newNodes, edges });
 
-		// Verify calculatePathHighlight was called with new nodes
-		expect(calculatePathHighlight).toHaveBeenCalledWith(
-			"child-2",
-			newNodes,
-			edges,
-		);
+		// With caching: calculatePathHighlight should NOT be called again
+		// because selectedNodeId hasn't changed
+		expect(calculatePathHighlight).toHaveBeenCalledTimes(1);
+
+		// Now change the selection
+		act(() => {
+			result.current.setSelectedNodeId("child-1");
+		});
+
+		// Should recalculate when selection changes
+		expect(calculatePathHighlight).toHaveBeenCalledTimes(2);
 	});
 
 	it("should return highlight result", () => {
@@ -253,6 +260,7 @@ describe("usePathHighlight", () => {
 
 describe("usePathHighlightWithInspector", () => {
 	beforeEach(() => {
+		vi.clearAllMocks();
 		vi.mocked(calculatePathHighlight).mockReturnValue(
 			createMockHighlightResult(null),
 		);

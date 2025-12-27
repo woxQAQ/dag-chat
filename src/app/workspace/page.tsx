@@ -14,7 +14,7 @@ import {
 	useNodesState,
 } from "@xyflow/react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { getProjectGraphAction } from "@/app/nodes/actions";
 import { applyAutoLayoutAction } from "@/app/workspace/layout-actions";
 import {
@@ -41,6 +41,26 @@ import { useNodeStream } from "@/hooks/use-node-stream";
 import { usePathHighlightWithInspector } from "@/hooks/use-path-highlight";
 import { useRootNodeCreation } from "@/hooks/use-root-creation";
 import { useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
+
+// ============================================================================
+// Stable Node Types - Module level for performance
+// ============================================================================
+
+/**
+ * Stable node types object for React Flow
+ *
+ * Moved to module level to prevent recreation on every render.
+ * The createEditableNode() factory function creates stable components
+ * that receive callbacks via NodeEditingContext, so the nodeTypes
+ * object itself can be a constant reference.
+ *
+ * Performance impact: Reduces unnecessary ReactFlow re-renders
+ */
+const STABLE_NODE_TYPES: NodeTypes = {
+	user: createEditableNode(),
+	assistant: createEditableNode(),
+	system: createEditableNode(),
+};
 
 // ============================================================================
 // Canvas Wrapper Component with Edit Handling
@@ -531,15 +551,9 @@ function WorkspaceContent() {
 		},
 	});
 
-	// UI-NEW-004: Create stable node types (no dependencies since callback comes from context)
-	const nodeTypes = useMemo(
-		() => ({
-			user: createEditableNode(),
-			assistant: createEditableNode(),
-			system: createEditableNode(),
-		}),
-		[],
-	);
+	// UI-NEW-004: Use stable node types (module-level constant for performance)
+	// The nodeTypes are defined as STABLE_NODE_TYPES at module level to prevent
+	// unnecessary ReactFlow re-renders when parent component updates.
 
 	// NEW: Handle double-click on canvas - opens prompt dialog
 	const onPaneDoubleClick = useCallback(
@@ -1075,7 +1089,7 @@ function WorkspaceContent() {
 					<CanvasWithEditHandler
 						nodes={highlightedNodes as MindFlowNode[]}
 						edges={highlightedEdges}
-						nodeTypes={nodeTypes}
+						nodeTypes={STABLE_NODE_TYPES}
 						// biome-ignore lint/suspicious/noExplicitAny: ReactFlow onNodesChange type compatibility with custom MindFlowNode
 						onNodesChange={onNodesChange as any}
 						onEdgesChange={onEdgesChange}

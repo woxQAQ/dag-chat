@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { getHighlighter } from "@/lib/shiki-singleton";
 
 /**
  * Props for MarkdownRenderer component
@@ -234,33 +235,8 @@ export function MarkdownRenderer({
 	useEffect(() => {
 		async function loadShiki() {
 			try {
-				const { createHighlighter } = await import("shiki");
-
-				const highlighter = await createHighlighter({
-					themes: ["catppuccin-latte"],
-					langs: [
-						"javascript",
-						"typescript",
-						"python",
-						"java",
-						"cpp",
-						"c",
-						"go",
-						"rust",
-						"ruby",
-						"php",
-						"sql",
-						"html",
-						"css",
-						"json",
-						"yaml",
-						"markdown",
-						"bash",
-						"shell",
-						"tsx",
-						"jsx",
-					],
-				});
+				// Use singleton highlighter instead of creating new instance
+				const highlighter = await getHighlighter();
 
 				setComponents({
 					...baseComponents,
