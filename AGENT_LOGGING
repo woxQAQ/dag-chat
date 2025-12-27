@@ -4,183 +4,40 @@
 
 ### [UI-WORKSPACE-004] Auto Layout - COMPLETED
 **Branch:** feat/ui-workspace-004-auto-layout
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Vertical tree layout algorithm inspired by Reingold-Tilford
+- Collision detection and resolution per Y-level
+- Works with multiple root nodes and orphan nodes
+- Layout applies to ALL nodes in project, persisted to database
 
-1. **Tree Layout Algorithm** (`src/lib/tree-layout.ts`)
-   - `calculateTreeLayout(nodes)`: Main entry point for vertical tree layout
-   - `buildTreeStructure(nodes)`: Converts flat nodes to hierarchical tree
-   - `calculateSubtreeWidths(node)`: Computes subtree widths via post-order traversal
-   - `assignPositions(node, x, y)`: Assigns coordinates via pre-order traversal
-   - `detectCollisions(layout)`: Checks for overlapping nodes
-   - `resolveCollisions(layout)`: Shifts conflicting subtrees (per Y-level)
-   - `tree-layout.test.ts`: 15 comprehensive unit tests
+#### Files
+- `src/lib/tree-layout.ts` (+test) - Layout algorithm with collision detection
+- `src/app/workspace/layout-actions.ts` (+test) - Server Action for applying layout
+- `src/app/workspace/page.tsx` - Integrated layout button
 
-2. **Server Action** (`src/app/workspace/layout-actions.ts`)
-   - `applyAutoLayoutAction(projectId)`: Server Action for applying auto-layout
-   - Fetches all nodes via `getProjectGraphAction`
-   - Calculates layout using `calculateTreeLayout`
-   - Persists positions via `batchUpdatePositions`
-   - Revalidates `/workspace` path
-   - `layout-actions.test.ts`: 5 integration tests
-
-3. **Workspace Integration** (`src/app/workspace/page.tsx`)
-   - Added import for `applyAutoLayoutAction`
-   - Updated `handleLayout` function to call Server Action
-   - Reloads graph after layout is applied
-   - Provides console feedback on success/error
-
-#### Technical Details:
-- **Layout Algorithm**: Vertical tree layout inspired by Reingold-Tilford
-- **Constants**: `PARENT_CHILD_VERTICAL_OFFSET = 150`, `NODE_WIDTH = 350`, `SIBLING_HORIZONTAL_GAP = 50`, `TREE_ROOT_GAP = 400`
-- **Collision Resolution**: Per-Y-level collision detection and shifting
-- **Complexity**: O(n) for typical cases, O(n²) for collision detection (mitigated by Y-level grouping)
-
-#### Visual Design:
-- **Vertical Orientation**: Root at top, children below (classic conversation flow)
-- **Centered Parents**: Parents centered above their children
-- **Proper Spacing**: 150px vertical gap, 50px horizontal gap between siblings
-- **Multiple Roots**: Separate trees laid out left-to-right with 400px gap
-
-#### File Structure:
-```
-src/
-├── lib/
-│   ├── tree-layout.ts (new)
-│   └── tree-layout.test.ts (new)
-├── app/
-│   └── workspace/
-│       ├── layout-actions.ts (new)
-│       ├── layout-actions.test.ts (new)
-│       └── page.tsx (modified)
-```
-
-#### Usage:
-1. Click Layout button in Floating Toolbar (bottom center)
-2. Algorithm calculates new positions for all nodes in project
-3. Positions are persisted to database
-4. Canvas refreshes with new layout
-
-#### Important Notes:
-- Layout applies to ALL nodes in a project (entire conversation tree)
-- No preview/undo - layout is applied immediately and saved
-- Works with empty projects (returns success with 0 updates)
-- Handles multiple root nodes (disconnected trees)
-- Handles orphan nodes (treated as separate roots)
-
-#### Test Results:
-- **Unit Tests**: 15/15 passed (tree-layout.test.ts)
-- **Integration Tests**: 5/5 passed (layout-actions.test.ts)
-- **Total**: 460/460 tests passed (all project tests)
-
-#### Next Steps:
-- Manual testing in development environment
-- Optional: Add toast notifications for success/error feedback
-- Optional: Add undo/redo functionality
-- Optional: Support horizontal layout direction
+#### Tests
+- 20 new tests, all passing
 
 ---
 
 ### [UI-WORKSPACE-005] Workspace Navigation - COMPLETED
 **Branch:** feat/ui-workspace-005-navigation
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Dynamic project name fetching from API
+- Back navigation to dashboard
+- Loading and error states with graceful degradation
+- Fetch cancellation on unmount
 
-1. **Custom Hook** (`src/hooks/use-workspace-navigation.ts`)
-   - `useWorkspaceNavigation()`: Manages workspace navigation state
-   - Returns: `{ projectName, isLoading, error, handleBack }`
-   - Fetches project data dynamically from API by projectId
-   - Provides back navigation to Dashboard
-   - Optional callbacks: `onProjectLoaded`, `onNavigateBack`
-   - `use-workspace-navigation.test.ts`: 10 comprehensive tests for the hook
+#### Files
+- `src/hooks/use-workspace-navigation.ts` (+test) - Navigation state management
+- `src/app/workspace/page.tsx` - Integrated hook for dynamic project name
 
-2. **Workspace Integration** (`src/app/workspace/page.tsx`)
-   - Added `useWorkspaceNavigation` hook import and usage
-   - Removed hardcoded project name "My MindFlow Project"
-   - Removed TODO `handleBack` function (now uses hook's implementation)
-   - TopHeader now receives dynamic `projectName` from API
-   - TopHeader's `onBack` uses the hook's `handleBack` function
-
-3. **Type Definitions**
-   - `UseWorkspaceNavigationOptions`: projectId, onProjectLoaded, onNavigateBack
-   - `UseWorkspaceNavigationResult`: projectName, isLoading, error, handleBack
-
-4. **Tests** (`src/hooks/use-workspace-navigation.test.ts`)
-   - 10 comprehensive tests covering:
-     - Initial state with valid and invalid projectId
-     - Project data fetching from API
-     - Empty project name handling (defaults to "Untitled Project")
-     - API error handling
-     - Network error handling
-     - ProjectId change refetching
-     - Back navigation with callback and router.push
-     - Fetch cancellation on unmount
-   - ✅ All 10 tests passing (10/10)
-
-#### Technical Details:
-- Uses Server Actions `getProject` from API-001 to fetch project data
-- React's `useEffect` with cleanup flag for cancellation
-- Next.js `useRouter` for navigation
-- Loading and error states for proper UX
-- Callbacks for extensibility (onProjectLoaded, onNavigateBack)
-
-#### Visual Design:
-- **Breadcrumb**: Already implemented in TopHeader - "Dashboard / Project Name"
-- **Project Name**: Dynamically fetched from API, displayed in breadcrumb
-- **Back Button**: Navigates to "/" (Dashboard)
-- **Loading State**: Shows "Untitled Project" while fetching, updates after load
-- **Error State**: Graceful degradation with "Untitled Project" on error
-
-#### File Structure:
-```
-src/hooks/
-├── use-workspace-navigation.ts (new)
-└── use-workspace-navigation.test.ts (new)
-
-src/app/workspace/
-└── page.tsx (modified - integrated useWorkspaceNavigation hook)
-```
-
-#### Usage Example:
-```tsx
-import { useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
-
-// In workspace component
-const { projectName, isLoading, error, handleBack } = useWorkspaceNavigation({
-  projectId,
-  onProjectLoaded: (name) => {
-    console.log("Project loaded:", name);
-  },
-  onNavigateBack: () => {
-    // Optional: perform cleanup before navigation
-  },
-});
-
-// In TopHeader
-<TopHeader
-  projectName={projectName}
-  onBack={handleBack}
-/>
-```
-
-#### Important Notes:
-- Project name defaults to "Untitled Project" when:
-  - No projectId is provided
-  - API returns empty name
-  - API call fails
-- The breadcrumb navigation (Dashboard / Project Name) is already implemented in TopHeader
-- Back button navigates to "/" (dashboard route)
-- Fetch is cancelled on component unmount to prevent memory leaks
-- The hook re-fetches project data when projectId changes
-
-#### Next Steps:
-- Feature UI-WORKSPACE-005 is complete. Users can now see dynamic project names in the workspace header and navigate back to dashboard.
-- The breadcrumb navigation was already implemented in UI-001 TopHeader component.
-- Dependent features can now proceed:
-  - UI-WORKSPACE-002: Export Functionality
-  - UI-WORKSPACE-003: Settings Functionality
+#### Tests
+- 10 new tests, all passing
 
 ---
 
@@ -188,88 +45,11 @@ const { projectName, isLoading, error, handleBack } = useWorkspaceNavigation({
 
 ### [UI-NEW-003] Empty State Guidance - VERIFIED ALREADY IMPLEMENTED
 **Branch:** feat/ui-new-003-empty-state-guidance
-**Status:** ✅ Verified Complete (Previously Implemented)
+**Status:** Verified Complete (from UI-NEW-001)
 
-#### Verification Summary:
-
-The UI-NEW-003 feature was already implemented as part of UI-NEW-001 (Root Node Creation).
-The `EmptyStateCanvas` component (`src/components/canvas/EmptyStateCanvas.tsx`) provides
-all required functionality for empty state guidance.
-
-#### Implementation Details:
-
-**Component:** `EmptyStateCanvas`
-**Location:** `src/components/canvas/EmptyStateCanvas.tsx`
-**Tests:** `src/components/canvas/EmptyStateCanvas.test.tsx` (15 tests, all passing)
-
-**Features Implemented:**
-1. **Default Message**: "Double click anywhere to start your thought flow"
-2. **Custom Message Support**: Via `message` prop
-3. **Conditional Display**: Via `show` prop
-4. **Double Click Handler**: Via `onDoubleClick` prop for creating first node
-5. **Soft Visual Design**:
-   - Color: text-slate-400 (#94a3b8) - muted gray
-   - Font: text-lg (1.125rem), font-light (300), tracking-wide
-   - Centered: flex items-center justify-center
-6. **Proper Z-Index**: z-index: 1 (above ReactFlow canvas)
-7. **Pointer Events Handling**: none when clickable to allow click-through
-
-#### Visual Design:
-- **Text Color**: #94a3b8 (slate-400) - soft, unobtrusive
-- **Font Size**: 1.125rem (text-lg)
-- **Font Weight**: 300 (font-light)
-- **Letter Spacing**: tracking-wide
-- **Position**: Absolute center (inset-0, flex-centered)
-- **Z-Index**: 1 (above canvas)
-
-#### Integration:
-- **Workspace Page**: `src/app/workspace/page.tsx` (lines 581-592)
-- **Condition**: Shows when `nodes.length === 0 && graphLoaded`
-- **Double Click**: Triggers prompt dialog for root node creation
-- **Error Messages**: Custom messages for missing/invalid projects
-
-#### Test Coverage:
-- ✅ Rendering with show prop (true/false)
-- ✅ Default message display
-- ✅ Custom message support
-- ✅ Z-index and positioning
-- ✅ Text styling
-- ✅ Double click handler
-- ✅ Mouse event passing
-- ✅ Pointer-events behavior
-- ✅ Conditional display based on nodes array
-- ✅ Empty and long custom messages
-
-**Total Tests**: 15 (all passing)
-
-#### Usage Example (from Workspace):
-```tsx
-<EmptyStateCanvas
-  show={nodes.length === 0 && graphLoaded}
-  message={
-    projectExists
-      ? undefined
-      : projectId
-        ? "Project not found. Please create a project first."
-        : "No project selected. Please select a project from the dashboard."
-  }
-  onDoubleClick={projectExists ? onPaneDoubleClick : undefined}
-/>
-```
-
-#### File Structure:
-```
-src/components/canvas/
-├── EmptyStateCanvas.tsx (implemented)
-├── EmptyStateCanvas.test.tsx (15 tests)
-└── index.ts (exported)
-```
-
-#### Conclusion:
-UI-NEW-003 is **complete and verified**. The feature was implemented as part of UI-NEW-001
-and has comprehensive test coverage. No additional work is required.
-
-**Status Update Required**: FEATURE_LIST_ADDON should be updated to reflect "complete" status.
+#### Summary
+Feature already implemented in `EmptyStateCanvas` component from UI-NEW-001.
+Provides centered hint message for empty projects with double-click handler.
 
 ---
 
@@ -277,109 +57,18 @@ and has comprehensive test coverage. No additional work is required.
 
 ### [UI-002-UPDATE] Canvas Visual Optimization - COMPLETED
 **Branch:** feat/ui-002-update-canvas-visual
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Added configurable dot opacity (default: subtle 4%)
+- Optional dynamic dot display (show only when panning)
+- Cleaner, minimal canvas appearance
 
-1. **InfiniteCanvas Component Updates** (`src/components/canvas/InfiniteCanvas.tsx`)
-   - Added new prop: `showDotsOnPanOnly` (default: false)
-     - When true, background dots only appear during canvas panning/dragging
-     - Provides a cleaner, minimal look when canvas is static
-   - Added new prop: `dotOpacity` (default: 0.04)
-     - Controls the opacity of background dots (0-1 range)
-     - Default 4% provides very subtle spatial reference
-   - Changed default dot color from solid `#cbd5e1` to `rgba(203, 213, 225, 0.04)`
-     - 4% opacity is much more subtle than previous solid color
-   - Added panning state tracking using `useState`
-   - Added `onMoveStart` and `onMoveEnd` handlers to detect panning
-   - Background conditionally renders based on `shouldShowBackground` flag
-   - Imported `useCallback` and `OnMoveProps` type from React Flow
+#### Files
+- `src/components/canvas/InfiniteCanvas.tsx` (+test) - Added `showDotsOnPanOnly`, `dotOpacity` props
 
-2. **Visual Design Changes**
-   - **Default dot opacity**: 4% (0.04) - very subtle, barely visible
-   - **Customizable opacity**: Can be increased (e.g., 0.08) for more visibility
-   - **Optional dynamic display**: Dots appear only when panning (showDotsOnPanOnly)
-   - **Pure white/transparent background**: Cleaner look with minimal dot pattern
-
-3. **Tests** (`src/components/canvas/InfiniteCanvas.test.tsx`)
-   - **Added 8 new tests** for UI-002-UPDATE functionality:
-     - Default dotOpacity of 0.04
-     - Custom dotOpacity values
-     - Background visibility with showDotsOnPanOnly settings
-     - Very subtle dots (0.03 opacity)
-     - More visible dots (0.08 opacity)
-     - Integration test with all visual optimization props
-     - Always show dots when showDotsOnPanOnly is false
-   - **Total tests**: 27 (all passing)
-   - Updated mock to support `onMoveStart` and `onMoveEnd` handlers
-   - Updated mock to set `data-color` attribute on Background component
-
-4. **TypeScript Updates**
-   - Extended `InfiniteCanvasProps` interface with new props
-   - Added `OnMoveProps` import from `@xyflow/react`
-   - Added comprehensive JSDoc comments for new props
-
-#### Technical Details:
-- Uses React's `useState` to track panning state
-- `onMoveStart` handler sets `isPanning` to true when canvas pan begins
-- `onMoveEnd` handler sets `isPanning` to false when canvas pan ends
-- `shouldShowBackground` = `!showDotsOnPanOnly || isPanning`
-  - Always show dots when `showDotsOnPanOnly` is false (default)
-  - Only show dots during pan when `showDotsOnPanOnly` is true
-- Dot color uses `rgba()` for opacity control: `rgba(203, 213, 225, ${dotOpacity})`
-
-#### Visual Design:
-- **Default dot opacity**: 4% (0.04) - extremely subtle
-- **Dot color**: Slate-300 (#cbd5e1) at configurable opacity
-- **Background**: Pure white/transparent (no solid fill)
-- **Dynamic behavior** (optional): Dots fade in during pan, fade out when static
-
-#### File Structure:
-```
-src/components/canvas/
-├── InfiniteCanvas.tsx (modified - added visual optimization props)
-└── InfiniteCanvas.test.tsx (modified - added 8 new tests)
-```
-
-#### Usage Example:
-```tsx
-import { InfiniteCanvas } from "@/components/canvas";
-
-// Basic usage with subtle dots (default)
-<InfiniteCanvas
-  nodes={nodes}
-  edges={edges}
-  onNodesChange={onNodesChange}
-  onEdgesChange={onEdgesChange}
-/>
-
-// With dynamic dot display (dots appear only when panning)
-<InfiniteCanvas
-  nodes={nodes}
-  edges={edges}
-  showDotsOnPanOnly={true}
-  dotOpacity={0.04}
-/>
-
-// With more visible dots
-<InfiniteCanvas
-  nodes={nodes}
-  edges={edges}
-  dotOpacity={0.08}
-/>
-```
-
-#### Important Notes:
-- Default behavior maintains backward compatibility (dots always shown)
-- `showDotsOnPanOnly` is opt-in via prop (defaults to false)
-- `dotOpacity` can be adjusted from 0.01 (barely visible) to 0.1 (noticeable)
-- The visual changes make the canvas feel cleaner and less cluttered
-- Dynamic dot display provides spatial context only when needed
-
-#### Next Steps:
-- Feature UI-002-UPDATE is complete. Canvas now has a cleaner, minimal appearance.
-- The workspace page can optionally enable `showDotsOnPanOnly` for dynamic dots
-- Users can customize `dotOpacity` based on their preference
+#### Tests
+- 8 new tests, 27 total
 
 ---
 
@@ -387,529 +76,83 @@ import { InfiniteCanvas } from "@/components/canvas";
 
 ### [UI-005] Path Highlighting - COMPLETED
 **Branch:** feat/ui-005-path-highlighting
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
-
-1. **Path Calculator Utility** (`src/lib/path-calculator.ts`)
-   - `calculatePathHighlight()`: Main function to calculate highlighted/dimmed nodes and edges
-   - `buildParentMap()`: Builds parent-child map from edges for efficient traversal
-   - `findRootNodeId()`: Finds root node (node with no parent or isRoot metadata)
-   - `calculatePathToRoot()`: Traverses from selected node up to root
-   - `applyNodeHighlightStyles()`: Applies opacity styles to nodes (highlighted vs dimmed)
-   - `applyEdgeHighlightStyles()`: Applies color/width/animation styles to edges
-   - Returns `PathHighlightResult` with sets of highlighted/dimmed element IDs
-
-2. **Custom Hook** (`src/hooks/use-path-highlight.ts`)
-   - `usePathHighlight()`: Manages path highlighting state
-   - Returns: `{ highlightedNodes, highlightedEdges, selectedNodeId, setSelectedNodeId, clearSelection, highlightResult, isHighlighting }`
-   - Supports custom highlight/dimmed colors
-   - Optional `onSelectionChange` callback
-   - `usePathHighlightWithInspector()`: Extended hook with inspector panel integration
-   - Returns additional handlers: `{ handleNodeSelect, handleSelectionClear }`
-
-3. **Workspace Integration** (`src/app/workspace/page.tsx`)
-   - Added `usePathHighlightWithInspector` hook
-   - Hook integration opens inspector panel when node is selected
-   - `onSelectionChange` handler syncs with ReactFlow selection
-   - Canvas now uses `highlightedNodes` and `highlightedEdges`
-
-4. **Tests**
-   - **path-calculator.test.ts**: 13 tests covering:
-     - Empty selection handling
-     - Linear chain path calculation
-     - Branching tree with dimmed nodes/edges
-     - Complex tree with multiple levels
-     - Root node identification with isRoot metadata
-     - Orphan node handling
-     - Node and edge style application
-   - **use-path-highlight.test.ts**: 11 tests covering:
-     - Initial state with no selection
-     - Setting selected node ID
-     - Clearing selection
-     - onSelectionChange callback invocation
-     - Custom highlight color support
-     - Reactivity to nodes/edges changes
-     - Highlight result exposure
-     - Inspector integration with handleNodeSelect/handleSelectionClear
-   - ✅ All 24 new tests passing (24/24)
-
-#### Technical Details:
-- Client-side path calculation using existing ReactFlow nodes and edges
-- Parent-child relationship derived from edges (source → target)
-- Root node identified as node with no incoming edges or `isRoot: true` metadata
-- Highlighted path computed by traversing from selected node up to root
-- Dimmed elements = all elements not on the active path
-- Smooth transitions (0.2s ease-in-out) for visual feedback
-- Highlighted edges: animated, stroke width 3px, custom color (#2563eb)
-- Dimmed edges: opacity 0.3, stroke width 1px
-
-#### Visual Design:
-- **Highlighted nodes**: opacity 1, normal appearance
-- **Dimmed nodes**: opacity 0.3, reduced visibility
-- **Highlighted edges**: animated, stroke width 3px, custom color
-- **Dimmed edges**: opacity 0.3, stroke width 1px
-- **CSS classes**: `node-highlighted`, `node-dimmed`, `edge-highlighted`, `edge-dimmed`
-- **Transition**: 0.2s ease-in-out for smooth visual feedback
-
-#### File Structure:
-```
-src/lib/
-├── path-calculator.ts (new)
-└── path-calculator.test.ts (new)
-
-src/hooks/
-├── use-path-highlight.ts (new)
-└── use-path-highlight.test.ts (new)
-
-src/app/workspace/
-└── page.tsx (modified - integrated path highlighting)
-```
-
-#### Usage Example:
-```tsx
-import { usePathHighlightWithInspector } from "@/hooks/use-path-highlight";
-
-const {
-  highlightedNodes,
-  highlightedEdges,
-  handleNodeSelect,
-  handleSelectionClear,
-} = usePathHighlightWithInspector({
-  nodes,
-  edges,
-  highlightColor: "#2563eb",
-  dimmedColor: "#cbd5e1",
-  onNodeSelected: (nodeId) => {
-    setInspectorOpen(true);
-    setInspectorTab("thread");
-  },
-});
-
-// In onSelectionChange handler
-const onSelectionChange = (params) => {
-  const selectedNodeId = params.nodes?.[0]?.id || null;
-  if (selectedNodeId) {
-    handleNodeSelect(selectedNodeId);
-  } else {
-    handleSelectionClear();
-  }
-};
-
-<InfiniteCanvas
-  nodes={highlightedNodes}
-  edges={highlightedEdges}
-  onSelectionChange={onSelectionChange}
-/>
-```
-
-#### Important Notes:
-- Path highlighting is purely visual - doesn't modify underlying data
-- Selection state managed by hook, synced with ReactFlow via onSelectionChange
-- Inspector panel automatically opens when node is selected
-- Clicking empty canvas clears selection and removes highlighting
+#### Summary
+- Client-side path calculation from selected node to root
+- Visual distinction: highlighted path (opacity 1) vs dimmed branches (opacity 0.3)
+- Inspector panel auto-opens on node selection
 - Works with any tree structure (linear, branching, complex)
-- Root node can be identified by: no incoming edges OR `isRoot: true` metadata
 
-#### Next Steps:
-- Feature UI-005 is complete. Users now see visual feedback for selected conversation paths.
-- Dependent features can now proceed:
-  - UI-NEW-003: Empty State Guidance (visual consistency)
-  - Inspector Panel integration improvements
-  - Keyboard shortcuts for path navigation
+#### Files
+- `src/lib/path-calculator.ts` (+test) - Path calculation utilities
+- `src/hooks/use-path-highlight.ts` (+test) - Highlight state management
+- `src/app/workspace/page.tsx` - Integrated highlighting
+
+#### Tests
+- 24 new tests, all passing
 
 ---
 
 ### [UI-NEW-004] Node Content Editing - COMPLETED
 **Branch:** feat/ui-new-004-node-content-editing
-**Status:** ✅ Complete
+**Status:** Complete
 
----
+#### Summary
+- Double-click node to enter edit mode
+- Cmd/Ctrl+Enter to save, Escape to cancel
+- React Context pattern to fix React Flow nodeTypes warning
+- Database only updated on save action
 
-### [FIX] React Flow nodeTypes Warning - FIXED
-**Branch:** feat/ui-new-004-node-content-editing
-**Status:** ✅ Complete
+#### Files
+- `src/app/nodes/actions.ts` - Added `updateNodeContentAction`
+- `src/hooks/use-node-editing.ts` (+test) - Edit state management
+- `src/components/nodes/EditableNode.tsx` (+test) - Editable wrapper
+- `src/contexts/NodeEditingContext.tsx` - Context for stable nodeTypes
+- `src/components/nodes/UserNode.tsx` - Added onEditSave/onEditCancel callbacks
+- `src/app/workspace/page.tsx` - Integrated editable nodes
 
-#### Issue:
-React Flow warning appeared in console:
-```
-[React Flow]: It looks like you've created a new nodeTypes or edgeTypes object.
-If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the
-component or memoize them.
-```
-
-#### Root Cause:
-The `updateNodeContent` function from `useNodeEditing` hook changed on each render
-due to `useCallback` dependencies (`onContentUpdated`, `onError`). This caused
-`createEditableNode(updateNodeContent)` to create new component functions each time,
-making the `useMemo` ineffective.
-
-#### Solution:
-Implemented React Context pattern to provide the update callback to editable nodes,
-allowing `nodeTypes` to be truly stable:
-
-1. **Created NodeEditingContext** (`src/contexts/NodeEditingContext.tsx`)
-   - Provides `updateNodeContent` callback via context
-   - Includes `NodeEditingProvider` wrapper component
-   - Exports `useNodeEditingContext()` hook for consuming
-
-2. **Updated EditableNode** (`src/components/nodes/EditableNode.tsx`)
-   - Removed `onUpdateContent` from `EditableNodeProps`
-   - Uses `useNodeEditingContext()` to get update callback
-   - `createEditableNode()` no longer takes parameters
-
-3. **Updated Workspace** (`src/app/workspace/page.tsx`)
-   - Wrapped `InfiniteCanvas` with `NodeEditingProvider`
-   - `nodeTypes` now has empty dependency array: `useMemo(() => ({...}), [])`
-
-4. **Updated Tests** (`src/components/nodes/EditableNode.test.tsx`)
-   - Added `renderEditableUserNode()` helper function
-   - All test renders wrapped with `NodeEditingProvider`
-
-#### Result:
-- ✅ `nodeTypes` is now truly stable (no recreation on each render)
-- ✅ React Flow warning eliminated
-- ✅ All 18 tests passing
-- ✅ TypeScript compilation successful
-
-#### Changes Made:
-
-1. **Server Actions** (`src/app/nodes/actions.ts`)
-   - Added `UpdateNodeContentInput` interface for node content updates
-   - `updateNodeContentAction()`: Server Action for updating node content
-   - Wraps API-003 `updateNodeContent` service for client components
-   - Revalidates `/workspace` path after update
-
-2. **Custom Hook** (`src/hooks/use-node-editing.ts`)
-   - `useNodeEditing()`: Manages node content editing state
-   - Returns: `{ isUpdating, error, updateNodeContent }`
-   - Optional callbacks: `onContentUpdated`, `onError`
-   - `use-node-editing.test.ts`: 9 comprehensive tests for the hook
-
-3. **Editable Node Wrapper** (`src/components/nodes/EditableNode.tsx`)
-   - `EditableUserNode`: Wrapper component with local edit state management
-   - Tracks `isEditing` state locally to trigger re-renders
-   - Syncs with node data changes (e.g., after external save)
-   - Separates save (Cmd/Ctrl+Enter) and cancel (Escape) actions
-   - `EditableNode.test.tsx`: 9 comprehensive tests for the wrapper
-
-4. **UserNode Component** (`src/components/nodes/UserNode.tsx`)
-   - Added `onEditSave` and `onEditCancel` callbacks
-   - Save action: Calls both `onEditToggle(false)` and `onEditSave()`
-   - Cancel action: Calls both `onEditToggle(false)` and `onEditCancel()`
-   - Enables EditableNode to distinguish save from cancel
-
-5. **Types** (`src/components/nodes/types.ts`)
-   - Extended `UserNodeProps` with `onEditSave` and `onEditCancel` callbacks
-
-6. **Node Exports** (`src/components/nodes/index.ts`)
-   - Added exports for `createEditableNode` and `EditableUserNode`
-
-7. **Workspace Integration** (`src/app/workspace/page.tsx`)
-   - Added `useNodeEditing` hook for edit state and API calls
-   - Created editable `nodeTypes` using `createEditableNode` factory
-   - Updates ReactFlow state after successful save
-   - Memoized `nodeTypes` for performance
-
-8. **Tests**
-   - **use-node-editing.test.ts**: 9 tests covering:
-     - Initial state, successful updates, loading states
-     - Error handling for Server Action failures and exceptions
-     - Callback invocation with and without handlers
-     - Multiple sequential updates
-   - **EditableNode.test.tsx**: 9 tests covering:
-     - Rendering, edit mode toggle, content changes
-     - Save (Cmd+Enter) and cancel (Escape) keyboard shortcuts
-     - Editing badge display, callback behavior
-     - `createEditableNode` factory function
-   - ✅ All 18 new tests passing
-
-#### Technical Details:
-- Uses Server Actions to avoid client importing server code
-- Local state management for edit mode to trigger React re-renders
-- Separate callbacks for save (persist to DB) and cancel (discard changes)
-- ReactFlow state updated after successful database save
-- Memoized nodeTypes to prevent unnecessary re-renders
-- `useEffect` syncs local edited content with node data changes
-
-#### Visual Design:
-- **Edit Mode**: "Editing" badge in amber shows when node is being edited
-- **Textarea**: White background, blue border focus, resize-y (48px min height)
-- **Keyboard Shortcuts**: Cmd/Ctrl+Enter to save, Escape to cancel
-- **Original Content**: Restored on cancel without saving to database
-
-#### File Structure:
-```
-src/app/nodes/
-└── actions.ts (modified - added updateNodeContentAction)
-
-src/hooks/
-├── use-node-editing.ts (new)
-└── use-node-editing.test.ts (new)
-
-src/components/nodes/
-├── EditableNode.tsx (new)
-├── EditableNode.test.tsx (new)
-├── UserNode.tsx (modified - added onEditSave/onEditCancel)
-├── types.ts (modified - extended UserNodeProps)
-└── index.ts (modified - added exports)
-
-src/app/workspace/
-└── page.tsx (modified - integrated useNodeEditing and editable nodes)
-```
-
-#### Usage Example:
-```tsx
-import { useNodeEditing } from "@/hooks/use-node-editing";
-import { createEditableNode } from "@/components/nodes";
-
-// In workspace component
-const { isUpdating, updateNodeContent } = useNodeEditing({
-  projectId: currentProjectId,
-  onContentUpdated: (nodeId, content) => {
-    // Update ReactFlow state after save
-    setNodes((nds) =>
-      nds.map((node) =>
-        node.id === nodeId
-          ? { ...node, data: { ...node.data, content, isEditing: false } }
-          : node
-      )
-    );
-  },
-  onError: (error) => {
-    toast.error(error);
-  }
-});
-
-// Create editable node types
-const nodeTypes = useMemo(() => ({
-  user: createEditableNode(updateNodeContent),
-  assistant: createEditableNode(updateNodeContent),
-}), [updateNodeContent]);
-
-<InfiniteCanvas nodeTypes={nodeTypes} />
-```
-
-#### Important Notes:
-- Double-click a node to enter edit mode
-- Type new content in textarea
-- Cmd/Ctrl+Enter to save (writes to database)
-- Escape to cancel (discards changes)
-- Edit state is managed locally in EditableNode wrapper
-- Original content is preserved on cancel
-- Database is only updated on save action
-
-#### Next Steps:
-- Feature UI-NEW-004 is complete. Users can now edit node content inline.
-- Dependent features can now proceed:
-  - UI-NEW-003: Empty State Guidance (for projects without nodes)
-  - UI-005: Path Highlighting (visual feedback for selected paths)
+#### Tests
+- 18 new tests, all passing
 
 ---
 
 ### [UI-006-UPDATE] FloatingToolbar Button Pruning - COMPLETED
 **Branch:** feat/ui-006-update-toolbar-pruning
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+Removed "Add Node" button to prevent rootless node creation. Node creation now only through:
+- Double-click on empty canvas (UI-NEW-001)
+- Branch button on existing nodes (UI-NEW-002)
 
-1. **FloatingToolbar Component** (`src/components/layout/FloatingToolbar.tsx`)
-   - Removed `onAddNode` prop from `FloatingToolbarProps` interface
-   - Removed Add Node button and its divider from JSX
-   - Removed `primaryButtonClass` variable (no longer needed)
-   - Updated JSDoc comments to reflect new functionality
-   - Toolbar now has 4 buttons: Select, Hand, Connect, Layout
-
-2. **Tests Update** (`src/components/layout/CanvasLayout.test.tsx`)
-   - Removed test case "should call onAddNode when Add button is clicked"
-   - Updated "should render all tool buttons" test to exclude Add Node button
-   - All 28 tests passing
-
-3. **Workspace Page** (`src/app/workspace/page.tsx`)
-   - Removed `onAddNode={handleAddNode}` prop from FloatingToolbar usage
-   - Removed unused `handleAddNode` function
-
-#### Technical Details:
-- Prevents creating rootless nodes via toolbar button
-- Node creation now only through:
-  - Double-click on empty canvas (UI-NEW-001: Root Node Creation)
-  - Branch button on existing nodes (UI-NEW-002: Branching Interaction)
-- No visual changes to toolbar layout (gap closed naturally)
-
-#### Visual Design:
-- **Toolbar**: Glassmorphism capsule, 4 buttons instead of 5
-- **Buttons**: Select (V), Hand (H), Connect (L), Layout
-- **Removed**: Add Node button with "+" icon and "Add" label
-
-#### File Structure:
-```
-src/components/layout/
-├── FloatingToolbar.tsx (modified - removed Add Node button)
-└── CanvasLayout.test.tsx (modified - updated tests)
-
-src/app/workspace/
-└── page.tsx (modified - removed onAddNode prop)
-```
-
-#### Next Steps:
-- Feature UI-006-UPDATE is complete. Users can no longer create rootless nodes via toolbar.
-- Dependent features:
-  - UI-006: Original Floating Toolbar feature (now updated/superseded)
+#### Files
+- `src/components/layout/FloatingToolbar.tsx` - Removed Add Node button
+- `src/components/layout/CanvasLayout.test.tsx` - Updated tests
+- `src/app/workspace/page.tsx` - Removed onAddNode prop
 
 ---
 
 ### [UI-NEW-001] Root Node Creation - COMPLETED
 **Branch:** feat/ui-new-001-root-node-creation
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Double-click empty canvas to create root USER node
+- Validates no existing root node in project
+- Sets `{ isRoot: true }` metadata
+- ReactFlow integration with coordinate conversion
 
-1. **Root Node Server Action** (`src/app/nodes/root-actions.ts`)
-   - `createRootNode()`: Server Action for creating the first USER node in a project
-   - Validates project doesn't already have a root node
-   - Creates USER node with no parent (root of tree)
-   - Sets metadata `{ isRoot: true }` on created node
-   - Revalidates `/workspace` path after creation
+#### Files
+- `src/app/nodes/root-actions.ts` (+test) - Root node Server Action
+- `src/app/nodes/actions.ts` - Added `getProjectGraphAction`
+- `src/hooks/use-root-creation.ts` (+test) - Root creation state
+- `src/components/canvas/EmptyStateCanvas.tsx` (+test) - Empty state overlay
+- `src/app/workspace/page.tsx` - ReactFlow integration
+- `src/components/nodes/BranchingNode.tsx` - Type fixes
 
-2. **Graph Loading Server Action** (`src/app/nodes/actions.ts`)
-   - `getProjectGraphAction()`: Server Action wrapper for graph loading
-   - Prevents client components from importing server-side code
-   - Returns complete graph data for ReactFlow rendering
-
-3. **Custom Hook** (`src/hooks/use-root-creation.ts`)
-   - `useRootNodeCreation()`: Manages root node creation state
-   - Returns: `{ isCreating, error, createRootNode }`
-   - Optional callbacks: `onNodeCreated`, `onError`
-   - `use-root-creation.test.ts`: 7 comprehensive tests for the hook
-
-4. **Empty State Canvas** (`src/components/canvas/EmptyStateCanvas.tsx`)
-   - Centered hint message for empty projects
-   - Default message: "Double click anywhere to start your thought flow"
-   - Custom message support via `message` prop
-   - Uses `pointer-events-none` to allow clicks through to canvas
-   - `EmptyStateCanvas.test.tsx`: 12 comprehensive tests
-
-5. **Workspace Integration** (`src/app/workspace/page.tsx`)
-   - Added ReactFlow state management: `useNodesState`, `useEdgesState`
-   - Graph data loading on mount via Server Action
-   - `onPaneDoubleClick` handler for root node creation
-   - Coordinate conversion using `screenToFlowPosition`
-   - Empty state overlay shown when `nodes.length === 0`
-   - Prevents root creation if project already has nodes
-
-6. **TypeScript Fixes** (`src/components/nodes/BranchingNode.tsx`)
-   - Fixed type definitions to properly exclude conflicting props
-   - Used `Omit<UserNodeProps, 'data' | 'selected'>` for proper type composition
-
-7. **Exports Update** (`src/components/canvas/index.ts`)
-   - Added exports for `EmptyStateCanvas` component
-
-8. **Tests**
-   - **root-actions.test.ts**: 13 tests covering:
-     - UUID validation, project existence
-     - Root node creation with validation
-     - Error handling for existing root nodes
-   - **use-root-creation.test.ts**: 7 tests covering:
-     - Initial state, successful creation, error handling
-     - Callback invocation, loading states
-   - **EmptyStateCanvas.test.tsx**: 12 tests covering:
-     - Rendering with show/hide, custom messages
-     - Conditional display, edge cases
-   - ✅ All 32 new tests passing (32/32)
-
-#### Technical Details:
-- Uses Server Actions to avoid client importing server code
-- ReactFlow's `screenToFlowPosition` for coordinate conversion
-- Type casting `(as any)` for ReactFlow generic limitations
-- Revalidates `/workspace` path after node creation
-- Prevents multiple root nodes in same project
-- Empty state uses `z-index: 0` to stay below canvas elements
-
-#### Visual Design:
-- **Empty State**: Centered, text-lg, text-slate-400, font-light, tracking-wide
-- **Background**: `pointer-events-none` to allow canvas interactions
-- **Message**: "Double click anywhere to start your thought flow" (default)
-
-#### File Structure:
-```
-src/app/nodes/
-├── root-actions.ts (new)
-├── root-actions.test.ts (new)
-└── actions.ts (modified - added getProjectGraphAction)
-
-src/hooks/
-├── use-root-creation.ts (new)
-└── use-root-creation.test.ts (new)
-
-src/components/canvas/
-├── EmptyStateCanvas.tsx (new)
-├── EmptyStateCanvas.test.tsx (new)
-└── index.ts (modified - added exports)
-
-src/app/workspace/
-└── page.tsx (modified - ReactFlow integration)
-
-src/components/nodes/
-└── BranchingNode.tsx (modified - type fixes)
-```
-
-#### Usage Example:
-```tsx
-import { useRootNodeCreation } from "@/hooks/use-root-creation";
-import { getProjectGraphAction } from "@/app/nodes/actions";
-import { EmptyStateCanvas } from "@/components/canvas";
-
-// Graph loading
-useEffect(() => {
-  const loadGraph = async () => {
-    const result = await getProjectGraphAction(projectId);
-    if (result.success) {
-      const { nodes, edges } = result.data;
-      setNodes(formatNodesForReactFlow(nodes));
-      setEdges(formatEdgesForReactFlow(edges));
-    }
-  };
-  loadGraph();
-}, [projectId]);
-
-// Root creation hook
-const { isCreating, createRootNode } = useRootNodeCreation({
-  projectId,
-  onNodeCreated: (nodeId, x, y) => {
-    setNodes((prev) => [...prev, { id: nodeId, type: "user", position: { x, y }, data: {...} }]);
-  },
-  onError: (error) => {
-    toast.error(error);
-  }
-});
-
-// Double-click handler
-const onPaneDoubleClick = (event: React.MouseEvent) => {
-  if (nodes.length > 0 || !reactFlowInstance) return;
-
-  const position = reactFlowInstance.screenToFlowPosition({
-    x: event.clientX,
-    y: event.clientY,
-  });
-
-  createRootNode(position.x, position.y);
-};
-
-// Empty state overlay
-<EmptyStateCanvas show={nodes.length === 0} />
-```
-
-#### Important Notes:
-- Root node can only be created when project has no nodes
-- Double-clicking on canvas when nodes exist shows console error
-- Root nodes are always USER role with `{ isRoot: true }` metadata
-- Server Action wrapper pattern used for `getProjectGraphAction`
-- Empty state message is fully customizable via `message` prop
-
-#### Next Steps:
-- Feature UI-NEW-001 is complete. Users can now create the first node by double-clicking on empty canvas.
-- Dependent features can now proceed:
-  - UI-NEW-002: Branching Interaction (already complete - creates child nodes from existing nodes)
+#### Tests
+- 32 new tests, all passing
 
 ---
 
@@ -917,1265 +160,244 @@ const onPaneDoubleClick = (event: React.MouseEvent) => {
 
 ### [UI-NEW-002] Branching Interaction - COMPLETED
 **Branch:** feat/ui-new-002-branching-interaction
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Hover over node to reveal "+" button
+- Click to create child node with auto-positioning
+- Works for both USER and ASSISTANT nodes
+- Event propagation stopped to prevent node selection
 
-1. **Node Component Updates** (`src/components/nodes/`)
-   - `UserNode.tsx`: Added branch button with `onCreateChild` callback
-   - `AINode.tsx`: Added branch button with `onCreateChild` callback
-   - `types.ts`: Extended props interfaces with `onCreateChild` callback
-   - `BranchingNode.tsx`: New wrapper components for branching interaction
-   - `BranchingNode.test.tsx`: 12 comprehensive tests for branching components
-   - `index.ts`: Updated exports to include branching components
+#### Files
+- `src/components/nodes/UserNode.tsx` - Added branch button
+- `src/components/nodes/AINode.tsx` - Added branch button
+- `src/components/nodes/BranchingNode.tsx` (+test) - Branching wrapper
+- `src/app/nodes/actions.ts` - Child node Server Actions
+- `src/hooks/use-branching.ts` (+test) - Branching state management
 
-2. **Component Features**
-
-   **Branch Button**:
-   - Circular blue "+" button (24px × 24px)
-   - Only visible when node is hovered
-   - Positioned below the node (-bottom-8)
-   - Hover: scale-110, Active: scale-95
-   - Click calls `onCreateChild()` callback
-   - Event propagation stopped to prevent parent selection
-
-   **BranchingUserNode**:
-   - Extends base UserNode with branching support
-   - Shows branch button on hover when `onCreateChild` is provided
-   - Hides edit hint when branch button is present
-
-   **BranchingAINode**:
-   - Extends base AINode with branching support
-   - Shows branch button on hover when `onCreateChild` is provided
-   - Hides action hint when branch button is present
-   - Compatible with existing action bar (copy, regenerate)
-
-3. **Server Actions** (`src/app/nodes/actions.ts`)
-   - `createChildNode()`: Creates child node with specified position
-   - `createChildNodeAutoPosition()`: Creates child with auto-calculated position
-   - Returns `ActionState<{ nodeId, positionX, positionY }>`
-   - Revalidates `/workspace` path after creation
-   - Wraps API-003 `createNode` service
-
-4. **Custom Hook** (`src/hooks/use-branching.ts`)
-   - `useBranching()`: Manages branching state and API calls
-   - Returns: `{ isCreating, error, createChildNode }`
-   - Auto-positions child nodes below parent with random horizontal offset (-20 to +20)
-   - Vertical spacing: 150px between parent and child
-   - Optional callbacks: `onNodeCreated`, `onError`
-   - `use-branching.test.ts`: 8 comprehensive tests for the hook
-
-5. **Factory Function** (`createBranchingNode`)
-   - Creates branching-enabled node components dynamically
-   - Accepts role ("user" | "assistant") and onCreateChild callback
-   - Returns React component for use with React Flow
-
-6. **Tests**
-   - **BranchingNode.test.tsx**: 12 tests covering:
-     - UserNode: branch button visibility, click handling, propagation stop
-     - UserNode: edit hint conditional rendering
-     - AINode: branch button with action bar compatibility
-     - AINode: action hint conditional rendering
-     - ✅ All tests passing (12/12)
-
-   - **use-branching.test.ts**: 8 tests covering:
-     - Initial state, successful creation, error handling
-     - USER/ASSISTANT role support, loading states
-     - Callback invocation, error propagation
-     - ✅ All tests passing (8/8)
-
-#### Technical Details:
-- Built with React 19.2.3 and TypeScript strict mode
-- Branch button: `bg-blue-500 hover:bg-blue-600`
-- Icon: SVG "+" with `strokeWidth={2.5}`
-- Transition: `duration-200` with smooth hover/active states
-- Server Actions use Next.js `revalidatePath` for cache invalidation
-- Auto-positioning uses parent node position + offsets
-- Horizontal offset randomization prevents perfect overlap on multiple children
-
-#### Visual Design:
-- **Button Size**: 24px × 24px (w-6 h-6)
-- **Button Color**: #3B82F6 (blue-500) → #2563EB (blue-600)
-- **Button Position**: -bottom-8 (32px below node)
-- **Shadow**: `shadow-md` on button
-- **Hover Effect**: `scale-110` (10% larger)
-- **Active Effect**: `scale-95` (5% smaller for press feedback)
-- **Label**: "Create child node" for accessibility
-
-#### File Structure:
-```
-src/components/nodes/
-├── UserNode.tsx (updated)
-├── AINode.tsx (updated)
-├── types.ts (updated)
-├── BranchingNode.tsx (new)
-├── BranchingNode.test.tsx (new)
-└── index.ts (updated)
-
-src/app/nodes/
-└── actions.ts (new)
-
-src/hooks/
-├── use-branching.ts (new)
-└── use-branching.test.ts (new)
-```
-
-#### Usage Example:
-```tsx
-import { useBranching } from "@/hooks/use-branching";
-import { createBranchingNode } from "@/components/nodes";
-
-// In your workspace component
-const { isCreating, createChildNode } = useBranching({
-  projectId: currentProjectId,
-  onNodeCreated: (nodeId, x, y) => {
-    // Add the new node to the graph
-    setNodes((prev) => [...prev, {
-      id: nodeId,
-      type: "user",
-      position: { x, y },
-      data: { id: nodeId, role: "USER", content: "" }
-    }]);
-  },
-  onError: (error) => {
-    toast.error(error);
-  }
-});
-
-// Create nodeTypes with branching support
-const nodeTypes = {
-  user: createBranchingNode("user", (parentId) => createChildNode(parentId)),
-  assistant: createBranchingNode("assistant", (parentId) => createChildNode(parentId, "ASSISTANT")),
-};
-
-<InfiniteCanvas nodeTypes={nodeTypes} />
-```
-
-#### Important Notes:
-- Branch button only appears when `onCreateChild` prop is provided
-- Existing nodes without `onCreateChild` work exactly as before
-- Edit/action hints are hidden when branch button is present (prevents clutter)
-- Click event stops propagation to prevent node selection
-- Auto-positioning prevents perfect overlap by adding random horizontal offset
-- Server Actions automatically revalidate workspace page for fresh data
-
-#### Next Steps:
-- Feature UI-NEW-002 is complete. Users can now create child nodes by hovering over nodes and clicking the "+" button.
-- Dependent features can now proceed:
-  - UI-NEW-001: Root Node Creation (double-click on empty canvas)
-  - UI-NEW-003: Empty State Guidance (when project has no nodes)
-  - Canvas integration: Connect `onNodeCreated` to React Flow's `onNodesChange`
-
----
-
-## 2024-12-25
-
-### [UI-007] Dashboard: Project List - TypeScript Fixes - COMPLETED
-**Branch:** feat/ui-007-dashboard
-**Status:** ✅ Type Errors Fixed
-
-#### TypeScript Errors Fixed
-
-**1. nodes.test.tsx - Missing type annotation**
-- Line 14: Added `type?: string` to Handle mock props parameter
-- Error: `Property 'type' does not exist on type '{}'`
-
-**2. ThreadView.test.tsx - Regex flag requires ES2018+**
-- Line 108: Changed `/s` flag to `[\s\S]` pattern for ES2017 compatibility
-- Error: `This regular expression flag is only available when targeting 'es2018' or later`
-
-**3. context-builder.test.ts - Incomplete mock type**
-- Line 39: Added all required properties to mockNode:
-  - `parentId: null as string | null`
-  - `role: "USER" as const`
-  - `content: "Test message"`
-  - `positionX: 0, positionY: 0`
-  - `metadata: {}`
-  - `createdAt: new Date(), updatedAt: new Date()`
-- Line 265: Removed `as const` assertion (created readonly array)
-
-**Result:**
-- TypeScript compilation passes: `npx tsc --noEmit` returns no errors
-
----
-
-### [UI-007] Dashboard: Project List - Bug Fix - COMPLETED
-**Branch:** feat/ui-007-dashboard
-**Status:** ✅ Bug Fixed
-
-#### Bug Fix: Comments Appearing in UI
-
-**Issue:**
-- Comments at lines 200 and 212 in `Dashboard.tsx` were appearing in the UI
-- Root cause: C-style comments (`/* */`) inside JSX were being rendered as text nodes
-
-**Fix Applied:**
-- Line 200: Changed `/* Project Grid */` to `{/* Project Grid */}`
-- Line 212: Changed `/* Load More */` to `{/* Load More */}`
-
-**Additional Fix:**
-- Cleared `.next` cache to resolve Turbopack build corruption
-- Build now succeeds: `✓ Compiled successfully in 3.2s`
+#### Tests
+- 20 new tests, all passing
 
 ---
 
 ### [UI-007] Dashboard: Project List - COMPLETED
 **Branch:** feat/ui-007-dashboard
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Server + Client Component pattern
+- Project grid with card-based layout
+- Create, rename, delete projects with confirmation
+- Inline rename mode
+- Pagination with "Load More"
 
-1. **Dashboard Components** (`src/components/dashboard/`)
-   - `Dashboard.tsx`: Main client component with project grid, header, and create functionality
-   - `ProjectCard.tsx`: Individual project card with name, description, stats, and actions
-   - `CreateProjectDialog.tsx`: Modal dialog for creating new projects
-   - `types.ts`: TypeScript type definitions for dashboard components
-   - `index.ts`: Barrel export file for easy imports
-   - `Dashboard.test.tsx`: Comprehensive test suite (31 tests)
+#### Files
+- `src/components/dashboard/` - Dashboard, ProjectCard, CreateProjectDialog (+test)
+- `src/app/page.tsx` - Server Component home page
 
-2. **Component Features**
-
-   **Dashboard**:
-   - Server Component integration via home page
-   - Fetches projects with stats using `listProjectsWithStats()` API-001
-   - Sticky header with project count and "New Project" button
-   - Responsive grid layout (1 column mobile, 2 tablet, 3 desktop)
-   - Empty state with call-to-action
-   - Error state with retry capability
-   - Load more button for pagination
-
-   **ProjectCard**:
-   - Displays project name and description (with line-clamp)
-   - Shows node count and last updated date
-   - Hover action bar with rename and delete buttons
-   - Inline rename mode with form
-   - Delete confirmation overlay
-   - Click to open project in workspace
-   - Selected/hover states for visual feedback
-
-   **CreateProjectDialog**:
-   - Modal dialog with backdrop click to close
-   - Name input (required, max 100 chars) with character count
-   - Description textarea (optional, max 1000 chars) with character count
-   - Form validation and error handling
-   - Loading state during creation
-   - Auto-focus on name input when dialog opens
-   - Keyboard support (Escape to close)
-
-3. **Home Page** (`src/app/page.tsx`)
-   - Server Component that fetches projects server-side
-   - Passes data to Dashboard client component
-   - Uses `listProjectsWithStats()` for node counts
-
-4. **Type Definitions**
-   - `DashboardProjectCardProps`: project, onOpen, onDelete, onRename
-   - `CreateProjectDialogProps`: isOpen, onClose, onCreate, isCreating
-   - `DashboardProps`: projects, total, hasMore, loading, error, onLoadMore
-
-5. **Tests** (`src/components/dashboard/Dashboard.test.tsx`)
-   - 31 comprehensive tests covering:
-     - ProjectCard: rendering, node count, dates, open/rename/delete actions
-     - ProjectCard: rename mode, delete confirmation, hover states
-     - CreateProjectDialog: rendering, form submission, validation
-     - CreateProjectDialog: character counts, backdrop click, accessibility
-     - ✅ All tests passing (31/31)
-
-#### Technical Details:
-- Built with React 19.2.3 and TypeScript strict mode
-- Server Component (page) + Client Component (Dashboard) pattern
-- Uses API-001 Server Actions for all project operations
-- Next.js router for navigation and refresh
-- Tailwind CSS v4 for all styling
-- Inline SVG icons (no external icon library)
-
-#### Visual Design:
-- **Background**: #F8FAFC (Slate 50) for main dashboard area
-- **Card Background**: #FFFFFF (white) with #E2E8F0 border
-- **Header**: White background with sticky positioning, 64px height
-- **Primary Button**: #3B82F6 (blue-500) with hover state
-- **Card Hover**: Enhanced shadow and border color change
-- **Grid Gap**: 1.25rem (20px) between cards
-- **Empty State**: Centered with icon, heading, description, and CTA
-
-#### File Structure:
-```
-src/components/dashboard/
-├── Dashboard.tsx
-├── ProjectCard.tsx
-├── CreateProjectDialog.tsx
-├── types.ts
-├── index.ts
-└── Dashboard.test.tsx
-
-src/app/
-└── page.tsx (Server Component - Dashboard home)
-```
-
-#### Important Notes:
-- Dashboard is the main landing page for the app
-- Projects are sorted by `updatedAt` desc (most recent first)
-- Creating a project redirects directly to the workspace
-- Deleting a project requires confirmation to prevent accidents
-- Rename is inline and doesn't require a separate page
-- Node count is fetched via `listProjectsWithStats()` from API-001
-
-#### Usage Example:
-```tsx
-// The Dashboard is used via the home page
-// GET / renders the Dashboard with all projects
-
-// Create project flow:
-// 1. Click "New Project" button
-// 2. Dialog opens, enter name and description
-// 3. Click "Create Project"
-// 4. Redirected to /workspace?project={newId}
-
-// Open project flow:
-// 1. Click "Open" button on any project card
-// 2. Redirected to /workspace?project={projectId}
-```
-
-#### Next Steps:
-- Feature UI-007 is complete. Users can now view, create, rename, and delete projects from the dashboard.
-- Dependent features can now proceed:
-  - UI-005: Path Highlighting (canvas visual feedback)
-  - UI-006: Enhanced Floating Toolbar (connect to project creation)
-  - Workspace page integration (project parameter handling)
+#### Tests
+- 31 tests, all passing
 
 ---
 
 ### [API-001] Server Actions: Project Management - COMPLETED
 **Branch:** feat/api-001-project-management
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Complete CRUD for projects
+- Cascade delete for all nodes
+- Statistics: node counts by role, max depth, leaf nodes
+- Pagination and flexible sorting
 
-1. **Project CRUD Service** (`src/lib/project-crud.ts`)
-   - `createProject()`: Create a new project with optional name and description
-   - `getProject()`: Retrieve a single project by ID with optional stats
-   - `listProjects()`: List all projects with pagination and sorting
-   - `updateProject()`: Update project name and/or description
-   - `deleteProject()`: Delete project with cascade delete for all nodes
-   - `getProjectStats()`: Get detailed statistics (node counts, depth, leaf nodes)
-   - `listProjectsWithStats()`: Convenience function for projects with node counts
+#### Files
+- `src/lib/project-crud.ts` (+test) - CRUD service
+- `src/app/projects/actions.ts` - Server Actions
 
-2. **Server Actions** (`src/app/projects/actions.ts`)
-   - `createProject()`: Server Action for creating projects (form-compatible)
-   - `getProject()`: Server Action for fetching project data
-   - `listProjects()`: Server Action for listing projects with pagination
-   - `listProjectsWithStats()`: Server Action for listing with node counts
-   - `updateProject()`: Server Action for updating projects (form-compatible)
-   - `deleteProject()`: Server Action for deleting projects
-   - `getProjectStats()`: Server Action for fetching project statistics
-
-3. **Type Definitions**
-   - `CreateProjectInput`: name, description
-   - `UpdateProjectInput`: name, description
-   - `ListProjectsOptions`: skip, take, orderBy, orderDirection
-   - `ProjectResult`: Complete project data with timestamps
-   - `ProjectListResult`: Projects array with total count and hasMore flag
-   - `ProjectStats`: totalNodes, userNodes, assistantNodes, systemNodes, maxDepth, leafNodes
-   - `ActionState<T>`: success flag, data, error for Server Actions
-
-4. **Tests** (`src/lib/project-crud.test.ts`)
-   - 44 comprehensive tests covering:
-     - Create: default/custom name, description, whitespace trimming, validation
-     - Get: single project, with stats, UUID validation, error handling
-     - List: pagination, sorting (createdAt/updatedAt, asc/desc), hasMore flag
-     - Update: name/description, empty description to null, validation
-     - Delete: single project, cascade delete of nodes
-     - Stats: zero stats, role counting, max depth, leaf node counting
-     - List with stats: node counts per project, pagination
-   - ✅ All tests passing (44/44)
-
-#### Technical Details:
-- Uses Prisma Client ORM for all operations
-- UUID validation for all ID parameters
-- Name validation: non-empty, max 100 characters
-- Description validation: max 1000 characters, empty string converts to null
-- Cascade delete configured via Prisma schema (`onDelete: Cascade`)
-- Recursive CTE for max depth calculation in stats
-- Pagination with skip/take pattern
-- Flexible sorting by createdAt or updatedAt (asc/desc)
-- Server Actions return `ActionState<T>` for consistent error handling
-
-#### API Features:
-- **Create Project**: Default name "Untitled Project", optional description
-- **List Projects**: Paginated (default 20), sorted by updatedAt desc
-- **Get Project**: Optional node count via `withStats` parameter
-- **Update Project**: Partial updates supported, whitespace trimmed
-- **Delete Project**: Cascade deletes all associated nodes
-- **Stats**: Total nodes, counts by role, max tree depth, leaf node count
-
-#### File Structure:
-```
-src/lib/
-├── project-crud.ts
-└── project-crud.test.ts
-
-src/app/projects/
-└── actions.ts
-```
-
-#### Usage Examples:
-```ts
-// Direct CRUD usage (Server Components)
-import { createProject, listProjects, getProject } from "@/lib/project-crud";
-
-const project = await createProject({
-  name: "My Conversation",
-  description: "A project about AI"
-});
-
-const result = await listProjects({ take: 10, skip: 0 });
-```
-
-```tsx
-// Server Actions (Client Components)
-import { createProject, listProjects } from "@/app/projects/actions";
-
-// In a form
-<form action={createProject}>
-  <input name="name" placeholder="Project name" />
-  <button type="submit">Create</button>
-</form>
-
-// Direct call
-const result = await createProject({ name: "New Project" });
-if (result.success) {
-  console.log(result.data.id);
-}
-```
-
-#### Important Notes:
-- Empty string description is converted to null (for clearing descriptions)
-- First node created in project becomes `rootNodeId` (via node-crud)
-- Deleting root node clears `project.rootNodeId` to null
-- Projects are sorted by updatedAt desc by default (most recent first)
-- Cascade delete removes all nodes when project is deleted
-- UUID format validation enforced for all ID parameters
-
-#### Next Steps:
-- Feature API-001 is complete. Project management is now fully functional.
-- Dependent features can now proceed:
-  - UI-007: Dashboard (project list view can use these Server Actions)
-  - UI-006: Enhanced Floating Toolbar (connect to project creation)
+#### Tests
+- 44 tests, all passing
 
 ---
 
 ### [UI-004] Inspector Panel Thread View - COMPLETED
 **Branch:** feat/ui-004-inspector-thread-view
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Linear conversation display using SVC-001 context builder
+- Role-based styling (USER/ASSISTANT/SYSTEM)
+- Markdown rendering with syntax highlighting
+- Streaming indicator, copy/regenerate actions
+- Auto-growing textarea input
 
-1. **Thread View Components** (`src/components/thread/`)
-   - `ThreadView.tsx`: Main container with message list and input area
-   - `ThreadMessage.tsx`: Individual message display with role-based styling
-   - `ThreadInput.tsx`: Message input area with auto-growing textarea
-   - `types.ts`: TypeScript type definitions for thread components
-   - `index.ts`: Barrel export file for easy imports
-   - `ThreadView.test.tsx`: Comprehensive test suite (36 tests)
+#### Files
+- `src/components/thread/` - ThreadView, ThreadMessage, ThreadInput (+test)
 
-2. **Component Features**
-
-   **ThreadView**:
-   - Fetches conversation context using `buildConversationContext()`
-   - Displays messages in chronological order (root → selected node)
-   - Auto-scroll to bottom on new messages
-   - Loading, error, and empty states
-   - Input area to continue conversation
-   - Message action callbacks (copy, regenerate)
-   - Supports both controlled (props) and internal state modes
-
-   **ThreadMessage**:
-   - **USER messages**: Right-aligned, blue background (#3b82f6), "You" label
-   - **ASSISTANT messages**: Left-aligned, white background, markdown rendering
-   - **SYSTEM messages**: Centered, muted text (#64748b)
-   - Streaming indicator with animated pulse for AI responses
-   - Provider/model name display from metadata
-   - Copy and regenerate buttons (visible on hover)
-   - Custom markdown styling (code blocks, inline code, links)
-   - Whitespace preservation for user messages
-
-   **ThreadInput**:
-   - Auto-growing textarea (48px to 200px max height)
-   - Character count display (4000 max, warning at 90%)
-   - Keyboard shortcuts: Cmd/Ctrl+Enter to send, Escape to clear
-   - Loading state with spinner
-   - Disabled state handling
-   - Error recovery (restores message on failure)
-   - Send button with proper disabled states
-
-3. **Type Definitions**
-   - `ThreadMessageRole`: "SYSTEM" | "USER" | "ASSISTANT"
-   - `ThreadMessage`: Extended ContextMessage with isStreaming and metadata
-   - `ThreadViewProps`: Complete props interface for ThreadView
-   - `ThreadMessageProps`, `ThreadInputProps`: Component prop interfaces
-   - Re-exports `ContextMessage`, `ContextResult` from context-builder
-
-4. **Tests** (`src/components/thread/ThreadView.test.tsx`)
-   - 36 comprehensive tests covering:
-     - ThreadMessage: USER/ASSISTANT/SYSTEM role rendering
-     - ThreadMessage: Empty states, metadata display, streaming indicator
-     - ThreadMessage: Copy and regenerate button interactions
-     - ThreadInput: Rendering, disabled states, typing behavior
-     - ThreadInput: Send button, keyboard shortcuts, character count
-     - ThreadView: Empty/loading/error states
-     - ThreadView: Message display with props
-     - ThreadView: Send message integration
-     - ThreadView: Message actions (copy, regenerate)
-   - ✅ All tests passing (36/36)
-
-#### Technical Details:
-- Built with React 19.2.3 and TypeScript strict mode
-- Uses `buildConversationContext()` from SVC-001 for linear path extraction
-- Markdown rendering via `react-markdown` v10.1.0
-- Syntax highlighting via `rehype-highlight` v7.0.2
-- GFM support via `remark-gfm` v4.0.1
-- Tailwind CSS v4 for all styling
-- Auto-scroll using React ref + scrollIntoView with smooth behavior
-- Cancel flag in useEffect to prevent state updates on unmount
-
-#### Visual Design:
-- **USER messages**: Background #3b82f6 (blue-500), white text, rounded-2xl
-- **ASSISTANT messages**: Background #ffffff (white), border #e2e8f0 (slate-200)
-- **SYSTEM messages**: Background #f1f5f9 (slate-100), centered, rounded-full
-- **Input area**: Border-top #e2e8f0 (slate-200), background #f8fafc (slate-50)
-- **Code blocks**: Background #f1f5f9, rounded corners, monospace font
-- **Streaming indicator**: Animated ping + static dot in blue
-- **Message spacing**: 12px vertical gap (my-3)
-
-#### File Structure:
-```
-src/components/thread/
-├── ThreadView.tsx
-├── ThreadMessage.tsx
-├── ThreadInput.tsx
-├── types.ts
-├── index.ts
-└── ThreadView.test.tsx
-```
-
-#### Important Notes:
-- ThreadView fetches context automatically when `nodeId` prop changes
-- Messages can be provided via `messages` prop to bypass internal fetching
-- Copy button uses `navigator.clipboard.writeText()` by default
-- Regenerate button only shown for ASSISTANT messages when not streaming
-- Markdown supports: headings, bold, italic, code blocks, inline code, lists, tables, blockquotes, links
-- All links automatically get `target="_blank"` and `rel="noopener noreferrer"`
-
-#### Usage Example:
-```tsx
-import { ThreadView } from "@/components/thread";
-
-// In your InspectorPanel component
-<ThreadView
-  nodeId={selectedNodeId}
-  projectId={activeProjectId}
-  onSendMessage={async (message, parentNodeId) => {
-    await sendMessageToAI(message, parentNodeId);
-  }}
-  onMessageCopy={(messageId, content) => {
-    copyToClipboard(content);
-  }}
-  onMessageRegenerate={(messageId) => {
-    regenerateResponse(messageId);
-  }}
-/>
-```
-
-#### Next Steps:
-- Feature UI-004 is complete. Users can now view and continue conversations from the inspector panel.
-- Dependent features can now proceed:
-  - UI-005: Path Highlighting (canvas visual feedback for selected paths)
-  - UI-006: Enhanced Floating Toolbar (connect to actual functionality)
-  - Frontend integration with streaming API for real-time message updates
+#### Tests
+- 36 tests, all passing
 
 ---
 
 ### [UI-003] Node Components - COMPLETED
 **Branch:** feat/ui-003-node-components
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- UserNode: Edit mode, connection handles, selected state
+- AINode: Markdown rendering, streaming indicator, action bar
+- Pre-configured nodeTypes export for React Flow
 
-1. **Node Components** (`src/components/nodes/`)
-   - `UserNode.tsx`: User input message node component
-   - `AINode.tsx`: AI assistant response node component with markdown support
-   - `types.ts`: TypeScript type definitions for node data and props
-   - `index.ts`: Barrel exports and nodeTypes configuration for React Flow
-   - `nodes.test.tsx`: Comprehensive test suite for all node components
+#### Files
+- `src/components/nodes/` - UserNode, AINode, types (+test)
 
-2. **Component Features**
-
-   **UserNode**:
-   - Light gray background (#f1f5f9) with subtle border
-   - User avatar icon with "You" label
-   - Edit mode with textarea (double-click to toggle)
-   - Keyboard shortcuts: Cmd/Ctrl+Enter to save, Escape to cancel
-   - Empty state message when content is missing
-   - Connection handles (top/bottom) visible on hover
-   - Edit hint tooltip on hover
-   - Selected state with blue border highlight
-
-   **AINode**:
-   - White background with shadow for elevation
-   - AI avatar icon with provider/model name display
-   - Full markdown rendering support (via react-markdown)
-   - Code syntax highlighting (via rehype-highlight)
-   - GitHub Flavored Markdown support (tables, strikethrough, etc.)
-   - Streaming indicator with animated pulse
-   - Action bar on hover: Copy button, Regenerate button
-   - Custom styling for code blocks and inline code
-   - Links open in new tab with security attributes
-   - Selected state with blue border and enhanced shadow
-
-3. **Type Definitions**
-   - `NodeRole`: "SYSTEM" | "USER" | "ASSISTANT"
-   - `MindFlowNodeData`: id, role, content, isEditing, isStreaming, createdAt, metadata
-   - `MindFlowNode`: Extended React Flow Node type
-   - `BaseNodeProps`, `UserNodeProps`, `AINodeProps`: Component prop interfaces
-
-4. **nodeTypes Export**
-   - Pre-configured mapping of node types to components
-   - `user` → UserNode
-   - `assistant` → AINode
-   - `system` → AINode (can be customized later)
-
-5. **Tests** (`src/components/nodes/nodes.test.tsx`)
-   - 38 comprehensive tests covering:
-     - UserNode rendering (content, empty state, labels)
-     - UserNode interactions (edit mode, double-click, content change)
-     - UserNode styles (selected, hover states)
-     - AINode rendering (markdown, headings, bold text)
-     - AINode metadata display (provider, model)
-     - AINode streaming indicator
-     - AINode markdown features (code blocks, inline code, links, lists, tables, blockquotes)
-     - AINode interactions (copy, regenerate, double-click)
-     - nodeTypes export verification
-     - Edge cases (long content, special characters, null metadata)
-   - ✅ All tests passing (38/38)
-
-#### Technical Details:
-- Built with React 19.2.3 and TypeScript strict mode
-- Uses `@xyflow/react` v12.10.0 Handle component for connections
-- Markdown rendering via `react-markdown` v10.1.0
-- Syntax highlighting via `rehype-highlight` v7.0.2
-- GFM support via `remark-gfm` v4.0.1
-- Tailwind CSS v4 for all styling
-- React Flow Handle component mocked in tests to avoid Zustand dependency
-
-#### Visual Design:
-- **UserNode**: Background #f1f5f9 (slate-100), Border #e2e8f0 (slate-200), Selected #2563EB (blue-500)
-- **AINode**: Background #ffffff (white), Border #e2e8f0 (slate-200), Selected #2563EB (blue-500)
-- **Border Radius**: 12px (rounded-xl)
-- **Shadows**: Default 0 1px 3px, Hover 0 4px 6px, Selected 0 0 0 2px + 0 10px 15px
-- **Min Width**: UserNode 280px, AINode 320px
-- **Max Width**: UserNode 400px, AINode 500px
-- **Font**: System sans-serif for UI, monospace for code
-
-#### File Structure:
-```
-src/components/nodes/
-├── UserNode.tsx
-├── AINode.tsx
-├── types.ts
-├── index.ts
-└── nodes.test.tsx
-```
-
-#### Important Notes:
-- Both nodes are client components ("use client" directive)
-- Connection handles only appear when hovered to reduce visual clutter
-- Edit mode in UserNode is controlled via `isEditing` flag in data
-- Streaming state in AINode shows animated pulse indicator
-- Markdown in AINode supports: headings, bold, italic, code blocks, inline code, lists, tables, blockquotes, links
-- Code blocks have custom gray background (#f1f5f9) with rounded corners
-- All links automatically get `target="_blank"` and `rel="noopener noreferrer"`
-
-#### Usage Example:
-```tsx
-import { nodeTypes, type MindFlowNode } from "@/components/nodes";
-
-// In your canvas component
-const nodes: MindFlowNode[] = [
-  {
-    id: "user-1",
-    type: "user",
-    position: { x: 100, y: 100 },
-    data: { id: "user-1", role: "USER", content: "Hello!" }
-  },
-  {
-    id: "ai-1",
-    type: "assistant",
-    position: { x: 100, y: 300 },
-    data: {
-      id: "ai-1",
-      role: "ASSISTANT",
-      content: "## Hello\n\nThis is **markdown**!",
-      metadata: { provider: "deepseek", model: "deepseek-chat" }
-    }
-  }
-];
-
-<InfiniteCanvas nodes={nodes} nodeTypes={nodeTypes} />
-```
-
-#### Next Steps:
-- Feature UI-003 is complete. Canvas can now render conversation nodes with proper styling.
-- Dependent features can now proceed:
-  - UI-004: Inspector Panel Thread View (uses node data for linear conversation display)
-  - UI-005: Path Highlighting (uses node selection state)
-  - UI-006: Enhanced Floating Toolbar (connect to node creation/editing)
+#### Tests
+- 38 tests, all passing
 
 ---
 
 ### [UI-002] Infinite Canvas - COMPLETED
 **Branch:** feat/ui-002-infinite-canvas
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Built on React Flow (@xyflow/react)
+- Infinite panning and zooming
+- Background grid patterns (dots/lines/cross)
+- Extensible props interface
 
-1. **InfiniteCanvas Component** (`src/components/canvas/InfiniteCanvas.tsx`)
-   - Built on top of React Flow (`@xyflow/react` v12.10.0)
-   - Infinite panning and zooming support
-   - Background grid pattern (dots/lines/cross variants)
-   - Optional controls UI (zoom in/out, fit view)
-   - Full TypeScript support with proper type exports
-   - Extensible props interface (extends ReactFlowProps)
+#### Files
+- `src/components/canvas/InfiniteCanvas.tsx` (+test)
+- `src/app/workspace/page.tsx` - CanvasLayout integration
 
-2. **Component Features**
-   - **Pan & Zoom**: Configurable via `panOnDrag`, `zoomOnScroll`, `zoomOnPinch`, `panOnScroll` props
-   - **Background**: Customizable variant (dots/lines/cross) with configurable gap size
-   - **Viewport**: Initial viewport state support (x, y, zoom)
-   - **Controls**: Optional minimap controls (`showControls` prop)
-   - **Zoom Limits**: Min zoom 0.1, max zoom 4
-   - **Snap to Grid**: Enabled by default
-   - **Default Edge Options**: Smoothstep edges with slate color (#cbd5e1)
-
-3. **Type Definitions**
-   - `InfiniteCanvasProps`: Complete props interface extending ReactFlowProps
-   - Re-exports `Node` and `Edge` types from `@xyflow/react`
-   - Proper TypeScript types for all props
-
-4. **Tests** (`src/components/canvas/InfiniteCanvas.test.tsx`)
-   - 17 comprehensive tests covering:
-     - Rendering with empty nodes/edges
-     - Node and edge prop handling
-     - Background variants (dots, lines, cross)
-     - Background gap customization
-     - Controls visibility
-     - Viewport props
-     - Pan/Zoom configuration props
-     - Full integration test with all props
-   - ✅ All tests passing (17/17)
-
-5. **Configuration Updates**
-   - `vitest.config.ts`: Added `@xyflow/react/style.css` alias for CSS mocking in tests
-   - `src/test-setup.ts`: Added `@testing-library/jest-dom` import for matchers
-   - `src/app/workspace/page.tsx`: Integrated InfiniteCanvas with CanvasLayout
-
-#### Technical Details:
-- Uses `@xyflow/react` v12.10.0 (React Flow) as the core library
-- Built with React 19.2.3 and TypeScript strict mode
-- CSS import mocked via vitest alias for test compatibility
-- All ReactFlow props are forwarded via TypeScript utility types
-- Background uses React Flow's built-in `Background` component
-- Default edge style: `type: "smoothstep"`, stroke: `#cbd5e1`, strokeWidth: 2
-
-#### Visual Design:
-- **Background Color**: #cbd5e1 (Slate 300) for grid dots/lines
-- **Default Gap**: 24px (matches CanvasLayout grid pattern)
-- **Default Variant**: dots
-- **Edge Color**: #cbd5e1 (Slate 300)
-- **Zoom Range**: 0.1x to 4x
-
-#### File Structure:
-```
-src/components/canvas/
-├── InfiniteCanvas.tsx
-├── InfiniteCanvas.test.tsx
-└── index.ts
-
-src/app/workspace/
-└── page.tsx (integrated with InfiniteCanvas)
-```
-
-#### Important Notes:
-- The `@xyflow/react/style.css` import is required for proper styling
-- CSS import is mocked in tests via vitest alias to `./src/__mocks__/empty.ts`
-- Component uses `"use client"` directive (required for React Flow)
-- All ReactFlow props can be passed through via `...restProps`
-- The canvas has no default nodes/edges - these must be provided via props
-
-#### Usage Example:
-```tsx
-import { InfiniteCanvas } from "@/components/canvas";
-
-<InfiniteCanvas
-  nodes={nodes}
-  edges={edges}
-  backgroundVariant="dots"
-  backgroundGap={24}
-  showControls={false}
-  onNodesChange={onNodesChange}
-  onEdgesChange={onEdgesChange}
-/>
-```
-
-#### Next Steps:
-- Feature UI-002 is complete. The infinite canvas with pan and zoom is now functional.
-- Dependent features can now proceed:
-  - UI-003: Node Components (UserNode, AINode to render in canvas)
-  - UI-005: Path Highlighting (canvas visual feedback for selected paths)
+#### Tests
+- 17 tests, all passing
 
 ---
 
 ### [UI-001] Application Layout Framework - COMPLETED
 **Branch:** feat/ui-001-app-layout
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- CanvasLayout: Full-screen with grid background
+- TopHeader: Breadcrumb, back button, action buttons
+- FloatingToolbar: Tool modes with glassmorphism
+- InspectorPanel: Slide-out with Thread/Properties tabs
 
-1. **Layout Components** (`src/components/layout/`)
-   - `CanvasLayout.tsx`: Full-screen canvas layout wrapper with grid background
-   - `TopHeader.tsx`: Minimal top navigation bar (48-60px height)
-   - `FloatingToolbar.tsx`: Bottom center floating toolbar with glassmorphism effect
-   - `InspectorPanel.tsx`: Right slide-out panel with Thread/Properties tabs
-   - `index.ts`: Barrel export file for easy imports
+#### Files
+- `src/components/layout/` - CanvasLayout, TopHeader, FloatingToolbar, InspectorPanel (+test)
+- `src/app/workspace/page.tsx` - Demo page
 
-2. **Styling Approach**
-   - Uses Tailwind CSS v4 utility classes (no CSS modules)
-   - Responsive design with mobile breakpoints
-   - Slate color palette (#f8fafc background, #1e293b text)
-   - Primary blue color (#2563eb / #3b82f6) for active states
-   - Glassmorphism effect with backdrop-blur on toolbar/header
-
-3. **Component Features**
-
-   **CanvasLayout**:
-   - Full-screen viewport container (100vw x 100vh)
-   - Dot pattern grid background (24px spacing)
-   - Positioned slots: header (top), toolbar (bottom-center), inspector (right)
-   - Inspector panel with smooth slide-in/slide-out animation
-   - Responsive inspector width (400px desktop, 100% mobile)
-
-   **TopHeader**:
-   - Left: Back button + breadcrumb navigation
-   - Center: Save status indicator (Saving.../Saved/Unsaved)
-   - Right: Share, Export, Settings action buttons
-   - Transparent background with subtle blur
-   - Custom content slots for left/right sections
-
-   **FloatingToolbar**:
-   - Tool modes: Select (V), Hand (H), Connect (L)
-   - Add Node button (primary action, N shortcut)
-   - Auto Layout button
-   - Glassmorphism capsule design
-   - Active state highlighting with blue background
-   - Custom children support for extensibility
-
-   **InspectorPanel**:
-   - Two tabs: Thread (linear conversation) and Properties (metadata)
-   - Smooth slide-in animation from right
-   - Close button
-   - Empty state messages
-   - Custom content slots for both tabs
-
-4. **Workspace Page** (`src/app/workspace/page.tsx`)
-   - Demo page showing all layout components integrated
-   - State management for tool mode and inspector panel
-   - Placeholder for canvas content (UI-002)
-
-5. **Tests** (`src/components/layout/CanvasLayout.test.tsx`)
-   - 29 comprehensive tests covering:
-     - CanvasLayout rendering with grid background
-     - Header/toolbar/inspector slots
-     - TopHeader: project name, back button, save status, action buttons
-     - FloatingToolbar: all tool buttons, mode highlighting
-     - InspectorPanel: tabs, empty states, content rendering
-     - Full layout integration test
-   - ✅ All tests passing (29/29)
-
-#### Technical Details:
-- Built with React 19.2.3 and TypeScript strict mode
-- Uses Next.js 16.1.1 App Router
-- Tailwind CSS v4 for styling (inline theme configuration)
-- No external CSS files needed
-- Component composition pattern for flexibility
-- Proper TypeScript types exported for all props
-
-#### Visual Design:
-- **Canvas Background**: #F8FAFC (Slate 50) with dot pattern grid
-- **Primary Color**: #2563EB (Royal Blue) for active states
-- **Header Height**: 56px (h-14)
-- **Inspector Width**: 400px (responsive: 100% on mobile)
-- **Grid Pattern**: 24px spacing with #cbd5e1 dots at 40% opacity
-- **Shadows**: Subtle shadows for depth (toolbar, inspector)
-- **Transitions**: 120-250ms duration with cubic-bezier easing
-
-#### File Structure:
-```
-src/components/layout/
-├── CanvasLayout.tsx
-├── TopHeader.tsx
-├── FloatingToolbar.tsx
-├── InspectorPanel.tsx
-├── index.ts
-└── CanvasLayout.test.tsx
-
-src/app/
-├── page.tsx (updated with link to workspace)
-└── workspace/
-    └── page.tsx (demo page)
-```
-
-#### Important Notes:
-- Inspector panel is hidden by default (`inspectorOpen=false`)
-- Toolbar buttons use SVG icons (inline, no external icon library)
-- Save status color changes: blue (saving), green (saved), amber (unsaved)
-- Back button only renders when `onBack` handler is provided
-- Custom content can be injected via props for maximum flexibility
-
-#### Next Steps:
-- Feature UI-001 is complete. The application layout framework is now functional.
-- Dependent features can now proceed:
-  - UI-002: Infinite Canvas (React Flow integration for canvas content area)
-  - UI-003: Node Components (UserNode, AINode to render in canvas)
-  - UI-004: Inspector Panel Thread View (linear conversation display)
-  - UI-005: Path Highlighting (canvas visual feedback)
-  - UI-006: Enhanced Floating Toolbar (connect to actual functionality)
-  - UI-007: Dashboard (project list view)
+#### Tests
+- 29 tests, all passing
 
 ---
 
 ### [AI-001] AI Streaming Integration - COMPLETED
 **Branch:** feat/ai-001-streaming
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Vercel AI SDK streaming (DeepSeek, Anthropic, OpenAI)
+- POST /api/chat: Stream response and persist as ASSISTANT node
+- Placeholder node created before streaming
+- Integrates with SVC-001 for conversation context
 
-1. **AI Streaming Service** (`src/lib/ai-stream.ts`)
-   - `streamChat()`: Main streaming function using Vercel AI SDK
-   - `streamChatWithNode()`: Convenience function that combines AI streaming with node persistence
-   - `createAIModel()`: Factory function for creating AI model instances (DeepSeek, Anthropic, OpenAI)
-   - `validateAIConfig()`: Validates environment variables for AI providers
-   - `getDefaultProvider()`: Gets default AI provider from environment
+#### Files
+- `src/lib/ai-stream.ts` (+test) - Streaming service
+- `src/app/api/chat/route.ts` - Chat API endpoint
 
-2. **Chat API Route** (`src/app/api/chat/route.ts`)
-   - `POST /api/chat`: Streams AI response and persists as ASSISTANT node
-   - `GET /api/chat`: Health check endpoint
-   - Request body: projectId, parentNodeId, message, provider (optional), model (optional), positionX/Y (optional)
-   - Response: Streaming data with `X-Node-Id` header for client reference
-
-3. **Type Definitions**
-   - `AIProvider`: "deepseek" | "anthropic" | "openai"
-   - `StreamChatInput`: messages, provider, model, maxTokens, temperature
-   - `StreamChatResult`: toStreamResponse(), text promise, usage promise
-   - `ChatRequest`: API request body with all parameters
-   - `ChatResponse`: nodeId and error field
-
-4. **Tests** (`src/lib/ai-stream.test.ts`)
-   - 8 comprehensive tests covering:
-     - Request validation (projectId, parentNodeId, message)
-     - Optional parameters (provider, positionX, positionY)
-     - Health check endpoint
-     - Error handling for invalid input
-   - ✅ All tests passing (8/8)
-
-#### Technical Details:
-- Uses Vercel AI SDK (`ai` v6.0.3) for streaming responses
-- Supports multiple providers via AI SDK adapters:
-  - DeepSeek (default, via `@ai-sdk/deepseek`)
-  - Anthropic Claude (via `@ai-sdk/anthropic`)
-  - OpenAI GPT (via `@ai-sdk/openai`)
-- Node creation workflow:
-  1. Creates placeholder ASSISTANT node with empty content
-  2. Streams AI response to client
-  3. Updates node content when stream completes
-- Integrates with `buildConversationContext()` for full conversation history
-- Returns streaming response with `X-Node-Id` header for frontend tracking
-
-#### Environment Variables Required:
-```bash
-DEEPSEEK_API_KEY=sk-xxx           # Required for DeepSeek
-DEEPSEEK_MODEL=deepseek-chat      # Optional model override
-DEEPSEEK_BASE_URL=https://...     # Optional custom base URL
-
-ANTHROPIC_API_KEY=sk-ant-xxx     # Required for Anthropic
-OPENAI_API_KEY=sk-openai-xxx     # Required for OpenAI
-AI_PROVIDER=deepseek              # Optional default provider
-```
-
-#### Important Notes:
-- First creates empty ASSISTANT node, then streams content into it
-- Metadata includes: `streaming: true/false`, `provider`, `contextLength`, `contextTokens`
-- Node position (X, Y) can be specified for canvas layout
-- Provider defaults to "deepseek" if not specified
-- The `X-Node-Id` response header allows frontend to track which node is being updated
-
-#### API Usage Example:
-```bash
-curl -X POST http://localhost:3000/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{
-    "projectId": "project-uuid",
-    "parentNodeId": "user-node-uuid",
-    "message": "Explain React hooks",
-    "provider": "deepseek",
-    "positionX": 100,
-    "positionY": 200
-  }'
-```
-
-#### Next Steps:
-- Feature AI-001 is complete. The core AI streaming pipeline is now functional.
-- Dependent features can now proceed:
-  - UI-003: Node Components (can consume streaming API for real-time updates)
-  - UI-004: Inspector Panel (can show streaming responses)
-  - Frontend integration using `@ai-sdk/react` for direct streaming consumption
+#### Tests
+- 8 tests, all passing
 
 ---
 
 ### [API-003] Node CRUD Service - COMPLETED
 **Branch:** feat/api-003-node-crud
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Complete CRUD for nodes with parent-child relationships
+- Optimized position-only and content-only updates
+- Batch operations for atomicity
+- Cascade delete for subtrees
 
-1. **Node CRUD Service** (`src/lib/node-crud.ts`)
-   - `createNode()`: Create a new node with parent-child relationship support
-   - `getNode()`: Retrieve a single node by ID
-   - `updateNode()`: Update node content and/or position
-   - `updateNodePosition()`: Optimized position-only update (for drag operations)
-   - `updateNodeContent()`: Optimized content-only update (for edit operations)
-   - `deleteNode()`: Delete node with cascade delete for children
-   - `batchCreateNodes()`: Create multiple nodes in a single transaction
-   - `batchUpdatePositions()`: Update multiple node positions (for auto-layout)
-   - UUID validation, project/node existence checks, parent validation
+#### Files
+- `src/lib/node-crud.ts` (+test)
 
-2. **Type Definitions**
-   - `CreateNodeInput`: projectId, role, content, parentId (optional), positionX/Y (optional), metadata (optional)
-   - `UpdateNodeInput`: Partial update with content, positionX/Y, metadata
-   - `UpdateNodePositionInput`: positionX, positionY only
-   - `UpdateNodeContentInput`: content, metadata only
-   - `BatchUpdatePositionInput`: Array of { nodeId, positionX, positionY }
-   - `NodeResult`: Complete node data with timestamps
-   - `BatchOperationResult`: { success, nodeId, error? }
-
-3. **Tests** (`src/lib/node-crud.test.ts`)
-   - 37 comprehensive tests covering:
-     - UUID validation for all operations
-     - Project existence validation
-     - Parent node validation (existence + project ownership)
-     - Node creation with minimal/all fields
-     - Parent-child relationship creation
-     - Root node auto-assignment
-     - All role types (SYSTEM, USER, ASSISTANT)
-     - Single/multiple field updates
-     - Position-only updates (drag operations)
-     - Content-only updates (edit operations)
-     - Cascade delete for subtree
-     - Root node deletion handling
-     - Batch create operations
-     - Batch position updates with partial failure handling
-   - ✅ All tests passing (37/37)
-
-#### Technical Details:
-- Uses Prisma Client ORM for all operations (no raw SQL needed for CRUD)
-- Transaction-based batch operations for atomicity
-- Automatic `rootNodeId` assignment for first node in project
-- Cascade delete configured via Prisma schema (`onDelete: Cascade`)
-- Position updates are independent of content updates (optimized for drag-drop)
-- Metadata stored as JSONB for flexibility
-
-#### Important Notes:
-- First node created in a project automatically becomes `rootNodeId`
-- Deleting root node clears `project.rootNodeId` to null
-- Parent nodes must belong to the same project as child nodes
-- Batch operations use Prisma transactions for atomicity
-- Partial failures in batch operations return error details per item
-
-#### Next Steps:
-- Feature API-003 is complete. This enables full node manipulation for the frontend.
-- Dependent features can now proceed:
-  - UI-003: Node Components (can now create/update/delete nodes)
-  - UI-005: Path Highlighting (uses node operations)
-  - API-001: Project Management (follows similar patterns)
+#### Tests
+- 37 tests, all passing
 
 ---
 
 ### [API-002] Graph Retrieval Service - COMPLETED
 **Branch:** feat/api-002-graph-retrieval
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Retrieves complete graph structure (nodes + edges)
+- Subgraph retrieval for lazy loading
+- Node statistics calculation
+- Uses raw SQL with recursive CTE
 
-1. **Graph Retrieval Service** (`src/lib/graph-retrieval.ts`)
-   - `getProjectGraph()`: Retrieves complete graph structure for a project (all nodes + edges)
-   - `getNodeSubgraph()`: Retrieves subtree starting from a specific node (for lazy loading)
-   - `getProjectGraphStats()`: Returns node statistics (counts by role, max depth, leaf count)
-   - UUID validation, project/node existence checks, error handling
+#### Files
+- `src/lib/graph-retrieval.ts` (+test)
 
-2. **Type Definitions**
-   - `GraphNode`: Node with id, projectId, parentId, role, content, positionX, positionY, metadata, timestamps
-   - `GraphEdge`: Edge with id (source-target), source (parent node ID), target (child node ID)
-   - `GraphData`: Complete graph with nodes array, edges array, and rootNodeId
-
-3. **Tests** (`src/lib/graph-retrieval.test.ts`)
-   - 28 comprehensive tests covering:
-     - UUID validation and error handling
-     - Project/node existence checks
-     - Empty graph handling
-     - Node content and metadata retrieval
-     - Edge generation from parent-child relationships
-     - Subgraph retrieval with proper edge filtering
-     - Depth-based ordering
-     - Graph statistics calculation
-     - Edge cases (float positions, JSON metadata, null parentId)
-   - ✅ All tests passing
-
-#### Technical Details:
-- Uses raw SQL queries with Prisma `$queryRaw` for optimal performance
-- Column names use camelCase with double quotes (`"projectId"`, `"parentId"`) to match Prisma schema
-- UUID values cast to `::text` for comparison (Prisma String type stores as TEXT in PostgreSQL)
-- Recursive CTE for subtree traversal in `getNodeSubgraph()`
-- Edge building only includes edges where both source and target are in the result set
-- Nodes ordered by `createdAt` ASC for chronological rendering
-
-#### Important Notes:
-- The database uses camelCase column names (`projectId`, not `project_id`)
-- Type casting uses `::text` instead of `::uuid` because Prisma String fields are stored as TEXT
-- Double quotes required around camelCase column names in PostgreSQL
-
-#### Next Steps:
-- Feature API-002 is complete. This enables the frontend canvas to render conversation trees.
-- Dependent features can now proceed:
-  - UI-002: Infinite Canvas (React Flow integration)
-  - UI-003: Node Components (UserNode, AINode)
+#### Tests
+- 28 tests, all passing
 
 ---
 
 ### [SVC-001] Context Builder Service - COMPLETED
 **Branch:** feat/svc-001-context-builder
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Builds linear conversation history from root to target node
+- Uses recursive CTE for tree traversal
+- Token truncation for LLM constraints
+- Batch processing support
 
-1. **Context Builder Service** (`src/lib/context-builder.ts`)
-   - `buildConversationContext()`: Builds linear conversation history from root to target node using recursive CTE
-   - `buildConversationContextBatch()`: Batch processing for multiple nodes with parallel execution
-   - `truncateContextByTokens()`: Truncates context to fit token budget for LLM constraints
-   - `formatContextForAI()`: Formats context for Vercel AI SDK consumption
-   - UUID validation, node existence checks, error handling
+#### Files
+- `src/lib/context-builder.ts` (+test)
 
-2. **Type Definitions**
-   - `ContextMessage`: Individual message with id, role, content, positionInChain
-   - `ContextResult`: Result object with messages array, totalTokens, pathLength
-
-3. **Tests** (`src/lib/context-builder.test.ts`)
-   - 25 comprehensive tests covering:
-     - UUID validation
-     - Node existence checks
-     - Recursive CTE path traversal
-     - Token calculation
-     - Batch processing
-     - Context truncation
-     - AI SDK formatting
-     - Error handling
-   - ✅ All tests passing
-
-4. **Configuration Updates**
-   - `package.json`: Added `test:coverage` script
-
-#### Technical Details:
-- Uses PostgreSQL `WITH RECURSIVE` CTE for efficient tree traversal
-- Builds path from target node → root, then reverses for chronological order
-- Approximate token count: ~4 chars per token
-- Keeps most recent messages when truncating
-
-#### Next Steps:
-- Feature SVC-001 is complete. Ready to proceed with dependent features:
-  - AI-001: AI Streaming Integration (Vercel AI SDK)
+#### Tests
+- 25 tests, all passing
 
 ---
 
 ### [DB-001] Database Schema Design - COMPLETED
 **Branch:** feat/db-001-database-schema
-**Status:** ✅ Complete
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Prisma schema with Project and Node models
+- Adjacency list pattern for tree structure (parentId)
+- Cascade delete configured
+- PostgreSQL 17 with Docker
 
-1. **Prisma Schema** (`prisma/schema.prisma`)
-   - Created `Project` model with: id, name, description, createdAt, updatedAt, rootNodeId
-   - Created `Node` model with: id, projectId, parentId (adjacency list), role (SYSTEM/USER/ASSISTANT), content, positionX, positionY, metadata (JSONB), timestamps
-   - Adjacency list pattern for tree structure (parentId -> children[])
-   - Cascade delete configured for Project -> Nodes and Parent -> Children
+#### Files
+- `prisma/schema.prisma` - Schema definition
+- `docker-compose.yml` - PostgreSQL container
+- `src/lib/prisma.ts` - Prisma Client singleton
+- `src/lib/prisma.test.ts` - Database tests
 
-2. **Docker Compose** (`docker-compose.yml`)
-   - PostgreSQL 17-alpine container
-   - Port 5432, user/pass: mindflow/mindflow_dev, db: mindflow
-   - Healthcheck and volume persistence
-
-3. **Prisma Client** (`src/lib/prisma.ts`)
-   - Prisma 7+ compatible with pg adapter
-   - Singleton pattern for development
-
-4. **Tests** (`src/lib/prisma.test.ts`)
-   - 17 comprehensive tests covering:
-     - Project CRUD operations
-     - Node CRUD operations
-     - Tree structure (parent-child relationships)
-     - Cascading deletes
-     - Recursive CTE queries for tree traversal
-   - ✅ All tests passing
-
-5. **Configuration Updates**
-   - `prisma.config.mjs` - Updated to load .env.local
-   - `.env.local` - Updated DATABASE_URL to local PostgreSQL
-   - `src/test-setup.ts` - Test setup file for Vitest
-   - `src/__mocks__/empty.ts` - CSS module mock
-
-#### Migration History:
-- `20251224193322_init` - Initial schema migration
+#### Tests
+- 17 tests, all passing
 
 ---
 
 ### [TEST-001] Test Database Isolation - COMPLETED
-**Branch:** main (fixing issue from commit 4331d90)
-**Status:** ✅ Complete
+**Branch:** main
+**Status:** Complete
 
-#### Changes Made:
+#### Summary
+- Separate test database (`mindflow_test`)
+- Automated connection verification
+- Sequential execution to prevent pollution
+- Setup script for database creation
 
-1. **Test Database Setup** (`scripts/setup-test-db.sh`)
-   - Executed `pnpm test:setup` to create `mindflow_test` database
-   - Applied Prisma migrations to test database
-   - Database now properly isolated from development database
+#### Test Results
+- 444 tests passing in 23 test files
 
-2. **Automated Verification** (`src/test-setup.ts`)
-   - Added database connection check in `beforeAll` hook
-   - Provides clear error message if test database doesn't exist:
-     ```
-     Test database connection failed. Please run:
-       pnpm test:setup
-     ```
-   - Test query (`SELECT 1`) verifies database and schema exist
-
-3. **Infrastructure Already in Place** (from commit 4331d90):
-   - `.env.test` - Test database URL configuration
-   - `vitest.config.ts` - Loads `.env.test` for test environment
-   - `src/lib/prisma.ts` - Test environment detection (`NODE_ENV === "test"` or `VITEST === "vitest"`)
-   - `package.json` - `test:setup` script
-
-#### Test Results:
-- ✅ All 444 tests passing in 23 test files
-- ✅ Test database properly isolated from development database
-- ✅ Connection verification provides helpful error messages
-
-#### Technical Details:
-- Test Database: `postgresql://mindflow:mindflow_dev@localhost:5432/mindflow_test`
-- Schema: Same as development (Project, Node tables)
-- Cleanup: `beforeAll` clears all test data, `afterAll` disconnects Prisma
-- Sequential execution: `fileParallelism: false` to prevent database pollution
-
+---

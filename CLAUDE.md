@@ -91,15 +91,44 @@ Target users are developers, architects, and researchers who need to:
 
 See `docs/design/product_requirements_document.md` for detailed UX specifications.
 
-## important hints
+## Important Hints
 
-1. select a feature from `FEATURE_LIST*` by their priority and dependencies.
-2. You MUST record your working progress in `AGENT_LOGGING` in a log format
-3. if you start a work on a feature, you should check `git log` and `AGENT_LOGGING` to get the insight of current project.
-4. the `FEATURE_LIST*` `state` field is in enum ["complete", "todo", "tested", "not tested"]. `FEATURE_LIST*` is READONLY for you.
-5. YOU SHOULD NOT DEVELOP AT main/master branch. you should create a new branch for each feature you work on. 
-6. After you finish the feature, you need to commit your changes to the new branch.
-7. You SHOULD write comprehensive test cases for each feature you develop.
+1. select a feature from `FEATURE_LIST*` by their priority and dependencies
+2. You MUST record your working progress in `AGENT_LOGGING`
+3. Before starting work, check `git log` and `AGENT_LOGGING` for project context
+4. `FEATURE_LIST*` `state` field is enum ["complete", "todo", "tested", "not tested"] - READONLY for you
+5. NEVER develop on main/master branch - create a new branch for each feature
+6. Commit changes to the feature branch when complete
+7. Write comprehensive test cases for each feature
+
+## AGENT_LOGGING Format
+
+When logging completed features, use this compact format:
+
+```markdown
+### [FEATURE-ID] Feature Name - COMPLETED
+**Branch:** feat/feature-branch
+**Status:** Complete
+
+#### Summary
+- Key functionality (bullet points, 3-5 items)
+- Main purpose and what it enables
+
+#### Files
+- `path/to/file.ts` (+test) - brief description
+- `path/to/modified.ts` - what changed
+
+#### Tests
+- X new tests, all passing
+```
+
+**DO NOT include:**
+- Detailed implementation details (constants, return values, line numbers, hex codes)
+- Code examples or usage blocks
+- Verbose component feature descriptions
+- Visual design specifications (colors, sizes, spacing)
+- "Next Steps" or "Important Notes" sections
+- File structure diagrams
 
 ## Testing Guidelines
 ### Framework
