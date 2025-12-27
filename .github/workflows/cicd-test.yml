@@ -75,6 +75,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      
+      - name: Generate Prisma
+        run: pnpx prisma generate
 
       - name: Run tests
         run: pnpm test:coverage
@@ -106,6 +109,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+            
+      - name: Generate Prisma
+        run: pnpx prisma generate
 
       - name: Build project
         run: pnpm build
