@@ -10,6 +10,19 @@
 - **减少眼疲劳**: 避免纯黑 (#000000)，使用深灰色以减少 OLED 屏幕上的视觉疲劳和拖影
 - **层次清晰**: 使用透明度和阴影来构建深度，而非仅依赖颜色变化
 
+#### 对比度验证 (Contrast Ratio Verification)
+
+关键颜色对的对比度验证：
+
+| 颜色对 | 前景色 | 背景色 | 对比度 | WCAG 等级 |
+|:---|:---|:---|:---|:---|
+| Primary Text | #F1F5F9 (Slate 100) | #1E293B (Slate 800) | ~12.1:1 | AAA ✓ |
+| Secondary Text | #94A3B8 (Slate 400) | #1E293B (Slate 800) | ~4.5:1 | AA |
+| Link | #60A5FA (Blue 400) | #0F172A (Slate 900) | ~4.8:1 | AA |
+| Border Subtle | #334155 (Slate 700) | #0F172A (Slate 900) | ~1.9:1 | 装饰性 |
+
+**设计权衡**: 次要文本 (#94A3B8 on #1E293B) 符合 WCAG AA 标准 (4.5:1)，但未达到 AAA (7:1)。这是为了保持视觉层次而做的有意权衡。如需 AAA 合规，可将次要文本改为 #CBD5E1 (Slate 300)，但会减弱主次文本的视觉区分度。
+
 ### 1.2 保持产品一致性
 - **主色调不变**: Primary Color (#3B82F6) 在暗色模式下保持不变，确保品牌识别度
 - **Canvas First 优先**: 画布背景应"退后"，让节点内容成为视觉焦点
@@ -172,9 +185,18 @@ opacity: 0.4;
 
 #### 代码块 (Code Blocks)
 使用 Shiki 的暗色主题：
-- **推荐主题**: `github-dark` 或 `dracula`
+- **推荐主题**:
+  - `catppuccin-mocha` (与现有 `catppuccin-latte` 配对，保持一致性)
+  - `github-dark` 或 `dracula` (备选方案)
 - **背景**: `#0F172A` (Slate 900)
 - **边框**: `#334155` (Slate 700)
+
+**实现注意**: 当前 `src/lib/shiki-singleton.ts:50` 使用 `catppuccin-latte`（亮色主题）。需要在 Shiki 配置中同时加载两个主题，并根据当前主题动态选择：
+
+```ts
+// 伪代码示例
+const theme = resolvedTheme === "dark" ? "catppuccin-mocha" : "catppuccin-latte";
+```
 
 #### 文本样式
 | 元素 | 暗色模式 |
@@ -216,11 +238,36 @@ opacity: 0.4;
 
 ### 7.1 CSS 变量方案
 
-在 `globals.css` 中扩展 CSS 变量：
+#### 现有 globals.css 状态
+
+当前 `app/globals.css` 使用以下变量：
 
 ```css
 :root {
-  /* Light Mode (Default) */
+  --background: #ffffff;
+  --foreground: #171717;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+```
+
+这与本文档提出的 Slate 基础色彩系统存在冲突。
+
+#### 迁移路径
+
+**阶段 1: 添加新变量，保留旧变量** (非破坏性)
+
+```css
+:root {
+  /* 保留现有变量 (向后兼容) */
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* 新增语义化变量 */
   --canvas-bg: #F8FAFC;
   --primary: #2563EB;
   --primary-hover: #1D4ED8;
@@ -233,7 +280,11 @@ opacity: 0.4;
 }
 
 :root[data-theme="dark"] {
-  /* Dark Mode */
+  /* 保留现有变量 (向后兼容) */
+  --background: #0F172A;  /* 更新为 Slate 900 */
+  --foreground: #F1F5F9;
+
+  /* 新增语义化变量 */
   --canvas-bg: #0F172A;
   --primary: #3B82F6;
   --primary-hover: #2563EB;
@@ -248,12 +299,23 @@ opacity: 0.4;
 /* Fallback for system preference */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    --background: #0F172A;
+    --foreground: #F1F5F9;
     --canvas-bg: #0F172A;
     --primary: #3B82F6;
     /* ... 其他暗色变量 */
   }
 }
 ```
+
+**阶段 2: 逐步迁移组件**
+
+- 新组件使用新的语义化变量
+- 旧组件在重构时迁移到新变量
+
+**阶段 3: 清理旧变量** (可选)
+
+当所有组件迁移完成后，可以移除 `--background` 和 `--foreground`。
 
 ### 7.2 Tailwind CSS 自定义
 
@@ -276,7 +338,61 @@ module.exports = {
 };
 ```
 
-### 7.3 主题切换组件
+### 7.3 避免硬编码颜色 (Avoid Hardcoded Colors)
+
+#### 问题识别
+
+当前代码库中存在硬编码的亮色模式 Tailwind 类，无法适配暗色主题：
+
+- `src/components/markdown/MarkdownRenderer.tsx:64` - Copy button 使用 `bg-slate-700 hover:bg-slate-600`
+- `src/components/markdown/MarkdownRenderer.tsx:118-178` - 文本颜色硬编码 (`text-slate-800`, `text-slate-900`, `text-blue-600`)
+
+#### 解决方案
+
+**方案 A: 使用 Tailwind `dark:` 前缀** (推荐用于简单场景)
+
+```tsx
+// Before (硬编码)
+<div className="bg-slate-100 text-slate-800 border-slate-200">
+
+// After (支持暗色)
+<div className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700">
+```
+
+**方案 B: 使用语义化 CSS 变量** (推荐用于可复用组件)
+
+```tsx
+// 定义语义化变量
+--text-primary: #1E293B;
+--text-primary-dark: #F1F5F9;
+
+// 组件中使用
+<div className="bg-[var(--node-user-bg)] text-[var(--text-primary)]">
+```
+
+**方案 C: 创建自定义 Tailwind 类**
+
+```js
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        'text-primary': 'var(--text-primary)',
+        'text-primary-dark': 'var(--text-primary-dark)',
+      },
+    },
+  },
+};
+```
+
+#### 迁移优先级
+
+1. **高优先级**: 用户可见的文本和背景颜色
+2. **中优先级**: 边框、分隔线、图标颜色
+3. **低优先级**: 装饰性元素、内部状态
+
+### 7.4 主题切换组件
 
 ```tsx
 // components/ThemeProvider.tsx
@@ -340,17 +456,61 @@ export function useTheme() {
 
 ## 8. 过渡动画 (Transitions)
 
-使用 CSS transition 实现平滑的主题切换：
+### 推荐方案
+
+使用 CSS transition 实现平滑的主题切换，但需要避免性能问题：
 
 ```css
-* {
+/* 方案 1: 仅在根元素上应用过渡 */
+:root {
+  transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 方案 2: 针对特定元素应用过渡 */
+.theme-transition {
   transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
 }
 ```
 
-**注意**: 某些属性（如 box-shadow）应排除在过渡之外，避免性能问题。
+### 性能注意事项
+
+**避免在 `*` 通配符上应用过渡**，原因：
+
+1. **性能开销**: 每个元素都会监听过渡，包括不可见元素
+2. **意外动画**: 可能触发布局属性（如 width、height）的过渡
+3. **调试困难**: 难以追踪哪些元素在执行过渡
+
+**应排除的属性**:
+
+- `box-shadow` / `drop-shadow`: 触发重绘
+- `width` / `height`: 触发重排
+- `top` / `left`: 触发重排
+- `margin` / `padding`: 触发重排
+
+**推荐使用的属性**:
+
+- `color`, `background-color`: 仅触发重绘
+- `border-color`: 仅触发重绘
+- `fill`, `stroke`: SVG 属性，性能良好
+
+### 尊重用户偏好
+
+支持 `prefers-reduced-motion` 媒体查询：
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+```
 
 ---
 

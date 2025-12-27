@@ -11,9 +11,9 @@ if ! cd "$CLAUDE_PROJECT_DIR" && pnpm check; then
   exit 0
 fi
 
-# if ! pnpm test; then
-#   echo '{"decision": "block", "reason": "Code contains test errors. Please fix them first."}'
-#   exit 0
-# fi
+if ! pnpm test; then
+  echo '{"decision": "block", "reason": "Code contains test errors. Please fix them first."}'
+  exit 0
+fi
 
 echo '{"decision": "approve"}'
