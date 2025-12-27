@@ -45,8 +45,8 @@ export function ThreadMessage({
 	if (role === "SYSTEM") {
 		return (
 			<div className="flex justify-center my-4">
-				<div className="px-3 py-1.5 bg-slate-100 rounded-full">
-					<p className="text-xs text-slate-500 text-center max-w-md">
+				<div className="px-3 py-1.5 bg-[var(--color-surface-elevated)] rounded-full">
+					<p className="text-xs text-[var(--color-text-secondary)] text-center max-w-md">
 						{content || "*System message*"}
 					</p>
 				</div>
@@ -59,12 +59,12 @@ export function ThreadMessage({
 		return (
 			<div className={`flex justify-end my-3 ${isLast ? "mb-4" : ""}`}>
 				<div className="max-w-[80%] flex flex-col items-end gap-1">
-					<div className="bg-blue-500 text-white px-4 py-2.5 rounded-2xl rounded-br-md">
+					<div className="bg-[var(--color-primary)] text-white px-4 py-2.5 rounded-2xl rounded-br-md">
 						<p className="text-sm whitespace-pre-wrap break-words">
 							{content || "*Empty message*"}
 						</p>
 					</div>
-					<span className="text-xs text-slate-400">You</span>
+					<span className="text-xs text-[var(--color-text-muted)]">You</span>
 				</div>
 			</div>
 		);
@@ -76,9 +76,9 @@ export function ThreadMessage({
 			<div className="max-w-[85%] flex flex-col gap-2">
 				{/* Header with AI label and actions */}
 				<div className="flex items-center gap-2 px-1">
-					<div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+					<div className="w-5 h-5 rounded-full bg-[var(--color-primary)]/20 flex items-center justify-center flex-shrink-0">
 						<svg
-							className="w-3 h-3 text-blue-600"
+							className="w-3 h-3 text-[var(--color-primary)]"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -92,15 +92,15 @@ export function ThreadMessage({
 							/>
 						</svg>
 					</div>
-					<span className="text-xs font-medium text-slate-700">{provider}</span>
-					{model && <span className="text-xs text-slate-400">{model}</span>}
+					<span className="text-xs font-medium text-[var(--color-text-primary)]">{provider}</span>
+					{model && <span className="text-xs text-[var(--color-text-muted)]">{model}</span>}
 					{isStreaming && (
 						<div className="flex items-center gap-1 ml-auto">
 							<span className="relative flex h-2 w-2">
-								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-								<span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-primary)]/80 opacity-75" />
+								<span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-primary)]" />
 							</span>
-							<span className="text-xs text-blue-600">Streaming</span>
+							<span className="text-xs text-[var(--color-primary)]">Streaming</span>
 						</div>
 					)}
 					{/* Action buttons */}
@@ -108,7 +108,7 @@ export function ThreadMessage({
 						<button
 							type="button"
 							onClick={handleCopy}
-							className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-slate-600 transition-colors"
+							className="p-1 hover:bg-[var(--color-border-subtle)] rounded text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
 							title="Copy"
 							aria-label="Copy message"
 						>
@@ -131,7 +131,7 @@ export function ThreadMessage({
 							<button
 								type="button"
 								onClick={onRegenerate}
-								className="p-1 hover:bg-blue-50 rounded text-slate-400 hover:text-blue-600 transition-colors"
+								className="p-1 hover:bg-[var(--color-primary)]/10 rounded text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
 								title="Regenerate"
 								aria-label="Regenerate response"
 							>
@@ -156,7 +156,7 @@ export function ThreadMessage({
 
 				{/* Content with markdown */}
 				<div className="px-1 py-1">
-					<div className="prose prose-sm prose-slate max-w-none">
+					<div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
 						<MarkdownRenderer content={content || "*Empty response*"} />
 					</div>
 				</div>

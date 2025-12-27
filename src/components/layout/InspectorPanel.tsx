@@ -41,15 +41,15 @@ export function InspectorPanel({
 }: InspectorPanelProps) {
 	return (
 		<aside
-			className={`flex flex-col h-full bg-white border-l border-slate-200 shadow-lg ${className}`}
+			className={`flex flex-col h-full bg-[var(--color-surface)] border-l border-[var(--color-border)] shadow-lg ${className}`}
 		>
 			{/* Header */}
-			<div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-				<h2 className="text-sm font-medium text-slate-700">Thread</h2>
+			<div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
+				<h2 className="text-sm font-medium text-[var(--color-text-primary)]">Thread</h2>
 
 				<button
 					type="button"
-					className="flex items-center justify-center w-8 h-8 border-0 bg-transparent text-slate-400 cursor-pointer rounded-md hover:bg-slate-100 hover:text-slate-600 transition-colors"
+					className="flex items-center justify-center w-8 h-8 border-0 bg-transparent text-[var(--color-text-muted)] cursor-pointer rounded-md hover:bg-[var(--color-border-subtle)] hover:text-[var(--color-text-secondary)] transition-colors"
 					onClick={onClose}
 					aria-label="Close panel"
 				>
@@ -71,7 +71,7 @@ export function InspectorPanel({
 			<div className="flex-1 overflow-y-auto">
 				{threadContent || (
 					<div className="flex items-center justify-center h-full px-4">
-						<p className="text-sm text-slate-400">
+						<p className="text-sm text-[var(--color-text-muted)]">
 							Select a node to view conversation thread
 						</p>
 					</div>

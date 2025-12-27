@@ -75,11 +75,11 @@ export function UserNode({
 	return (
 		// biome-ignore lint/a11y/useSemanticElements: ReactFlow node requires div for positioning
 		<div
-			className={`relative w-[320px] rounded-xl bg-slate-100 border-2 transition-all duration-200 ${
+			className={`relative w-[320px] rounded-xl bg-[var(--color-surface-elevated)] border-2 transition-all duration-200 ${
 				selected
-					? "border-blue-500 shadow-[0_0_0_2px_#2563EB,0_10px_15px_-3px_rgba(0,0,0,0.1)]"
-					: "border-slate-200 shadow-[0_1px_3px_0_rgba(0,0,0,0.1)]"
-			} ${isHovered ? "shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]" : ""}`}
+					? "border-[var(--color-primary)] shadow-[var(--shadow-node-selected)]"
+					: "border-[var(--color-border)] shadow-[var(--shadow-node)]"
+			} ${isHovered ? "shadow-[var(--shadow-node-hover)]" : ""}`}
 			onDoubleClick={handleDoubleClick}
 			role="button"
 			tabIndex={0}
@@ -93,10 +93,10 @@ export function UserNode({
 			/>
 
 			{/* Node Header - User Label */}
-			<div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200/50">
-				<div className="w-6 h-6 rounded-full bg-slate-300 flex items-center justify-center">
+			<div className="flex items-center gap-2 px-4 py-2 border-b border-[var(--color-border)]/50">
+				<div className="w-6 h-6 rounded-full bg-[var(--color-border)] flex items-center justify-center">
 					<svg
-						className="w-3.5 h-3.5 text-slate-600"
+						className="w-3.5 h-3.5 text-[var(--color-text-secondary)]"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -110,9 +110,9 @@ export function UserNode({
 						/>
 					</svg>
 				</div>
-				<span className="text-sm font-medium text-slate-600">You</span>
+				<span className="text-sm font-medium text-[var(--color-text-secondary)]">You</span>
 				{isEditing && (
-					<span className="ml-auto text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+					<span className="ml-auto text-xs text-[var(--color-warning)] bg-[var(--color-warning)]/10 px-2 py-0.5 rounded-full">
 						Editing
 					</span>
 				)}
@@ -125,13 +125,13 @@ export function UserNode({
 						defaultValue={content}
 						onChange={handleContentChange}
 						onKeyDown={handleKeyDown}
-						className="w-full min-h-[60px] p-2 text-sm text-slate-800 bg-white rounded-lg border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+						className="w-full min-h-[60px] p-2 text-sm text-[var(--color-text-primary)] bg-[var(--color-surface)] rounded-lg border border-[var(--color-primary)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] resize-y"
 						placeholder="Enter your message..."
 					/>
 				) : (
-					<p className="text-sm text-slate-800 whitespace-pre-wrap break-words">
+					<p className="text-sm text-[var(--color-text-primary)] whitespace-pre-wrap break-words">
 						{content || (
-							<span className="text-slate-400 italic">Empty message</span>
+							<span className="text-[var(--color-text-muted)] italic">Empty message</span>
 						)}
 					</p>
 				)}
@@ -147,7 +147,7 @@ export function UserNode({
 
 			{/* Edit Hint - Only visible when hovered */}
 			{isHovered && !isEditing && (
-				<div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-slate-400 whitespace-nowrap">
+				<div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-[var(--color-text-muted)] whitespace-nowrap">
 					Double-click to edit
 				</div>
 			)}

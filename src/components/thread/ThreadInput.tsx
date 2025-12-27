@@ -98,7 +98,7 @@ export function ThreadInput({
 	const isNearLimit = charCount > maxLength * 0.9;
 
 	return (
-		<div className={`border-t border-slate-200 bg-slate-50 p-4 ${className}`}>
+		<div className={`border-t border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-4 ${className}`}>
 			<form onSubmit={handleSend} className="flex flex-col gap-2">
 				<div className="relative flex items-end gap-2">
 					<div className="flex-1 relative">
@@ -110,10 +110,10 @@ export function ThreadInput({
 							disabled={isDisabled}
 							placeholder={placeholder}
 							rows={1}
-							className={`w-full px-4 py-3 pr-12 bg-white border rounded-xl resize-none transition-all ${
+							className={`w-full px-4 py-3 pr-12 bg-[var(--color-surface)] border rounded-xl resize-none transition-all ${
 								isDisabled
-									? "bg-slate-100 text-slate-400 cursor-not-allowed"
-									: "border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+									? "bg-[var(--color-border-subtle)] text-[var(--color-text-muted)] cursor-not-allowed"
+									: "border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
 							}`}
 							style={{ minHeight: "48px", maxHeight: "200px" }}
 							aria-label="Message input"
@@ -123,7 +123,7 @@ export function ThreadInput({
 						{message.length > 0 && (
 							<div
 								className={`absolute bottom-2 right-2 text-xs ${
-									isNearLimit ? "text-amber-600" : "text-slate-400"
+									isNearLimit ? "text-[var(--color-warning)]" : "text-[var(--color-text-muted)]"
 								}`}
 							>
 								{charCount}/{maxLength}
@@ -137,8 +137,8 @@ export function ThreadInput({
 						disabled={isDisabled || !message.trim()}
 						className={`flex items-center justify-center w-12 h-12 rounded-xl border-0 transition-all ${
 							isDisabled || !message.trim()
-								? "bg-slate-200 text-slate-400 cursor-not-allowed"
-								: "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 shadow-sm hover:shadow-md"
+								? "bg-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed"
+								: "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-hover)] shadow-sm hover:shadow-md"
 						}`}
 						aria-label="Send message"
 						title={isDisabled ? "Sending..." : "Send message (Cmd+Enter)"}
@@ -186,9 +186,9 @@ export function ThreadInput({
 				</div>
 
 				{/* Helper text */}
-				<p className="text-xs text-slate-400 text-center">
+				<p className="text-xs text-[var(--color-text-muted)] text-center">
 					Press{" "}
-					<kbd className="px-1.5 py-0.5 bg-slate-200 rounded text-slate-600">
+					<kbd className="px-1.5 py-0.5 bg-[var(--color-border)] rounded text-[var(--color-text-secondary)]">
 						Cmd+Enter
 					</kbd>{" "}
 					to send

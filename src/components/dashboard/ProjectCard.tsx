@@ -45,7 +45,7 @@ export function ProjectCard({
 	};
 
 	return (
-		<div className="group relative bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200">
+		<div className="group relative bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-5 hover:shadow-md hover:border-[var(--color-text-muted)] transition-all duration-200">
 			{/* Card Header */}
 			<div className="flex items-start justify-between gap-3 mb-3">
 				{isRenaming ? (
@@ -55,12 +55,12 @@ export function ProjectCard({
 							value={newName}
 							onChange={(e) => setNewName(e.target.value)}
 							onBlur={() => setIsRenaming(false)}
-							className="flex-1 px-2 py-1 text-lg font-semibold text-slate-800 border border-blue-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="flex-1 px-2 py-1 text-lg font-semibold text-[var(--color-text-primary)] border border-[var(--color-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
 							maxLength={100}
 						/>
 						<button
 							type="submit"
-							className="px-3 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
+							className="px-3 py-1 bg-[var(--color-primary)] text-white text-sm rounded-md hover:bg-[var(--color-primary-hover)] transition-colors"
 						>
 							Save
 						</button>
@@ -70,13 +70,13 @@ export function ProjectCard({
 								setIsRenaming(false);
 								setNewName(project.name);
 							}}
-							className="px-3 py-1 bg-slate-200 text-slate-700 text-sm rounded-md hover:bg-slate-300 transition-colors"
+							className="px-3 py-1 bg-[var(--color-border)] text-[var(--color-text-primary)] text-sm rounded-md hover:bg-[var(--color-text-muted)] transition-colors"
 						>
 							Cancel
 						</button>
 					</form>
 				) : (
-					<h3 className="flex-1 text-lg font-semibold text-slate-800 line-clamp-2">
+					<h3 className="flex-1 text-lg font-semibold text-[var(--color-text-primary)] line-clamp-2">
 						{project.name}
 					</h3>
 				)}
@@ -86,7 +86,7 @@ export function ProjectCard({
 						<button
 							type="button"
 							onClick={() => setIsRenaming(true)}
-							className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+							className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-border-subtle)] rounded-md transition-colors"
 							title="Rename project"
 						>
 							<svg
@@ -108,7 +108,7 @@ export function ProjectCard({
 					<button
 						type="button"
 						onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
-						className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+						className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-md transition-colors"
 						title="Delete project"
 					>
 						<svg
@@ -131,13 +131,13 @@ export function ProjectCard({
 
 			{/* Description */}
 			{project.description && (
-				<p className="text-sm text-slate-600 line-clamp-3 mb-4">
+				<p className="text-sm text-[var(--color-text-secondary)] line-clamp-3 mb-4">
 					{project.description}
 				</p>
 			)}
 
 			{/* Stats */}
-			<div className="flex items-center gap-4 text-xs text-slate-500 mb-4">
+			<div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)] mb-4">
 				<div className="flex items-center gap-1.5">
 					<svg
 						className="w-4 h-4"
@@ -175,10 +175,10 @@ export function ProjectCard({
 			</div>
 
 			{/* Actions */}
-			<div className="flex items-center justify-between pt-3 border-t border-slate-100">
+			<div className="flex items-center justify-between pt-3 border-t border-[var(--color-border)]/60">
 				<Link
 					href={`/workspace?project=${project.id}`}
-					className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
+					className="px-4 py-2 bg-[var(--color-primary)] text-white text-sm font-medium rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
 					onClick={() => onOpen(project.id)}
 				>
 					Open
@@ -186,23 +186,23 @@ export function ProjectCard({
 
 				{/* Delete Confirmation */}
 				{showDeleteConfirm && (
-					<div className="absolute inset-0 bg-white/95 rounded-xl flex items-center justify-center p-4 z-10">
+					<div className="absolute inset-0 bg-[var(--color-surface)]/95 rounded-xl flex items-center justify-center p-4 z-10">
 						<div className="text-center">
-							<p className="text-sm text-slate-700 mb-3">
+							<p className="text-sm text-[var(--color-text-primary)] mb-3">
 								Delete this project?
 							</p>
 							<div className="flex gap-2">
 								<button
 									type="button"
 									onClick={handleDelete}
-									className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
+									className="px-3 py-1.5 bg-[var(--color-error)] text-white text-sm rounded-md hover:bg-red-600 transition-colors"
 								>
 									Delete
 								</button>
 								<button
 									type="button"
 									onClick={() => setShowDeleteConfirm(false)}
-									className="px-3 py-1.5 bg-slate-200 text-slate-700 text-sm rounded-md hover:bg-slate-300 transition-colors"
+									className="px-3 py-1.5 bg-[var(--color-border)] text-[var(--color-text-primary)] text-sm rounded-md hover:bg-[var(--color-text-muted)] transition-colors"
 								>
 									Cancel
 								</button>

@@ -130,13 +130,13 @@ export function PromptInputDialog({
 			className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
 			onClick={handleBackdropClick}
 		>
-			<div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+			<div className="bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
 				{/* Header */}
-				<div className="px-6 py-4 border-b border-slate-200">
-					<h2 className="text-xl font-semibold text-slate-800">
+				<div className="px-6 py-4 border-b border-[var(--color-border)]">
+					<h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
 						{title || "Start Your Thought Flow"}
 					</h2>
-					<p className="text-sm text-slate-500 mt-1">
+					<p className="text-sm text-[var(--color-text-secondary)] mt-1">
 						{description || "Enter your first prompt to begin the conversation"}
 					</p>
 				</div>
@@ -151,14 +151,14 @@ export function PromptInputDialog({
 						placeholder={placeholder}
 						maxLength={maxLength}
 						rows={6}
-						className="w-full p-3 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y min-h-[120px] max-h-[300px]"
+						className="w-full p-3 text-sm text-[var(--color-text-primary)] bg-[var(--color-surface-elevated)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-y min-h-[120px] max-h-[300px]"
 					/>
 
 					{/* Character Count */}
 					<div className="flex justify-end mt-2">
 						<span
 							className={`text-xs ${
-								isNearLimit ? "text-amber-600 font-medium" : "text-slate-400"
+								isNearLimit ? "text-[var(--color-warning)] font-medium" : "text-[var(--color-text-muted)]"
 							}`}
 						>
 							{charCount} / {maxLength}
@@ -167,11 +167,11 @@ export function PromptInputDialog({
 				</div>
 
 				{/* Footer */}
-				<div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+				<div className="px-6 py-4 bg-[var(--color-surface-elevated)] border-t border-[var(--color-border)] flex justify-end gap-3">
 					<button
 						type="button"
 						onClick={onClose}
-						className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-lg transition-colors"
+						className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-border)] rounded-lg transition-colors"
 					>
 						Cancel
 					</button>
@@ -179,25 +179,25 @@ export function PromptInputDialog({
 						type="button"
 						onClick={handleSubmit}
 						disabled={!canSubmit}
-						className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed rounded-lg transition-colors"
+						className="px-4 py-2 text-sm font-medium text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] disabled:bg-[var(--color-border)] disabled:text-[var(--color-text-muted)] disabled:cursor-not-allowed rounded-lg transition-colors"
 					>
 						{submitButtonText || "Create Node"}
 					</button>
 				</div>
 
 				{/* Keyboard Hints */}
-				<div className="px-6 py-3 bg-slate-100 border-t border-slate-200 flex items-center justify-center gap-6">
-					<div className="flex items-center gap-1.5 text-xs text-slate-500">
-						<kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-[10px]">
+				<div className="px-6 py-3 bg-[var(--color-border-subtle)] border-t border-[var(--color-border)] flex items-center justify-center gap-6">
+					<div className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)]">
+						<kbd className="px-1.5 py-0.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded text-[10px]">
 							⌘
 						</kbd>
-						<kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-[10px]">
+						<kbd className="px-1.5 py-0.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded text-[10px]">
 							Enter
 						</kbd>
 						<span>to submit</span>
 					</div>
-					<div className="flex items-center gap-1.5 text-xs text-slate-500">
-						<kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-[10px]">
+					<div className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)]">
+						<kbd className="px-1.5 py-0.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded text-[10px]">
 							Esc
 						</kbd>
 						<span>to cancel</span>

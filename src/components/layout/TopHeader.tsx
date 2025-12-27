@@ -42,7 +42,7 @@ export function TopHeader({ onBack, className = "" }: TopHeaderProps) {
 		>
 			<button
 				type="button"
-				className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 backdrop-blur-md border border-slate-200/60 text-slate-600 hover:bg-white hover:text-slate-800 hover:shadow-lg transition-all duration-200 shadow-sm"
+				className="flex items-center justify-center w-10 h-10 rounded-lg bg-[var(--color-surface)]/80 backdrop-blur-md border border-[var(--color-border)]/60 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)] hover:shadow-lg transition-all duration-200 shadow-sm"
 				onClick={onBack}
 				aria-label="Go back to dashboard"
 			>
