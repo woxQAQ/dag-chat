@@ -5,7 +5,7 @@
  * Tests should mock database operations rather than directly accessing the database.
  */
 
-import { describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 // Mock the prisma client before importing
 vi.mock("./prisma", () => ({
