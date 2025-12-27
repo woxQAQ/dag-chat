@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import {
 	CanvasLayout,
 	FloatingToolbar,
@@ -17,7 +18,7 @@ describe("CanvasLayout", () => {
 		);
 
 		const layout = container.firstElementChild;
-		expect(layout).toHaveClass("bg-slate-50");
+		expect(layout).toHaveClass("bg-[var(--color-canvas)]");
 	});
 
 	it("should render header when provided", () => {
@@ -95,15 +96,19 @@ describe("TopHeader", () => {
 });
 
 describe("FloatingToolbar", () => {
+	const wrapper = ({ children }: { children: React.ReactNode }) => (
+		<ThemeProvider defaultTheme="light">{children}</ThemeProvider>
+	);
+
 	it("should render with default select mode", () => {
-		render(<FloatingToolbar />);
+		render(<FloatingToolbar />, { wrapper });
 		// Select tool should be active by default
 		const container = screen.getByLabelText("Select mode (V)")?.parentElement;
 		expect(container).toBeInTheDocument();
 	});
 
 	it("should render all tool buttons", () => {
-		render(<FloatingToolbar />);
+		render(<FloatingToolbar />, { wrapper });
 		expect(screen.getByLabelText("Select mode (V)")).toBeInTheDocument();
 		expect(screen.getByLabelText("Hand mode (H)")).toBeInTheDocument();
 		expect(screen.getByLabelText("Connect mode (L)")).toBeInTheDocument();
@@ -111,26 +116,30 @@ describe("FloatingToolbar", () => {
 	});
 
 	it("should highlight active tool mode", () => {
-		const { rerender } = render(<FloatingToolbar mode="select" />);
-		// Check select button has active class (bg-blue-500)
+		const { rerender } = render(<FloatingToolbar mode="select" />, { wrapper });
+		// Check select button has active class
 		const selectButton = screen.getByLabelText("Select mode (V)");
-		expect(selectButton.closest("button")).toHaveClass("bg-blue-500");
+		expect(selectButton.closest("button")).toHaveClass(
+			"bg-[var(--color-primary)]",
+		);
 
 		rerender(<FloatingToolbar mode="hand" />);
 		const handButton = screen.getByLabelText("Hand mode (H)");
-		expect(handButton.closest("button")).toHaveClass("bg-blue-500");
+		expect(handButton.closest("button")).toHaveClass(
+			"bg-[var(--color-primary)]",
+		);
 	});
 
 	it("should call onModeChange when tool button is clicked", () => {
 		const onModeChange = () => {};
-		render(<FloatingToolbar onModeChange={onModeChange} />);
+		render(<FloatingToolbar onModeChange={onModeChange} />, { wrapper });
 		// Button is rendered, click handler is attached
 		expect(screen.getByLabelText("Hand mode (H)")).toBeInTheDocument();
 	});
 
 	it("should call onLayout when Layout button is clicked", () => {
 		const onLayout = () => {};
-		render(<FloatingToolbar onLayout={onLayout} />);
+		render(<FloatingToolbar onLayout={onLayout} />, { wrapper });
 		expect(screen.getByLabelText("Auto layout")).toBeInTheDocument();
 	});
 
@@ -139,6 +148,7 @@ describe("FloatingToolbar", () => {
 			<FloatingToolbar>
 				<div data-testid="custom-toolbar">Custom</div>
 			</FloatingToolbar>,
+			{ wrapper },
 		);
 		expect(screen.getByTestId("custom-toolbar")).toBeInTheDocument();
 	});
@@ -179,6 +189,10 @@ describe("InspectorPanel", () => {
 });
 
 describe("Layout Integration", () => {
+	const wrapper = ({ children }: { children: React.ReactNode }) => (
+		<ThemeProvider defaultTheme="light">{children}</ThemeProvider>
+	);
+
 	it("should render all layout components together", () => {
 		const onBack = () => {};
 		render(
@@ -190,6 +204,7 @@ describe("Layout Integration", () => {
 			>
 				<div>Canvas Content</div>
 			</CanvasLayout>,
+			{ wrapper },
 		);
 
 		expect(screen.getByLabelText("Go back to dashboard")).toBeInTheDocument();

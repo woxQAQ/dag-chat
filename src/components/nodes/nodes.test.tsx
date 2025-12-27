@@ -94,7 +94,7 @@ describe("Node Components", () => {
 		it("should apply selected styles when selected is true", () => {
 			const { container } = render(<UserNode {...defaultProps} selected />);
 			const nodeContainer = container.firstChild as HTMLElement;
-			expect(nodeContainer).toHaveClass("border-blue-500");
+			expect(nodeContainer).toHaveClass("border-[var(--color-primary)]");
 		});
 
 		it("should render edit hint when hovered", () => {
@@ -187,7 +187,7 @@ describe("Node Components", () => {
 			const { container } = render(<AINode {...defaultProps} selected />);
 			// Find the actual node container (inside the wrapper div)
 			const nodeContainer = container.querySelector('[role="button"]');
-			expect(nodeContainer).toHaveClass("border-blue-500");
+			expect(nodeContainer).toHaveClass("border-[var(--color-primary)]");
 		});
 
 		it("should render action bar when hovered", () => {
