@@ -2,7 +2,7 @@
  * Tests for use-node-editing hook (UI-NEW-004)
  */
 
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNodeEditing } from "./use-node-editing";
 
@@ -45,7 +45,9 @@ describe("useNodeEditing", () => {
 
 			const { result } = renderHook(() => useNodeEditing({ onContentUpdated }));
 
-			await result.current.updateNodeContent(mockNodeId, mockContent);
+			await act(async () => {
+				await result.current.updateNodeContent(mockNodeId, mockContent);
+			});
 
 			expect(updateNodeContentAction).toHaveBeenCalledWith({
 				nodeId: mockNodeId,
@@ -71,7 +73,9 @@ describe("useNodeEditing", () => {
 			const { result } = renderHook(() => useNodeEditing());
 
 			// Start the update and wait for completion
-			await result.current.updateNodeContent(mockNodeId, mockContent);
+			await act(async () => {
+				await result.current.updateNodeContent(mockNodeId, mockContent);
+			});
 
 			// After completion, isUpdating should be false
 			await waitFor(() => {
@@ -94,7 +98,9 @@ describe("useNodeEditing", () => {
 
 			const { result } = renderHook(() => useNodeEditing({ onError }));
 
-			await result.current.updateNodeContent(mockNodeId, mockContent);
+			await act(async () => {
+				await result.current.updateNodeContent(mockNodeId, mockContent);
+			});
 
 			expect(onError).toHaveBeenCalledWith(mockError);
 			await waitFor(() => {
@@ -117,7 +123,9 @@ describe("useNodeEditing", () => {
 
 			const { result } = renderHook(() => useNodeEditing({ onError }));
 
-			await result.current.updateNodeContent(mockNodeId, mockContent);
+			await act(async () => {
+				await result.current.updateNodeContent(mockNodeId, mockContent);
+			});
 
 			expect(onError).toHaveBeenCalledWith(mockError);
 			await waitFor(() => {
@@ -137,7 +145,9 @@ describe("useNodeEditing", () => {
 
 			const { result } = renderHook(() => useNodeEditing({ onError }));
 
-			await result.current.updateNodeContent(mockNodeId, mockContent);
+			await act(async () => {
+				await result.current.updateNodeContent(mockNodeId, mockContent);
+			});
 
 			expect(onError).toHaveBeenCalledWith("An unexpected error occurred");
 			await waitFor(() => {
@@ -162,9 +172,9 @@ describe("useNodeEditing", () => {
 			const { result } = renderHook(() => useNodeEditing());
 
 			// Should not throw
-			await expect(
-				result.current.updateNodeContent(mockNodeId, mockContent),
-			).resolves.toBeUndefined();
+			await act(async () => {
+				await result.current.updateNodeContent(mockNodeId, mockContent);
+			});
 		});
 
 		it("should not trigger callbacks when not provided", async () => {
@@ -179,9 +189,9 @@ describe("useNodeEditing", () => {
 			const { result } = renderHook(() => useNodeEditing());
 
 			// Should not throw
-			await expect(
-				result.current.updateNodeContent(mockNodeId, mockContent),
-			).resolves.toBeUndefined();
+			await act(async () => {
+				await result.current.updateNodeContent(mockNodeId, mockContent);
+			});
 
 			await waitFor(() => {
 				expect(result.current.error).toBe("Some error");
@@ -200,8 +210,10 @@ describe("useNodeEditing", () => {
 
 			const { result } = renderHook(() => useNodeEditing({ onContentUpdated }));
 
-			await result.current.updateNodeContent("node-1", "Content 1");
-			await result.current.updateNodeContent("node-2", "Content 2");
+			await act(async () => {
+				await result.current.updateNodeContent("node-1", "Content 1");
+				await result.current.updateNodeContent("node-2", "Content 2");
+			});
 
 			expect(updateNodeContentAction).toHaveBeenCalledTimes(2);
 			expect(onContentUpdated).toHaveBeenCalledTimes(2);

@@ -52,6 +52,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma
+        run: pnpm prisma generate
+
       - name: Run TypeScript compiler
         run: pnpm tsc --noEmit
 
@@ -75,6 +78,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      
+      - name: Generate Prisma
+        run: pnpm prisma generate
 
       - name: Run tests
         run: pnpm test:coverage
@@ -106,6 +112,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+            
+      - name: Generate Prisma
+        run: pnpm prisma generate
 
       - name: Build project
         run: pnpm build
