@@ -1,0 +1,42 @@
+[
+  {
+    "id": "UI-DARK-001",
+    "name": "Global Theme Configuration (Tailwind v4)",
+    "description": "Define semantic color variables in src/app/globals.css for Light and Dark modes. Create CSS variables (e.g., --color-canvas-bg, --color-node-ai, --color-text-primary) mapping to Slate/Blue scales and register them in the @theme block. This replaces the proposal's tailwind.config.ts approach to align with Tailwind v4.",
+    "status": "pending",
+    "priority": "P0",
+    "dependencies": []
+  },
+  {
+    "id": "UI-DARK-002",
+    "name": "Canvas & Layout Dark Mode",
+    "description": "Update CanvasLayout, TopHeader, FloatingToolbar, and InspectorPanel to use the new semantic color classes (e.g., bg-canvas-bg, border-border-subtle). Adjust grid pattern opacity for dark mode.",
+    "status": "pending",
+    "priority": "P0",
+    "dependencies": ["UI-DARK-001"]
+  },
+  {
+    "id": "UI-DARK-003",
+    "name": "Node Component Dark Mode",
+    "description": "Update AINode and UserNode components to use semantic colors. Implement specific dark mode styles for shadows and markdown content text colors.",
+    "status": "pending",
+    "priority": "P0",
+    "dependencies": ["UI-DARK-001"]
+  },
+  {
+    "id": "UI-DARK-004",
+    "name": "Code Highlighting (Shiki)",
+    "description": "Update Shiki configuration to support dark mode. Ensure code blocks in AI nodes render with appropriate dark theme colors when in dark mode.",
+    "status": "pending",
+    "priority": "P1",
+    "dependencies": ["UI-DARK-003"]
+  },
+  {
+    "id": "UI-DARK-005",
+    "name": "Icon & Interaction Refinement",
+    "description": "Audit all SVG icons to use currentColor. Verify and refine hover states, focus rings, and scrollbars for sufficient contrast in dark mode.",
+    "status": "pending",
+    "priority": "P1",
+    "dependencies": ["UI-DARK-002", "UI-DARK-003"]
+  }
+]
