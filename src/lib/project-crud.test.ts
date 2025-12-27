@@ -28,6 +28,7 @@ vi.mock("./prisma", () => ({
 			findFirst: vi.fn(),
 		},
 		$queryRaw: vi.fn(),
+		$queryRawUnsafe: vi.fn(),
 	},
 }));
 
@@ -243,7 +244,13 @@ describe("Project CRUD Service", () => {
 			};
 
 			vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject);
-			vi.mocked(prisma.$queryRaw).mockResolvedValue([]);
+			vi.mocked(prisma.$queryRaw).mockResolvedValue([
+				{ total_nodes: 0, user_nodes: 0, assistant_nodes: 0, system_nodes: 0 },
+			]);
+			vi.mocked(prisma.$queryRawUnsafe).mockResolvedValue([
+				{ max_depth: null },
+			]);
+			vi.mocked(prisma.node.count).mockResolvedValue(0);
 
 			const stats = await getProjectStats(mockProject.id);
 

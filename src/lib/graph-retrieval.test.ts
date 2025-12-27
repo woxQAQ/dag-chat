@@ -23,6 +23,7 @@ vi.mock("./prisma", () => ({
 			create: vi.fn(),
 			findMany: vi.fn(),
 			findFirst: vi.fn(),
+			findUnique: vi.fn(),
 		},
 		$queryRaw: vi.fn(),
 	},
@@ -74,7 +75,7 @@ describe("Graph Retrieval Service", () => {
 			};
 
 			vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject);
-			vi.mocked(prisma.node.findMany).mockResolvedValue([]);
+			vi.mocked(prisma.$queryRaw).mockResolvedValue([]);
 
 			const graph = await getProjectGraph(mockProjectId);
 
@@ -98,7 +99,7 @@ describe("Graph Retrieval Service", () => {
 					id: mockRootNodeId,
 					projectId: mockProjectId,
 					parentId: null,
-					role: "SYSTEM" as const,
+					role: "SYSTEM",
 					content: "System prompt",
 					positionX: 0,
 					positionY: 0,
@@ -110,7 +111,7 @@ describe("Graph Retrieval Service", () => {
 					id: "00000000-0000-0000-0000-000000000003",
 					projectId: mockProjectId,
 					parentId: mockRootNodeId,
-					role: "USER" as const,
+					role: "USER",
 					content: "Hello",
 					positionX: 100,
 					positionY: 100,
@@ -121,7 +122,7 @@ describe("Graph Retrieval Service", () => {
 			];
 
 			vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject);
-			vi.mocked(prisma.node.findMany).mockResolvedValue(mockNodes);
+			vi.mocked(prisma.$queryRaw).mockResolvedValue(mockNodes);
 
 			const graph = await getProjectGraph(mockProjectId);
 
@@ -141,7 +142,7 @@ describe("Graph Retrieval Service", () => {
 
 		it("should throw error for non-existent node", async () => {
 			const fakeId = "00000000-0000-0000-0000-000000000000";
-			vi.mocked(prisma.node.findFirst).mockResolvedValue(null);
+			vi.mocked(prisma.node.findUnique).mockResolvedValue(null);
 
 			await expect(getNodeSubgraph(fakeId)).rejects.toThrow("Node not found");
 		});
@@ -158,12 +159,22 @@ describe("Graph Retrieval Service", () => {
 				metadata: {},
 				createdAt: new Date(),
 				updatedAt: new Date(),
+				depth: 0,
 			};
 
-			vi.mocked(prisma.node.findFirst).mockResolvedValue(mockNode);
-			vi.mocked(prisma.$queryRaw).mockResolvedValue([
-				{ id: mockNode.id, parent_id: mockRootNodeId },
-			]);
+			vi.mocked(prisma.node.findUnique).mockResolvedValue({
+				id: mockNode.id,
+				projectId: mockNode.projectId,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				parentId: mockRootNodeId,
+				role: "USER" as const,
+				content: "Leaf",
+				positionX: 100,
+				positionY: 200,
+				metadata: {},
+			});
+			vi.mocked(prisma.$queryRaw).mockResolvedValue([mockNode]);
 
 			const subgraph = await getNodeSubgraph(mockNode.id);
 
@@ -193,19 +204,26 @@ describe("Graph Retrieval Service", () => {
 				id: mockProjectId,
 				name: "Test Project",
 				description: null,
-				rootNodeId: mockRootNodeId,
+				rootNodeId: null,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			};
 
 			vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject);
 			vi.mocked(prisma.$queryRaw).mockResolvedValue([
-				{ total_nodes: 4, user_nodes: 2, assistant_nodes: 1, system_nodes: 1 },
+				{ role: "USER", depth: 0, child_count: BigInt(0) },
+				{ role: "USER", depth: 1, child_count: BigInt(0) },
+				{ role: "ASSISTANT", depth: 1, child_count: BigInt(1) },
+				{ role: "SYSTEM", depth: 0, child_count: BigInt(2) },
 			]);
 
 			const stats = await getProjectGraphStats(mockProjectId);
 
-			expect(stats.totalNodes).toBe(4);
+			expect(stats.nodeCountsByRole.USER).toBe(2);
+			expect(stats.nodeCountsByRole.ASSISTANT).toBe(1);
+			expect(stats.nodeCountsByRole.SYSTEM).toBe(1);
+			expect(stats.maxDepth).toBe(1);
+			expect(stats.leafNodeCount).toBe(2);
 		});
 	});
 });

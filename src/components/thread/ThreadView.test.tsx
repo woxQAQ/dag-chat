@@ -20,9 +20,9 @@ vi.mock("react-markdown", () => ({
 	),
 }));
 
-// Mock remark-gfm
+// Mock remark-gfm to return a plugin that doesn't trigger re-renders
 vi.mock("remark-gfm", () => ({
-	default: [],
+	default: () => (tree: unknown) => tree, // Return tree unchanged
 }));
 
 import { buildConversationContext } from "@/lib/context-builder";

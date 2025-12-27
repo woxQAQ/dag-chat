@@ -135,6 +135,7 @@ describe("ProjectCard", () => {
 
 	it("should save rename when form is submitted", async () => {
 		const user = userEvent.setup();
+		mockOnRename.mockResolvedValue(undefined);
 		render(
 			<ProjectCard
 				project={mockProject}
@@ -153,9 +154,8 @@ describe("ProjectCard", () => {
 		await user.clear(input);
 		await user.type(input, "New Project Name");
 
-		// Submit form by clicking save button
-		const saveButton = screen.getByRole("button", { name: "Save" });
-		const form = saveButton.closest("form");
+		// Submit form directly to avoid blur removing the form first
+		const form = input.closest("form");
 		if (form) {
 			fireEvent.submit(form);
 		}

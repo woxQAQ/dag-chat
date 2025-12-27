@@ -30,12 +30,18 @@ vi.mock("@/lib/prisma", () => ({
 	},
 }));
 
-// Mock project-crud
+// Mock project-crud and node-crud
+const mockGetProject = vi.fn();
+const mockCreateNode = vi.fn();
+
 vi.mock("@/lib/project-crud", () => ({
-	createProject: vi.fn(),
+	getProject: (...args: unknown[]) => mockGetProject(...args),
 }));
 
-import { prisma } from "@/lib/prisma";
+vi.mock("@/lib/node-crud", () => ({
+	createNode: (...args: unknown[]) => mockCreateNode(...args),
+}));
+
 import { createRootNode } from "./root-actions";
 
 describe("createRootNode Server Action", () => {
@@ -51,6 +57,15 @@ describe("createRootNode Server Action", () => {
 
 	describe("Success Cases", () => {
 		it("should create root node for empty project", async () => {
+			const mockProject = {
+				id: mockProjectId,
+				name: "Test Project",
+				description: null,
+				rootNodeId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
 			const mockNode = {
 				id: "00000000-0000-0000-0000-000000000002",
 				projectId: mockProjectId,
@@ -64,8 +79,8 @@ describe("createRootNode Server Action", () => {
 				updatedAt: new Date(),
 			};
 
-			vi.mocked(prisma.node.create).mockResolvedValue(mockNode);
-			vi.mocked(prisma.project.update).mockResolvedValue({} as never);
+			mockGetProject.mockResolvedValue(mockProject);
+			mockCreateNode.mockResolvedValue(mockNode);
 
 			const result = await createRootNode({
 				projectId: mockProjectId,
@@ -82,6 +97,15 @@ describe("createRootNode Server Action", () => {
 		});
 
 		it("should create USER role node", async () => {
+			const mockProject = {
+				id: mockProjectId,
+				name: "Test Project",
+				description: null,
+				rootNodeId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
 			const mockNode = {
 				id: "00000000-0000-0000-0000-000000000002",
 				projectId: mockProjectId,
@@ -95,8 +119,8 @@ describe("createRootNode Server Action", () => {
 				updatedAt: new Date(),
 			};
 
-			vi.mocked(prisma.node.create).mockResolvedValue(mockNode);
-			vi.mocked(prisma.project.update).mockResolvedValue({} as never);
+			mockGetProject.mockResolvedValue(mockProject);
+			mockCreateNode.mockResolvedValue(mockNode);
 
 			const result = await createRootNode({
 				projectId: mockProjectId,
@@ -105,18 +129,24 @@ describe("createRootNode Server Action", () => {
 				positionY: 0,
 			});
 
-			if (result.success && result.data) {
-				const node = await prisma.node.findUnique({
-					where: { id: result.data.nodeId },
-				});
-
-				expect(node?.role).toBe("USER");
-			}
+			expect(result.success).toBe(true);
+			expect(mockCreateNode).toHaveBeenCalledWith(
+				expect.objectContaining({ role: "USER" }),
+			);
 		});
 	});
 
 	describe("Forest Structure Support", () => {
 		it("should allow creating multiple root nodes", async () => {
+			const mockProject = {
+				id: mockProjectId,
+				name: "Test Project",
+				description: null,
+				rootNodeId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
 			const mockNode1 = {
 				id: "00000000-0000-0000-0000-000000000002",
 				projectId: mockProjectId,
@@ -143,10 +173,10 @@ describe("createRootNode Server Action", () => {
 				updatedAt: new Date(),
 			};
 
-			vi.mocked(prisma.node.create)
+			mockGetProject.mockResolvedValue(mockProject);
+			mockCreateNode
 				.mockResolvedValueOnce(mockNode1)
 				.mockResolvedValueOnce(mockNode2);
-			vi.mocked(prisma.project.update).mockResolvedValue({} as never);
 
 			const root1 = await createRootNode({
 				projectId: mockProjectId,
@@ -171,6 +201,15 @@ describe("createRootNode Server Action", () => {
 
 	describe("Position Handling", () => {
 		it("should accept zero position", async () => {
+			const mockProject = {
+				id: mockProjectId,
+				name: "Test Project",
+				description: null,
+				rootNodeId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
 			const mockNode = {
 				id: "00000000-0000-0000-0000-000000000002",
 				projectId: mockProjectId,
@@ -184,8 +223,8 @@ describe("createRootNode Server Action", () => {
 				updatedAt: new Date(),
 			};
 
-			vi.mocked(prisma.node.create).mockResolvedValue(mockNode);
-			vi.mocked(prisma.project.update).mockResolvedValue({} as never);
+			mockGetProject.mockResolvedValue(mockProject);
+			mockCreateNode.mockResolvedValue(mockNode);
 
 			const result = await createRootNode({
 				projectId: mockProjectId,
@@ -200,6 +239,15 @@ describe("createRootNode Server Action", () => {
 		});
 
 		it("should accept negative positions", async () => {
+			const mockProject = {
+				id: mockProjectId,
+				name: "Test Project",
+				description: null,
+				rootNodeId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
 			const mockNode = {
 				id: "00000000-0000-0000-0000-000000000002",
 				projectId: mockProjectId,
@@ -213,8 +261,8 @@ describe("createRootNode Server Action", () => {
 				updatedAt: new Date(),
 			};
 
-			vi.mocked(prisma.node.create).mockResolvedValue(mockNode);
-			vi.mocked(prisma.project.update).mockResolvedValue({} as never);
+			mockGetProject.mockResolvedValue(mockProject);
+			mockCreateNode.mockResolvedValue(mockNode);
 
 			const result = await createRootNode({
 				projectId: mockProjectId,

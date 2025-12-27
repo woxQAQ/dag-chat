@@ -12,9 +12,12 @@ vi.mock("./prisma", () => ({
 	prisma: {
 		node: {
 			deleteMany: vi.fn(),
+			delete: vi.fn(),
 			create: vi.fn(),
 			update: vi.fn(),
 			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			count: vi.fn(),
 		},
 		project: {
 			deleteMany: vi.fn(),
@@ -107,6 +110,7 @@ describe("Node CRUD Service", () => {
 				updatedAt: new Date(),
 			});
 
+			vi.mocked(prisma.node.count).mockResolvedValue(0);
 			vi.mocked(prisma.node.create).mockResolvedValue(mockNode);
 			vi.mocked(prisma.project.update).mockResolvedValue({} as never);
 
@@ -277,7 +281,9 @@ describe("Node CRUD Service", () => {
 
 			vi.mocked(prisma.node.findUnique).mockResolvedValue(mockNode);
 			vi.mocked(prisma.$queryRaw).mockResolvedValue([]);
+			vi.mocked(prisma.node.findMany).mockResolvedValue([]);
 			vi.mocked(prisma.node.delete).mockResolvedValue(mockNode);
+			vi.mocked(prisma.project.update).mockResolvedValue({} as never);
 
 			await deleteNode(mockNode.id);
 

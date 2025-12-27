@@ -3,7 +3,7 @@
  * UI-WORKSPACE-005: Workspace Navigation
  */
 
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getProject } from "@/app/projects/actions";
 import { useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
@@ -27,26 +27,39 @@ describe("useWorkspaceNavigation", () => {
 	});
 
 	describe("initial state", () => {
-		it("should have correct initial state when projectId is provided", () => {
-			vi.mocked(getProject).mockResolvedValue({
-				success: true,
-				data: {
-					id: "project-123",
-					name: "Test Project",
-					description: null,
-					rootNodeId: null,
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-			});
+		it("should have correct initial state when projectId is provided", async () => {
+			// biome-ignore lint/suspicious/noExplicitAny: Promise resolve type is complex
+			let resolveFetch!: (value: any) => void;
+
+			vi.mocked(getProject).mockReturnValue(
+				new Promise((resolve) => {
+					resolveFetch = resolve;
+				}),
+			);
 
 			const { result } = renderHook(() =>
 				useWorkspaceNavigation({ projectId: "project-123" }),
 			);
 
+			// Check initial state before fetch completes
 			expect(result.current.projectName).toBe("Untitled Project");
 			expect(result.current.isLoading).toBe(true);
 			expect(result.current.error).toBe(null);
+
+			// Resolve the pending fetch
+			await act(async () => {
+				resolveFetch?.({
+					success: true,
+					data: {
+						id: "project-123",
+						name: "Test Project",
+						description: null,
+						rootNodeId: null,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+				});
+			});
 		});
 
 		it("should set error when no projectId is provided", async () => {
