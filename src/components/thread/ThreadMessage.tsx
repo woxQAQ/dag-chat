@@ -155,7 +155,7 @@ export function ThreadMessage({
 				</div>
 
 				{/* Content with markdown */}
-				<div className="bg-white border border-slate-200 rounded-2xl rounded-tl-md px-4 py-3 shadow-sm">
+				<div className="px-1 py-1">
 					<div className="prose prose-sm prose-slate max-w-none">
 						<MarkdownRenderer content={content || "*Empty response*"} />
 					</div>
