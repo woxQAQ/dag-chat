@@ -57,7 +57,7 @@ const createMockMessage = (
 
 describe("ThreadMessage", () => {
 	describe("USER role", () => {
-		it("should render user message with blue background", () => {
+		it("should render user message with primary color background", () => {
 			const message = createMockMessage({
 				role: "USER",
 				content: "Test message",
@@ -67,7 +67,7 @@ describe("ThreadMessage", () => {
 
 			const content = screen.getByText("Test message");
 			expect(content).toBeInTheDocument();
-			expect(content.parentElement).toHaveClass("bg-blue-500");
+			expect(content.parentElement).toHaveClass("bg-[var(--color-primary)]");
 		});
 
 		it("should display 'You' label", () => {
@@ -244,7 +244,7 @@ describe("ThreadMessage", () => {
 
 			const content = screen.getByText("System notification");
 			expect(content).toBeInTheDocument();
-			expect(content).toHaveClass("text-slate-500");
+			expect(content).toHaveClass("text-[var(--color-text-secondary)]");
 		});
 
 		it("should show empty state when content is empty", () => {

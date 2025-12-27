@@ -88,7 +88,9 @@ describe("PromptInputDialog", () => {
 			fireEvent.change(textarea, {
 				target: { value: "a".repeat(90) },
 			});
-			expect(screen.getByText("90 / 100")).toHaveClass("text-amber-600");
+			expect(screen.getByText("90 / 100")).toHaveClass(
+				"text-[var(--color-warning)]",
+			);
 		});
 	});
 

@@ -64,14 +64,14 @@ export function CanvasLayout({
 }: CanvasLayoutProps) {
 	return (
 		<div
-			className={`relative w-screen h-screen overflow-hidden bg-slate-50 ${className}`}
+			className={`relative w-screen h-screen overflow-hidden bg-[var(--color-canvas)] ${className}`}
 		>
 			{/* Grid Background - Dot Pattern */}
 			<div
 				className="absolute inset-0 opacity-40 pointer-events-none"
 				style={{
 					backgroundImage:
-						"radial-gradient(circle, rgb(203 213 225) 1px, transparent 1px)",
+						"radial-gradient(circle, var(--dot-grid-color) 1px, transparent 1px)",
 					backgroundSize: "24px 24px",
 				}}
 			/>

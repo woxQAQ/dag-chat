@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export type ToolMode = "select" | "hand" | "connect";
 
@@ -55,17 +58,19 @@ export function FloatingToolbar({
 	children,
 	className = "",
 }: FloatingToolbarProps) {
+	const { theme, toggleTheme } = useTheme();
+
 	const buttonClass = (active: boolean) =>
 		`flex items-center justify-center w-10 h-10 rounded-lg border-0 cursor-pointer transition-all duration-120 ${
 			active
-				? "bg-blue-500 text-white"
-				: "bg-transparent text-slate-600 hover:bg-slate-200/60"
+				? "bg-[var(--color-primary)] text-white"
+				: "bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-border-subtle)]/60"
 		}`;
 
 	if (children) {
 		return (
 			<div
-				className={`flex items-center gap-1 px-2 py-1.5 bg-white/80 backdrop-blur-md rounded-full shadow-lg border border-slate-200/60 ${className}`}
+				className={`flex items-center gap-1 px-2 py-1.5 bg-[var(--color-surface)]/80 backdrop-blur-md rounded-full shadow-lg border border-[var(--color-border)]/60 ${className}`}
 			>
 				{children}
 			</div>
@@ -74,7 +79,7 @@ export function FloatingToolbar({
 
 	return (
 		<div
-			className={`flex items-center gap-1 px-2 py-1.5 bg-white/80 backdrop-blur-md rounded-full shadow-lg border border-slate-200/60 ${className}`}
+			className={`flex items-center gap-1 px-2 py-1.5 bg-[var(--color-surface)]/80 backdrop-blur-md rounded-full shadow-lg border border-[var(--color-border)]/60 ${className}`}
 		>
 			{/* Select Tool */}
 			<button
@@ -147,7 +152,7 @@ export function FloatingToolbar({
 			{/* Layout Button */}
 			<button
 				type="button"
-				className="flex items-center justify-center w-10 h-10 rounded-lg border-0 bg-transparent text-slate-600 cursor-pointer transition-all duration-120 hover:bg-slate-200/60"
+				className="flex items-center justify-center w-10 h-10 rounded-lg border-0 bg-transparent text-[var(--color-text-secondary)] cursor-pointer transition-all duration-120 hover:bg-[var(--color-border-subtle)]/60"
 				onClick={onLayout}
 				aria-label="Auto layout"
 				title="Auto Layout"
@@ -166,6 +171,45 @@ export function FloatingToolbar({
 					<rect x="14" y="14" width="7" height="7" />
 					<rect x="3" y="14" width="7" height="7" />
 				</svg>
+			</button>
+
+			{/* Theme Toggle Button */}
+			<button
+				type="button"
+				className="flex items-center justify-center w-10 h-10 rounded-lg border-0 bg-transparent text-[var(--color-text-secondary)] cursor-pointer transition-all duration-120 hover:bg-[var(--color-border-subtle)]/60"
+				onClick={toggleTheme}
+				aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+				title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+				suppressHydrationWarning
+			>
+				{theme === "light" ? (
+					// Moon icon for switching to dark mode
+					<svg
+						aria-hidden="true"
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+					>
+						<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+					</svg>
+				) : (
+					// Sun icon for switching to light mode
+					<svg
+						aria-hidden="true"
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+					>
+						<circle cx="12" cy="12" r="5" />
+						<path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+					</svg>
+				)}
 			</button>
 		</div>
 	);

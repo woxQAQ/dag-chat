@@ -47,7 +47,7 @@ export async function getHighlighter(): Promise<Highlighter> {
 
 	// Create and cache the initialization promise
 	initPromise = createHighlighter({
-		themes: ["catppuccin-latte"],
+		themes: ["catppuccin-latte", "catppuccin-mocha"],
 		langs: [
 			"javascript",
 			"typescript",

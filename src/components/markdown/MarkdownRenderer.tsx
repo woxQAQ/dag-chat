@@ -48,12 +48,9 @@ function CodeBlockWithCopy({
 
 	return (
 		<div ref={containerRef} className="relative group">
-			{/* Language label - catppuccin latte theme colors */}
+			{/* Language label - uses CSS variables for theme support */}
 			{displayLanguage && (
-				<div
-					className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-medium"
-					style={{ background: "#eff1f5", color: "#4c4f69" }}
-				>
+				<div className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)]">
 					{displayLanguage}
 				</div>
 			)}
@@ -61,7 +58,7 @@ function CodeBlockWithCopy({
 			<button
 				type="button"
 				onClick={handleCopy}
-				className="absolute top-2 right-2 p-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity text-xs z-10"
+				className="absolute top-2 right-2 p-1.5 bg-[var(--color-border)] hover:bg-[var(--color-text-muted)] text-[var(--color-text-primary)] rounded opacity-0 group-hover:opacity-100 transition-opacity text-xs z-10"
 				aria-label="Copy code"
 			>
 				{copied ? (
@@ -115,7 +112,7 @@ const baseComponents: Components = {
 	a: ({ children, href, ...props }) => (
 		<a
 			href={href}
-			className="text-blue-600 hover:text-blue-800 underline"
+			className="text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] underline"
 			target="_blank"
 			rel="noopener noreferrer"
 			{...props}
@@ -125,55 +122,55 @@ const baseComponents: Components = {
 	),
 	// Paragraphs
 	p: ({ children, ...props }) => (
-		<p className="text-slate-800" {...props}>
+		<p className="text-[var(--color-text-primary)]" {...props}>
 			{children}
 		</p>
 	),
 	// Lists
 	ul: ({ children, ...props }) => (
-		<ul className="text-slate-800" {...props}>
+		<ul className="text-[var(--color-text-primary)]" {...props}>
 			{children}
 		</ul>
 	),
 	ol: ({ children, ...props }) => (
-		<ol className="text-slate-800" {...props}>
+		<ol className="text-[var(--color-text-primary)]" {...props}>
 			{children}
 		</ol>
 	),
 	// List items
 	li: ({ children, ...props }) => (
-		<li className="text-slate-800" {...props}>
+		<li className="text-[var(--color-text-primary)]" {...props}>
 			{children}
 		</li>
 	),
 	// Headings
 	h1: ({ children, ...props }) => (
-		<h1 className="text-slate-900" {...props}>
+		<h1 className="text-[var(--color-text-primary)] font-bold" {...props}>
 			{children}
 		</h1>
 	),
 	h2: ({ children, ...props }) => (
-		<h2 className="text-slate-900" {...props}>
+		<h2 className="text-[var(--color-text-primary)] font-bold" {...props}>
 			{children}
 		</h2>
 	),
 	h3: ({ children, ...props }) => (
-		<h3 className="text-slate-900" {...props}>
+		<h3 className="text-[var(--color-text-primary)] font-bold" {...props}>
 			{children}
 		</h3>
 	),
 	h4: ({ children, ...props }) => (
-		<h4 className="text-slate-900" {...props}>
+		<h4 className="text-[var(--color-text-primary)] font-bold" {...props}>
 			{children}
 		</h4>
 	),
 	h5: ({ children, ...props }) => (
-		<h5 className="text-slate-900" {...props}>
+		<h5 className="text-[var(--color-text-primary)] font-bold" {...props}>
 			{children}
 		</h5>
 	),
 	h6: ({ children, ...props }) => (
-		<h6 className="text-slate-900" {...props}>
+		<h6 className="text-[var(--color-text-primary)] font-bold" {...props}>
 			{children}
 		</h6>
 	),
@@ -217,7 +214,7 @@ export function MarkdownRenderer({
 			if (isInline) {
 				return (
 					<code
-						className="bg-slate-100 text-blue-600 px-1.5 py-0.5 rounded text-sm font-mono"
+						className="bg-[var(--color-surface-elevated)] text-[var(--color-primary)] px-1.5 py-0.5 rounded text-sm font-mono"
 						{...props}
 					>
 						{children}
@@ -238,6 +235,12 @@ export function MarkdownRenderer({
 				// Use singleton highlighter instead of creating new instance
 				const highlighter = await getHighlighter();
 
+				// Detect current theme from data attribute
+				const isDark =
+					document.documentElement.getAttribute("data-theme") === "dark";
+				// Use catppuccin-mocha for dark theme, catppuccin-latte for light theme
+				const shikiTheme = isDark ? "catppuccin-mocha" : "catppuccin-latte";
+
 				setComponents({
 					...baseComponents,
 					code: ({ className, children, ...props }) => {
@@ -245,7 +248,7 @@ export function MarkdownRenderer({
 						if (isInline) {
 							return (
 								<code
-									className="bg-slate-100 text-blue-600 px-1.5 py-0.5 rounded text-sm font-mono"
+									className="bg-[var(--color-surface-elevated)] text-[var(--color-primary)] px-1.5 py-0.5 rounded text-sm font-mono"
 									{...props}
 								>
 									{children}
@@ -259,7 +262,7 @@ export function MarkdownRenderer({
 						const html = highlighter.codeToHtml(code, {
 							// biome-ignore lint/suspicious/noExplicitAny: Shiki expects specific language strings, but we need to accept dynamic values
 							lang: language as any,
-							theme: "catppuccin-latte",
+							theme: shikiTheme,
 						});
 
 						return <CodeBlockWithCopy html={html} language={language} />;

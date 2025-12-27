@@ -1,28 +1,96 @@
 @import "tailwindcss";
 
 :root {
-	--background: #ffffff;
-	--foreground: #171717;
+	/* Core Colors */
+	--color-primary: #2563eb;
+	--color-primary-hover: #1d4ed8;
+	--color-canvas: #f8fafc;
+	--color-surface: #ffffff;
+	--color-surface-elevated: #f1f5f9;
+	--color-border: #e2e8f0;
+	--color-border-subtle: #f1f5f9;
+
+	/* Text Colors */
+	--color-text-primary: #1e293b;
+	--color-text-secondary: #64748b;
+	--color-text-muted: #94a3b8;
+
+	/* Edge Colors */
+	--color-edge-default: #cbd5e1;
+	--color-edge-active: #2563eb;
+	--color-edge-dimmed: #f1f5f9;
+
+	/* Functional Colors */
+	--dot-grid-color: rgba(203, 213, 225, 0.5);
+
+	/* Status Colors */
+	--color-success: #10b981;
+	--color-warning: #f59e0b;
+	--color-error: #ef4444;
+	--color-info: #3b82f6;
+
+	/* Shadows */
+	--shadow-node: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+	--shadow-node-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+	--shadow-node-selected: 0 0 0 2px #2563eb, 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+[data-theme="dark"] {
+	/* Core Colors */
+	--color-primary: #3b82f6;
+	--color-primary-hover: #2563eb;
+	--color-canvas: #0c0e12;
+	--color-surface: #1a1d23;
+	--color-surface-elevated: #22262e;
+	--color-border: #2a2e36;
+	--color-border-subtle: #1a1d23;
+
+	/* Text Colors */
+	--color-text-primary: #e2e8f0;
+	--color-text-secondary: #94a3b8;
+	--color-text-muted: #64748b;
+
+	/* Edge Colors */
+	--color-edge-default: #334155;
+	--color-edge-active: #3b82f6;
+	--color-edge-dimmed: #1e293b;
+
+	/* Functional Colors */
+	--dot-grid-color: rgba(148, 163, 184, 0.08);
+
+	/* Status Colors */
+	--color-success: #10b981;
+	--color-warning: #f59e0b;
+	--color-error: #ef4444;
+	--color-info: #60a5fa;
+
+	/* Shadows */
+	--shadow-node: 0 1px 3px 0 rgb(0 0 0 / 0.5);
+	--shadow-node-hover: 0 4px 12px -2px rgb(0 0 0 / 0.6);
+	--shadow-node-selected: 0 0 0 2px #3b82f6, 0 10px 25px -5px rgb(0 0 0 / 0.7);
 }
 
 @theme inline {
-	--color-background: var(--background);
-	--color-foreground: var(--foreground);
+	--color-background: var(--color-canvas);
+	--color-foreground: var(--color-text-primary);
+	--color-primary: var(--color-primary);
+	--color-surface: var(--color-surface);
+	--color-surface-elevated: var(--color-surface-elevated);
+	--color-border: var(--color-border);
+	--color-text-primary: var(--color-text-primary);
+	--color-text-secondary: var(--color-text-secondary);
+	--color-text-muted: var(--color-text-muted);
 	--font-sans: var(--font-geist-sans);
 	--font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--background: #0a0a0a;
-		--foreground: #ededed;
-	}
-}
-
 body {
-	background: var(--background);
-	color: var(--foreground);
+	background: var(--color-canvas);
+	color: var(--color-text-primary);
 	font-family: Arial, Helvetica, sans-serif;
+	transition:
+		background-color 0.2s ease,
+		color 0.2s ease;
 }
 
 /* Shiki code block styling */

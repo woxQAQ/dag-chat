@@ -148,7 +148,7 @@ export function ThreadView({
 				data-testid="thread-view-empty"
 			>
 				<div className="flex-1 flex items-center justify-center p-8">
-					<p className="text-sm text-slate-400 text-center">
+					<p className="text-sm text-[var(--color-text-muted)] text-center">
 						Select a node to view the conversation thread
 					</p>
 				</div>
@@ -165,8 +165,10 @@ export function ThreadView({
 			>
 				<div className="flex-1 flex items-center justify-center p-8">
 					<div className="flex flex-col items-center gap-3">
-						<div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-						<p className="text-sm text-slate-400">Loading conversation...</p>
+						<div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+						<p className="text-sm text-[var(--color-text-muted)]">
+							Loading conversation...
+						</p>
 					</div>
 				</div>
 			</div>
@@ -182,10 +184,12 @@ export function ThreadView({
 			>
 				<div className="flex-1 flex items-center justify-center p-8">
 					<div className="text-center">
-						<p className="text-sm text-red-500 mb-2">
+						<p className="text-sm text-[var(--color-error)] mb-2">
 							Error loading conversation
 						</p>
-						<p className="text-xs text-slate-400">{displayError}</p>
+						<p className="text-xs text-[var(--color-text-muted)]">
+							{displayError}
+						</p>
 					</div>
 				</div>
 			</div>
@@ -202,7 +206,7 @@ export function ThreadView({
 			<div className="flex-1 overflow-y-auto px-4 py-4">
 				{displayMessages.length === 0 ? (
 					<div className="flex items-center justify-center h-full">
-						<p className="text-sm text-slate-400">
+						<p className="text-sm text-[var(--color-text-muted)]">
 							No messages in this conversation
 						</p>
 					</div>

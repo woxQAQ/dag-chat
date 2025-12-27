@@ -69,22 +69,22 @@ export function CreateProjectDialog({
 		>
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: Inner div prevents backdrop click */}
 			<div
-				className="bg-white rounded-xl shadow-xl w-full max-w-md"
+				className="bg-[var(--color-surface)] rounded-xl shadow-xl w-full max-w-md"
 				onClick={(e) => e.stopPropagation()}
 				role="presentation"
 			>
 				{/* Header */}
-				<div className="flex items-center justify-between p-5 border-b border-slate-200">
+				<div className="flex items-center justify-between p-5 border-b border-[var(--color-border)]">
 					<h2
 						id="create-project-title"
-						className="text-lg font-semibold text-slate-800"
+						className="text-lg font-semibold text-[var(--color-text-primary)]"
 					>
 						New Project
 					</h2>
 					<button
 						type="button"
 						onClick={onClose}
-						className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+						className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-border-subtle)] rounded-md transition-colors"
 						aria-label="Close"
 					>
 						<svg
@@ -109,9 +109,9 @@ export function CreateProjectDialog({
 					<div className="mb-4">
 						<label
 							htmlFor="project-name"
-							className="block text-sm font-medium text-slate-700 mb-1.5"
+							className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
 						>
-							Name <span className="text-red-500">*</span>
+							Name <span className="text-[var(--color-error)]">*</span>
 						</label>
 						<input
 							ref={nameInputRef}
@@ -120,12 +120,12 @@ export function CreateProjectDialog({
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 							placeholder="My Conversation"
-							className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-100 disabled:text-slate-500"
+							className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] disabled:bg-[var(--color-surface-elevated)] disabled:text-[var(--color-text-muted)]"
 							maxLength={100}
 							required
 							disabled={isCreating}
 						/>
-						<p className="mt-1 text-xs text-slate-500">
+						<p className="mt-1 text-xs text-[var(--color-text-secondary)]">
 							{name.length}/100 characters
 						</p>
 					</div>
@@ -133,7 +133,7 @@ export function CreateProjectDialog({
 					<div className="mb-5">
 						<label
 							htmlFor="project-description"
-							className="block text-sm font-medium text-slate-700 mb-1.5"
+							className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
 						>
 							Description
 						</label>
@@ -143,11 +143,11 @@ export function CreateProjectDialog({
 							onChange={(e) => setDescription(e.target.value)}
 							placeholder="What's this project about?"
 							rows={3}
-							className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none disabled:bg-slate-100 disabled:text-slate-500"
+							className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] resize-none disabled:bg-[var(--color-surface-elevated)] disabled:text-[var(--color-text-muted)]"
 							maxLength={1000}
 							disabled={isCreating}
 						/>
-						<p className="mt-1 text-xs text-slate-500">
+						<p className="mt-1 text-xs text-[var(--color-text-secondary)]">
 							{description.length}/1000 characters
 						</p>
 					</div>
@@ -157,7 +157,7 @@ export function CreateProjectDialog({
 						<button
 							type="button"
 							onClick={onClose}
-							className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors font-medium"
+							className="px-4 py-2 text-[var(--color-text-primary)] hover:bg-[var(--color-border-subtle)] rounded-lg transition-colors font-medium"
 							disabled={isCreating}
 						>
 							Cancel
@@ -165,7 +165,7 @@ export function CreateProjectDialog({
 						<button
 							type="submit"
 							disabled={!name.trim() || isCreating}
-							className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+							className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
 						>
 							{isCreating ? (
 								<>
