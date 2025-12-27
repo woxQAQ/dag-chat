@@ -3,7 +3,7 @@
     "id": "UI-DARK-001",
     "name": "Global Theme Configuration (Tailwind v4)",
     "description": "Define semantic color variables in src/app/globals.css for Light and Dark modes. Create CSS variables (e.g., --color-canvas-bg, --color-node-ai, --color-text-primary) mapping to Slate/Blue scales and register them in the @theme block. This replaces the proposal's tailwind.config.ts approach to align with Tailwind v4.",
-    "status": "pending",
+    "status": "complete",
     "priority": "P0",
     "dependencies": []
   },

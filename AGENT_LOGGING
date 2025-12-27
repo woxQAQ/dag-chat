@@ -1,5 +1,25 @@
 # Agent Logging - MindFlow Development
 
+## 2024-12-27
+
+### [UI-DARK-001] Global Theme Configuration (Tailwind v4) - COMPLETED
+**Branch:** feat/ui-dark-001-global-theme-config
+**Status:** Complete
+
+#### Summary
+- Semantic CSS variables for light and dark modes defined in globals.css
+- Color system mapped to Slate/Blue scales per design proposal
+- Tailwind v4 @theme inline block for semantic color registration
+- Variables for canvas, nodes, borders, typography, and brand colors
+
+#### Files
+- `src/app/globals.css` - Added semantic CSS variables and @theme registration
+
+#### Tests
+- 444 tests passing (no regressions)
+
+---
+
 ## 2024-12-26
 
 ### [UI-WORKSPACE-004] Auto Layout - COMPLETED

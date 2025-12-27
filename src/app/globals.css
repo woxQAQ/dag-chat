@@ -1,28 +1,101 @@
 @import "tailwindcss";
 
+/* Light Mode Colors */
 :root {
-	--background: #ffffff;
-	--foreground: #171717;
+	/* Canvas & Backgrounds */
+	--color-canvas-bg: #f8fafc; /* Slate-50 */
+	--color-node-ai-bg: #ffffff; /* White */
+	--color-node-user-bg: #f1f5f9; /* Slate-100 */
+	--color-elevated-bg: #ffffff; /* White */
+	--color-input-bg: #ffffff; /* White */
+
+	/* Borders */
+	--color-border-subtle: #e2e8f0; /* Slate-200 */
+	--color-border-strong: #cbd5e1; /* Slate-300 */
+	--color-grid-pattern: rgba(203, 213, 225, 0.4); /* Slate-300, 40% */
+
+	/* Typography */
+	--color-text-primary: #0f172a; /* Slate-900 */
+	--color-text-secondary: #475569; /* Slate-600 */
+	--color-text-muted: #94a3b8; /* Slate-400 */
+
+	/* Brand & Accents */
+	--color-brand-primary: #2563eb; /* Blue-600 */
+	--color-brand-focus: #3b82f6; /* Blue-500 */
+	--color-hover-bg: #f1f5f9; /* Slate-100 */
+
+	/* Shiki Code Block */
+	--color-code-bg: #f8fafc; /* Slate-50 */
+	--color-code-text: #0f172a; /* Slate-900 */
 }
 
 @theme inline {
-	--color-background: var(--background);
-	--color-foreground: var(--foreground);
+	/* Semantic Canvas Colors */
+	--color-canvas-bg: var(--color-canvas-bg);
+	--color-node-ai-bg: var(--color-node-ai-bg);
+	--color-node-user-bg: var(--color-node-user-bg);
+	--color-elevated-bg: var(--color-elevated-bg);
+	--color-input-bg: var(--color-input-bg);
+
+	/* Semantic Border Colors */
+	--color-border-subtle: var(--color-border-subtle);
+	--color-border-strong: var(--color-border-strong);
+	--color-grid-pattern: var(--color-grid-pattern);
+
+	/* Semantic Text Colors */
+	--color-text-primary: var(--color-text-primary);
+	--color-text-secondary: var(--color-text-secondary);
+	--color-text-muted: var(--color-text-muted);
+
+	/* Semantic Brand Colors */
+	--color-brand-primary: var(--color-brand-primary);
+	--color-brand-focus: var(--color-brand-focus);
+	--color-hover-bg: var(--color-hover-bg);
+
+	/* Code Colors */
+	--color-code-bg: var(--color-code-bg);
+	--color-code-text: var(--color-code-text);
+
+	/* Fonts */
 	--font-sans: var(--font-geist-sans);
 	--font-mono: var(--font-geist-mono);
 }
 
+/* Dark Mode Colors */
 @media (prefers-color-scheme: dark) {
 	:root {
-		--background: #0a0a0a;
-		--foreground: #ededed;
+		/* Canvas & Backgrounds */
+		--color-canvas-bg: #020617; /* Slate-950 */
+		--color-node-ai-bg: #0f172a; /* Slate-900 */
+		--color-node-user-bg: #1e293b; /* Slate-800 */
+		--color-elevated-bg: #1e293b; /* Slate-800 */
+		--color-input-bg: #020617; /* Slate-950 */
+
+		/* Borders */
+		--color-border-subtle: #1e293b; /* Slate-800 */
+		--color-border-strong: #334155; /* Slate-700 */
+		--color-grid-pattern: rgba(51, 65, 85, 0.2); /* Slate-700, 20% */
+
+		/* Typography */
+		--color-text-primary: #f1f5f9; /* Slate-100 */
+		--color-text-secondary: #94a3b8; /* Slate-400 */
+		--color-text-muted: #475569; /* Slate-600 */
+
+		/* Brand & Accents */
+		--color-brand-primary: #3b82f6; /* Blue-500 */
+		--color-brand-focus: #60a5fa; /* Blue-400 */
+		--color-hover-bg: #1e293b; /* Slate-800 */
+
+		/* Shiki Code Block */
+		--color-code-bg: #020617; /* Slate-950 */
+		--color-code-text: #e2e8f0; /* Slate-200 */
 	}
 }
 
 body {
-	background: var(--background);
-	color: var(--foreground);
-	font-family: Arial, Helvetica, sans-serif;
+	background: var(--color-canvas-bg);
+	color: var(--color-text-primary);
+	font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
 /* Shiki code block styling */
