@@ -183,7 +183,9 @@ describe("Project CRUD Service", () => {
 			vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject);
 			vi.mocked(prisma.project.update).mockResolvedValue(mockProject);
 
-			const result = await updateProject(mockProject.id, { name: "Updated Name" });
+			const result = await updateProject(mockProject.id, {
+				name: "Updated Name",
+			});
 
 			expect(result.name).toBe("Updated Name");
 		});

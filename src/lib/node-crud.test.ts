@@ -29,13 +29,11 @@ vi.mock("./prisma", () => ({
 import {
 	type CreateNodeInput,
 	createNode,
+	deleteNode,
 	getNode,
 	updateNode,
 	updateNodeContent,
 	updateNodePosition,
-	deleteNode,
-	batchCreateNodes,
-	batchUpdatePositions,
 } from "./node-crud";
 import { prisma } from "./prisma";
 

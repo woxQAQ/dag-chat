@@ -36,7 +36,6 @@ vi.mock("@/lib/project-crud", () => ({
 }));
 
 import { prisma } from "@/lib/prisma";
-import { createProject } from "@/lib/project-crud";
 import { createRootNode } from "./root-actions";
 
 describe("createRootNode Server Action", () => {
