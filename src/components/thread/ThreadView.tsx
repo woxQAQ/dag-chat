@@ -166,7 +166,9 @@ export function ThreadView({
 				<div className="flex-1 flex items-center justify-center p-8">
 					<div className="flex flex-col items-center gap-3">
 						<div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
-						<p className="text-sm text-[var(--color-text-muted)]">Loading conversation...</p>
+						<p className="text-sm text-[var(--color-text-muted)]">
+							Loading conversation...
+						</p>
 					</div>
 				</div>
 			</div>
@@ -185,7 +187,9 @@ export function ThreadView({
 						<p className="text-sm text-[var(--color-error)] mb-2">
 							Error loading conversation
 						</p>
-						<p className="text-xs text-[var(--color-text-muted)]">{displayError}</p>
+						<p className="text-xs text-[var(--color-text-muted)]">
+							{displayError}
+						</p>
 					</div>
 				</div>
 			</div>

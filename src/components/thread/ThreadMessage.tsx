@@ -92,15 +92,23 @@ export function ThreadMessage({
 							/>
 						</svg>
 					</div>
-					<span className="text-xs font-medium text-[var(--color-text-primary)]">{provider}</span>
-					{model && <span className="text-xs text-[var(--color-text-muted)]">{model}</span>}
+					<span className="text-xs font-medium text-[var(--color-text-primary)]">
+						{provider}
+					</span>
+					{model && (
+						<span className="text-xs text-[var(--color-text-muted)]">
+							{model}
+						</span>
+					)}
 					{isStreaming && (
 						<div className="flex items-center gap-1 ml-auto">
 							<span className="relative flex h-2 w-2">
 								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-primary)]/80 opacity-75" />
 								<span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-primary)]" />
 							</span>
-							<span className="text-xs text-[var(--color-primary)]">Streaming</span>
+							<span className="text-xs text-[var(--color-primary)]">
+								Streaming
+							</span>
 						</div>
 					)}
 					{/* Action buttons */}

@@ -98,7 +98,9 @@ export function ThreadInput({
 	const isNearLimit = charCount > maxLength * 0.9;
 
 	return (
-		<div className={`border-t border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-4 ${className}`}>
+		<div
+			className={`border-t border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-4 ${className}`}
+		>
 			<form onSubmit={handleSend} className="flex flex-col gap-2">
 				<div className="relative flex items-end gap-2">
 					<div className="flex-1 relative">
@@ -123,7 +125,9 @@ export function ThreadInput({
 						{message.length > 0 && (
 							<div
 								className={`absolute bottom-2 right-2 text-xs ${
-									isNearLimit ? "text-[var(--color-warning)]" : "text-[var(--color-text-muted)]"
+									isNearLimit
+										? "text-[var(--color-warning)]"
+										: "text-[var(--color-text-muted)]"
 								}`}
 							>
 								{charCount}/{maxLength}

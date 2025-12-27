@@ -110,7 +110,9 @@ export function UserNode({
 						/>
 					</svg>
 				</div>
-				<span className="text-sm font-medium text-[var(--color-text-secondary)]">You</span>
+				<span className="text-sm font-medium text-[var(--color-text-secondary)]">
+					You
+				</span>
 				{isEditing && (
 					<span className="ml-auto text-xs text-[var(--color-warning)] bg-[var(--color-warning)]/10 px-2 py-0.5 rounded-full">
 						Editing
@@ -131,7 +133,9 @@ export function UserNode({
 				) : (
 					<p className="text-sm text-[var(--color-text-primary)] whitespace-pre-wrap break-words">
 						{content || (
-							<span className="text-[var(--color-text-muted)] italic">Empty message</span>
+							<span className="text-[var(--color-text-muted)] italic">
+								Empty message
+							</span>
 						)}
 					</p>
 				)}

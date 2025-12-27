@@ -158,7 +158,9 @@ export function PromptInputDialog({
 					<div className="flex justify-end mt-2">
 						<span
 							className={`text-xs ${
-								isNearLimit ? "text-[var(--color-warning)] font-medium" : "text-[var(--color-text-muted)]"
+								isNearLimit
+									? "text-[var(--color-warning)] font-medium"
+									: "text-[var(--color-text-muted)]"
 							}`}
 						>
 							{charCount} / {maxLength}

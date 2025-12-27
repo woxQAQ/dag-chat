@@ -70,7 +70,8 @@ export function CanvasLayout({
 			<div
 				className="absolute inset-0 opacity-40 pointer-events-none"
 				style={{
-					backgroundImage: "radial-gradient(circle, var(--dot-grid-color) 1px, transparent 1px)",
+					backgroundImage:
+						"radial-gradient(circle, var(--dot-grid-color) 1px, transparent 1px)",
 					backgroundSize: "24px 24px",
 				}}
 			/>

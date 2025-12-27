@@ -95,7 +95,9 @@ export function Dashboard({
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex items-center justify-between h-16">
 						<div>
-							<h1 className="text-2xl font-bold text-[var(--color-text-primary)]">MindFlow</h1>
+							<h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
+								MindFlow
+							</h1>
 							{total > 0 && (
 								<p className="text-sm text-[var(--color-text-secondary)]">
 									{total} project{total !== 1 ? "s" : ""}
@@ -146,7 +148,9 @@ export function Dashboard({
 								d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 							/>
 						</svg>
-						<p className="text-[var(--color-error)] font-medium">Failed to load projects</p>
+						<p className="text-[var(--color-error)] font-medium">
+							Failed to load projects
+						</p>
 						<p className="text-[var(--color-error)] text-sm mt-1">{error}</p>
 					</div>
 				) : projects.length === 0 ? (

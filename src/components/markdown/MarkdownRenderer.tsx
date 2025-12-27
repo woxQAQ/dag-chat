@@ -50,9 +50,7 @@ function CodeBlockWithCopy({
 		<div ref={containerRef} className="relative group">
 			{/* Language label - uses CSS variables for theme support */}
 			{displayLanguage && (
-				<div
-					className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)]"
-				>
+				<div className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)]">
 					{displayLanguage}
 				</div>
 			)}
@@ -238,7 +236,8 @@ export function MarkdownRenderer({
 				const highlighter = await getHighlighter();
 
 				// Detect current theme from data attribute
-				const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+				const isDark =
+					document.documentElement.getAttribute("data-theme") === "dark";
 				// Use catppuccin-mocha for dark theme, catppuccin-latte for light theme
 				const shikiTheme = isDark ? "catppuccin-mocha" : "catppuccin-latte";
 

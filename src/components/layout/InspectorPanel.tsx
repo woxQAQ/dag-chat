@@ -45,7 +45,9 @@ export function InspectorPanel({
 		>
 			{/* Header */}
 			<div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
-				<h2 className="text-sm font-medium text-[var(--color-text-primary)]">Thread</h2>
+				<h2 className="text-sm font-medium text-[var(--color-text-primary)]">
+					Thread
+				</h2>
 
 				<button
 					type="button"
