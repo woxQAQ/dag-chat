@@ -91,16 +91,6 @@ Target users are developers, architects, and researchers who need to:
 
 See `docs/design/product_requirements_document.md` for detailed UX specifications.
 
-## Important Hints
-
-1. select a feature from `FEATURE_LIST*` by their priority and dependencies
-2. You MUST record your working progress in `AGENT_LOGGING`
-3. Before starting work, check `git log` and `AGENT_LOGGING` for project context
-4. `FEATURE_LIST*` `state` field is enum ["complete", "todo", "tested", "not tested"] - READONLY for you
-5. NEVER develop on main/master branch - create a new branch for each feature
-6. Commit changes to the feature branch when complete
-7. Write comprehensive test cases for each feature
-
 ## AGENT_LOGGING Format
 
 When logging completed features, use this compact format:
