@@ -25,6 +25,7 @@ vi.mock("remark-gfm", () => ({
 	default: () => (tree: unknown) => tree, // Return tree unchanged
 }));
 
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { buildConversationContext } from "@/lib/context-builder";
 import { ThreadInput } from "./ThreadInput";
 import { ThreadMessage } from "./ThreadMessage";
@@ -55,6 +56,11 @@ const createMockMessage = (
 	...overrides,
 });
 
+// Helper function to render with ThemeProvider
+function renderWithTheme(ui: React.ReactElement) {
+	return render(<ThemeProvider defaultTheme="light">{ui}</ThemeProvider>);
+}
+
 describe("ThreadMessage", () => {
 	describe("USER role", () => {
 		it("should render user message with primary color background", () => {
@@ -63,7 +69,7 @@ describe("ThreadMessage", () => {
 				content: "Test message",
 			});
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			const content = screen.getByText("Test message");
 			expect(content).toBeInTheDocument();
@@ -73,7 +79,7 @@ describe("ThreadMessage", () => {
 		it("should display 'You' label", () => {
 			const message = createMockMessage({ role: "USER" });
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			expect(screen.getByText("You")).toBeInTheDocument();
 		});
@@ -81,7 +87,7 @@ describe("ThreadMessage", () => {
 		it("should show empty state when content is empty", () => {
 			const message = createMockMessage({ role: "USER", content: "" });
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			expect(screen.getByText("*Empty message*")).toBeInTheDocument();
 		});
@@ -92,7 +98,7 @@ describe("ThreadMessage", () => {
 				content: "Line 1\nLine 2\n  Line 3",
 			});
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			const content = screen.getByText(/Line 1[\s\S]*Line 2[\s\S]*Line 3/);
 			expect(content).toBeInTheDocument();
@@ -106,7 +112,7 @@ describe("ThreadMessage", () => {
 				content: "AI response",
 			});
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			const content = screen.getByText("AI response");
 			expect(content).toBeInTheDocument();
@@ -119,7 +125,7 @@ describe("ThreadMessage", () => {
 				metadata: { provider: "DeepSeek", model: "deepseek-chat" },
 			});
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			expect(screen.getByText("DeepSeek")).toBeInTheDocument();
 			expect(screen.getByText("deepseek-chat")).toBeInTheDocument();
@@ -131,7 +137,7 @@ describe("ThreadMessage", () => {
 				content: "Response",
 			});
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			expect(screen.getByText("AI")).toBeInTheDocument();
 		});
@@ -143,7 +149,7 @@ describe("ThreadMessage", () => {
 				isStreaming: true,
 			});
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			expect(screen.getByText("Streaming")).toBeInTheDocument();
 		});
@@ -154,7 +160,7 @@ describe("ThreadMessage", () => {
 				content: "Response",
 			});
 
-			render(
+			renderWithTheme(
 				<ThreadMessage
 					message={message}
 					onCopy={vi.fn()}
@@ -174,7 +180,7 @@ describe("ThreadMessage", () => {
 				isStreaming: true,
 			});
 
-			render(
+			renderWithTheme(
 				<ThreadMessage
 					message={message}
 					onCopy={vi.fn()}
@@ -195,7 +201,7 @@ describe("ThreadMessage", () => {
 				content: "Response",
 			});
 
-			render(<ThreadMessage message={message} onCopy={onCopy} />);
+			renderWithTheme(<ThreadMessage message={message} onCopy={onCopy} />);
 
 			await user.click(screen.getByLabelText("Copy message"));
 			expect(onCopy).toHaveBeenCalledTimes(1);
@@ -208,7 +214,7 @@ describe("ThreadMessage", () => {
 				content: "Test content",
 			});
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			// Verify copy button exists and is clickable
 			const copyButton = screen.getByLabelText("Copy message");
@@ -226,7 +232,9 @@ describe("ThreadMessage", () => {
 				content: "Response",
 			});
 
-			render(<ThreadMessage message={message} onRegenerate={onRegenerate} />);
+			renderWithTheme(
+				<ThreadMessage message={message} onRegenerate={onRegenerate} />,
+			);
 
 			await user.click(screen.getByLabelText("Regenerate response"));
 			expect(onRegenerate).toHaveBeenCalledTimes(1);
@@ -240,7 +248,7 @@ describe("ThreadMessage", () => {
 				content: "System notification",
 			});
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			const content = screen.getByText("System notification");
 			expect(content).toBeInTheDocument();
@@ -253,7 +261,7 @@ describe("ThreadMessage", () => {
 				content: "",
 			});
 
-			render(<ThreadMessage message={message} />);
+			renderWithTheme(<ThreadMessage message={message} />);
 
 			expect(screen.getByText("*System message*")).toBeInTheDocument();
 		});
@@ -266,7 +274,9 @@ describe("ThreadInput", () => {
 	});
 
 	it("should render textarea and send button", () => {
-		render(<ThreadInput onSend={vi.fn()} placeholder="Type a message..." />);
+		renderWithTheme(
+			<ThreadInput onSend={vi.fn()} placeholder="Type a message..." />,
+		);
 
 		expect(
 			screen.getByPlaceholderText("Type a message..."),
@@ -275,7 +285,7 @@ describe("ThreadInput", () => {
 	});
 
 	it("should disable input when isLoading is true", () => {
-		render(<ThreadInput isLoading onSend={vi.fn()} />);
+		renderWithTheme(<ThreadInput isLoading onSend={vi.fn()} />);
 
 		const textarea = screen.getByRole("textbox");
 		expect(textarea).toBeDisabled();
@@ -283,14 +293,14 @@ describe("ThreadInput", () => {
 	});
 
 	it("should disable input when disabled is true", () => {
-		render(<ThreadInput disabled onSend={vi.fn()} />);
+		renderWithTheme(<ThreadInput disabled onSend={vi.fn()} />);
 
 		expect(screen.getByRole("textbox")).toBeDisabled();
 	});
 
 	it("should update message value when typing", async () => {
 		const user = userEvent.setup();
-		render(<ThreadInput onSend={vi.fn()} />);
+		renderWithTheme(<ThreadInput onSend={vi.fn()} />);
 
 		const textarea = screen.getByRole("textbox");
 		await user.type(textarea, "Hello");
@@ -301,7 +311,7 @@ describe("ThreadInput", () => {
 	it("should call onSend when send button is clicked", async () => {
 		const user = userEvent.setup();
 		const onSend = vi.fn().mockResolvedValue(undefined);
-		render(<ThreadInput onSend={onSend} />);
+		renderWithTheme(<ThreadInput onSend={onSend} />);
 
 		const textarea = screen.getByRole("textbox");
 		await user.type(textarea, "Test message");
@@ -316,7 +326,7 @@ describe("ThreadInput", () => {
 	it("should clear input after sending", async () => {
 		const user = userEvent.setup();
 		const onSend = vi.fn().mockResolvedValue(undefined);
-		render(<ThreadInput onSend={onSend} />);
+		renderWithTheme(<ThreadInput onSend={onSend} />);
 
 		const textarea = screen.getByRole("textbox");
 		await user.type(textarea, "Test message");
@@ -331,7 +341,7 @@ describe("ThreadInput", () => {
 	it("should not send empty messages", async () => {
 		const user = userEvent.setup();
 		const onSend = vi.fn();
-		render(<ThreadInput onSend={onSend} />);
+		renderWithTheme(<ThreadInput onSend={onSend} />);
 
 		await user.click(screen.getByLabelText("Send message"));
 
@@ -341,7 +351,7 @@ describe("ThreadInput", () => {
 	it("should send on Cmd+Enter", async () => {
 		const user = userEvent.setup();
 		const onSend = vi.fn().mockResolvedValue(undefined);
-		render(<ThreadInput onSend={onSend} />);
+		renderWithTheme(<ThreadInput onSend={onSend} />);
 
 		const textarea = screen.getByRole("textbox");
 		await user.type(textarea, "Test message");
@@ -355,7 +365,7 @@ describe("ThreadInput", () => {
 
 	it("should clear on Escape", async () => {
 		const user = userEvent.setup();
-		render(<ThreadInput onSend={vi.fn()} />);
+		renderWithTheme(<ThreadInput onSend={vi.fn()} />);
 
 		const textarea = screen.getByRole("textbox");
 		await user.type(textarea, "Test message");
@@ -367,7 +377,7 @@ describe("ThreadInput", () => {
 
 	it("should show character count", async () => {
 		const user = userEvent.setup();
-		render(<ThreadInput onSend={vi.fn()} />);
+		renderWithTheme(<ThreadInput onSend={vi.fn()} />);
 
 		const textarea = screen.getByRole("textbox");
 		await user.type(textarea, "Hello");
@@ -377,7 +387,7 @@ describe("ThreadInput", () => {
 
 	it("should show character count when typing", async () => {
 		const user = userEvent.setup();
-		render(<ThreadInput onSend={vi.fn()} />);
+		renderWithTheme(<ThreadInput onSend={vi.fn()} />);
 
 		const textarea = screen.getByRole("textbox");
 
@@ -405,7 +415,7 @@ describe("ThreadView", () => {
 
 	describe("Empty state", () => {
 		it("should show empty state when no node selected", () => {
-			render(<ThreadView nodeId={null} projectId="project-1" />);
+			renderWithTheme(<ThreadView nodeId={null} projectId="project-1" />);
 
 			expect(
 				screen.getByText("Select a node to view the conversation thread"),
@@ -415,7 +425,9 @@ describe("ThreadView", () => {
 
 	describe("Loading state", () => {
 		it("should use isLoading prop when provided", () => {
-			render(<ThreadView nodeId="node-1" projectId="project-1" isLoading />);
+			renderWithTheme(
+				<ThreadView nodeId="node-1" projectId="project-1" isLoading />,
+			);
 
 			expect(screen.getByText("Loading conversation...")).toBeInTheDocument();
 		});
@@ -423,7 +435,7 @@ describe("ThreadView", () => {
 
 	describe("Error state", () => {
 		it("should use error prop when provided", () => {
-			render(
+			renderWithTheme(
 				<ThreadView
 					nodeId="node-1"
 					projectId="project-1"
@@ -441,7 +453,7 @@ describe("ThreadView", () => {
 				createMockMessage({ role: "USER", content: "Custom message" }),
 			];
 
-			render(
+			renderWithTheme(
 				<ThreadView
 					nodeId="node-1"
 					projectId="project-1"
@@ -455,7 +467,7 @@ describe("ThreadView", () => {
 		it("should show no messages state when context is empty", () => {
 			const messages: ThreadMessageType[] = [];
 
-			render(
+			renderWithTheme(
 				<ThreadView
 					nodeId="node-1"
 					projectId="project-1"
@@ -475,7 +487,7 @@ describe("ThreadView", () => {
 				createMockMessage({ role: "USER", content: "Hello" }),
 			];
 
-			render(
+			renderWithTheme(
 				<ThreadView
 					nodeId="node-1"
 					projectId="project-1"
@@ -496,7 +508,7 @@ describe("ThreadView", () => {
 			];
 
 			const onSendMessage = vi.fn().mockResolvedValue(undefined);
-			render(
+			renderWithTheme(
 				<ThreadView
 					nodeId="node-1"
 					projectId="project-1"
@@ -522,7 +534,7 @@ describe("ThreadView", () => {
 				createMockMessage({ role: "USER", content: "Hello" }),
 			];
 
-			render(
+			renderWithTheme(
 				<ThreadView
 					nodeId="node-1"
 					projectId={null}
@@ -550,7 +562,7 @@ describe("ThreadView", () => {
 				},
 			];
 
-			render(
+			renderWithTheme(
 				<ThreadView
 					nodeId="node-1"
 					projectId="project-1"
@@ -573,7 +585,7 @@ describe("ThreadView", () => {
 				},
 			];
 
-			render(
+			renderWithTheme(
 				<ThreadView
 					nodeId="node-1"
 					projectId="project-1"

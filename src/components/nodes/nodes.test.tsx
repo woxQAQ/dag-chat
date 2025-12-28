@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AINode } from "./AINode";
 import { nodeTypes } from "./index";
 import type { MindFlowNodeData } from "./types";
@@ -24,6 +25,11 @@ vi.mock("@xyflow/react", async () => {
 	};
 });
 
+// Helper function to render with ThemeProvider
+function renderWithTheme(ui: React.ReactElement) {
+	return render(<ThemeProvider defaultTheme="light">{ui}</ThemeProvider>);
+}
+
 describe("Node Components", () => {
 	describe("UserNode", () => {
 		const defaultProps = {
@@ -37,12 +43,12 @@ describe("Node Components", () => {
 		};
 
 		it("should render user node with content", () => {
-			render(<UserNode {...defaultProps} />);
+			renderWithTheme(<UserNode {...defaultProps} />);
 			expect(screen.getByText("Hello, how are you?")).toBeInTheDocument();
 		});
 
 		it("should render empty state when content is empty", () => {
-			render(
+			renderWithTheme(
 				<UserNode
 					{...defaultProps}
 					data={{ ...defaultProps.data, content: "" }}
@@ -52,12 +58,14 @@ describe("Node Components", () => {
 		});
 
 		it("should show 'You' label in header", () => {
-			render(<UserNode {...defaultProps} />);
+			renderWithTheme(<UserNode {...defaultProps} />);
 			expect(screen.getByText("You")).toBeInTheDocument();
 		});
 
 		it("should apply selected styles when selected is true", () => {
-			const { container } = render(<UserNode {...defaultProps} selected />);
+			const { container } = renderWithTheme(
+				<UserNode {...defaultProps} selected />,
+			);
 			// Find the actual node container (inside the wrapper div)
 			const nodeContainer = container.querySelector('[role="button"]');
 			expect(nodeContainer).toHaveClass("border-[var(--color-primary)]");
@@ -65,7 +73,7 @@ describe("Node Components", () => {
 
 		it("should render branch button when hovered and onCreateChild is provided", () => {
 			const onCreateChild = vi.fn();
-			render(
+			renderWithTheme(
 				<UserNode {...defaultProps} isHovered onCreateChild={onCreateChild} />,
 			);
 			expect(
@@ -75,7 +83,7 @@ describe("Node Components", () => {
 
 		it("should not render branch button when not hovered", () => {
 			const onCreateChild = vi.fn();
-			render(
+			renderWithTheme(
 				<UserNode
 					{...defaultProps}
 					isHovered={false}
@@ -88,7 +96,7 @@ describe("Node Components", () => {
 		});
 
 		it("should not render branch button when onCreateChild is not provided", () => {
-			render(<UserNode {...defaultProps} isHovered />);
+			renderWithTheme(<UserNode {...defaultProps} isHovered />);
 			expect(
 				screen.queryByRole("button", { name: /create child node/i }),
 			).not.toBeInTheDocument();
@@ -96,7 +104,7 @@ describe("Node Components", () => {
 
 		it("should call onCreateChild when branch button is clicked", () => {
 			const onCreateChild = vi.fn();
-			render(
+			renderWithTheme(
 				<UserNode {...defaultProps} isHovered onCreateChild={onCreateChild} />,
 			);
 			const branchButton = screen.getByRole("button", {
@@ -120,33 +128,33 @@ describe("Node Components", () => {
 		};
 
 		it("should render AI node with markdown content", () => {
-			render(<AINode {...defaultProps} />);
+			renderWithTheme(<AINode {...defaultProps} />);
 			expect(screen.getByText("Hello World")).toBeInTheDocument();
 		});
 
 		it("should render markdown headings", () => {
-			render(<AINode {...defaultProps} />);
+			renderWithTheme(<AINode {...defaultProps} />);
 			const heading = screen.getByText("Hello World");
 			expect(heading.tagName).toBe("H2");
 		});
 
 		it("should render markdown bold text", () => {
-			render(<AINode {...defaultProps} />);
+			renderWithTheme(<AINode {...defaultProps} />);
 			expect(screen.getByText("markdown")).toBeInTheDocument();
 		});
 
 		it("should render provider name from metadata", () => {
-			render(<AINode {...defaultProps} />);
+			renderWithTheme(<AINode {...defaultProps} />);
 			expect(screen.getByText("deepseek")).toBeInTheDocument();
 		});
 
 		it("should render model from metadata when available", () => {
-			render(<AINode {...defaultProps} />);
+			renderWithTheme(<AINode {...defaultProps} />);
 			expect(screen.getByText("deepseek-chat")).toBeInTheDocument();
 		});
 
 		it("should show streaming indicator when isStreaming is true", () => {
-			render(
+			renderWithTheme(
 				<AINode
 					{...defaultProps}
 					data={{ ...defaultProps.data, isStreaming: true }}
@@ -156,7 +164,7 @@ describe("Node Components", () => {
 		});
 
 		it("should render empty state when content is empty", () => {
-			render(
+			renderWithTheme(
 				<AINode
 					{...defaultProps}
 					data={{ ...defaultProps.data, content: "" }}
@@ -166,14 +174,16 @@ describe("Node Components", () => {
 		});
 
 		it("should apply selected styles when selected is true", () => {
-			const { container } = render(<AINode {...defaultProps} selected />);
+			const { container } = renderWithTheme(
+				<AINode {...defaultProps} selected />,
+			);
 			// Find the actual node container (inside the wrapper div)
 			const nodeContainer = container.querySelector('[role="button"]');
 			expect(nodeContainer).toHaveClass("border-[var(--color-primary)]");
 		});
 
 		it("should render action bar when hovered", () => {
-			render(<AINode {...defaultProps} isHovered />);
+			renderWithTheme(<AINode {...defaultProps} isHovered />);
 			// Check for copy button title
 			expect(
 				screen.getByRole("button", { name: /copy content/i }),
@@ -182,7 +192,7 @@ describe("Node Components", () => {
 
 		it("should render regenerate button when not streaming", () => {
 			const onRegenerate = vi.fn();
-			render(
+			renderWithTheme(
 				<AINode {...defaultProps} isHovered onRegenerate={onRegenerate} />,
 			);
 			expect(
@@ -192,7 +202,7 @@ describe("Node Components", () => {
 
 		it("should not render regenerate button when streaming", () => {
 			const onRegenerate = vi.fn();
-			render(
+			renderWithTheme(
 				<AINode
 					{...defaultProps}
 					isHovered
@@ -213,7 +223,7 @@ describe("Node Components", () => {
 					content: "```javascript\nconst x = 1;\n```",
 				},
 			};
-			const { container } = render(<AINode {...codeProps} />);
+			const { container } = renderWithTheme(<AINode {...codeProps} />);
 			const codeBlock = container.querySelector("pre");
 			expect(codeBlock).toBeInTheDocument();
 		});
@@ -226,7 +236,7 @@ describe("Node Components", () => {
 					content: "This is `inline code` example.",
 				},
 			};
-			render(<AINode {...codeProps} />);
+			renderWithTheme(<AINode {...codeProps} />);
 			expect(screen.getByText("inline code")).toBeInTheDocument();
 		});
 
@@ -238,7 +248,7 @@ describe("Node Components", () => {
 					content: "[Link](https://example.com)",
 				},
 			};
-			const { container } = render(<AINode {...linkProps} />);
+			const { container } = renderWithTheme(<AINode {...linkProps} />);
 			const link = container.querySelector("a");
 			expect(link).toHaveAttribute("href", "https://example.com");
 			expect(link).toHaveAttribute("target", "_blank");
@@ -247,7 +257,7 @@ describe("Node Components", () => {
 
 		it("should call onRegenerate when double-clicked", () => {
 			const onRegenerate = vi.fn();
-			const { container } = render(
+			const { container } = renderWithTheme(
 				<AINode {...defaultProps} onRegenerate={onRegenerate} />,
 			);
 			const nodeContainer = container.firstChild as HTMLElement;
@@ -260,7 +270,7 @@ describe("Node Components", () => {
 
 		it("should not call onRegenerate when streaming", () => {
 			const onRegenerate = vi.fn();
-			render(
+			renderWithTheme(
 				<AINode
 					{...defaultProps}
 					data={{ ...defaultProps.data, isStreaming: true }}
@@ -275,7 +285,7 @@ describe("Node Components", () => {
 
 		it("should call onCopy when copy button is clicked", () => {
 			const onCopy = vi.fn();
-			render(<AINode {...defaultProps} isHovered onCopy={onCopy} />);
+			renderWithTheme(<AINode {...defaultProps} isHovered onCopy={onCopy} />);
 			const copyButton = screen.getByRole("button", { name: /copy content/i });
 			copyButton.click();
 			expect(onCopy).toHaveBeenCalledTimes(1);
@@ -283,7 +293,7 @@ describe("Node Components", () => {
 
 		it("should not show action hint when onCreateChild is provided", () => {
 			const onCreateChild = vi.fn();
-			render(
+			renderWithTheme(
 				<AINode {...defaultProps} isHovered onCreateChild={onCreateChild} />,
 			);
 			expect(
@@ -292,7 +302,7 @@ describe("Node Components", () => {
 		});
 
 		it("should show action hint when onCreateChild is not provided", () => {
-			render(<AINode {...defaultProps} isHovered />);
+			renderWithTheme(<AINode {...defaultProps} isHovered />);
 			expect(
 				screen.getByText("Double-click to regenerate"),
 			).toBeInTheDocument();
@@ -321,7 +331,7 @@ describe("Node Components", () => {
 					content: "- Item 1\n- Item 2\n- Item 3",
 				} as MindFlowNodeData,
 			};
-			const { container } = render(<AINode {...props} />);
+			const { container } = renderWithTheme(<AINode {...props} />);
 			expect(container.querySelector("ul")).toBeInTheDocument();
 		});
 
@@ -333,7 +343,7 @@ describe("Node Components", () => {
 					content: "1. First\n2. Second\n3. Third",
 				} as MindFlowNodeData,
 			};
-			const { container } = render(<AINode {...props} />);
+			const { container } = renderWithTheme(<AINode {...props} />);
 			expect(container.querySelector("ol")).toBeInTheDocument();
 		});
 
@@ -345,7 +355,7 @@ describe("Node Components", () => {
 					content: "> This is a quote",
 				} as MindFlowNodeData,
 			};
-			const { container } = render(<AINode {...props} />);
+			const { container } = renderWithTheme(<AINode {...props} />);
 			expect(container.querySelector("blockquote")).toBeInTheDocument();
 		});
 
@@ -358,7 +368,7 @@ describe("Node Components", () => {
 						"| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |",
 				} as MindFlowNodeData,
 			};
-			const { container } = render(<AINode {...props} />);
+			const { container } = renderWithTheme(<AINode {...props} />);
 			expect(container.querySelector("table")).toBeInTheDocument();
 		});
 	});
@@ -373,7 +383,7 @@ describe("Node Components", () => {
 					content: longContent,
 				} as MindFlowNodeData,
 			};
-			render(<UserNode {...props} />);
+			renderWithTheme(<UserNode {...props} />);
 			expect(screen.getByText(longContent)).toBeInTheDocument();
 		});
 
@@ -385,7 +395,7 @@ describe("Node Components", () => {
 					content: "Special chars: < > & \" '",
 				} as MindFlowNodeData,
 			};
-			render(<AINode {...props} />);
+			renderWithTheme(<AINode {...props} />);
 			expect(screen.getByText(/Special chars:/)).toBeInTheDocument();
 		});
 
@@ -398,7 +408,7 @@ describe("Node Components", () => {
 					metadata: undefined,
 				} as MindFlowNodeData,
 			};
-			render(<AINode {...props} />);
+			renderWithTheme(<AINode {...props} />);
 			expect(screen.getByText("AI")).toBeInTheDocument();
 		});
 
@@ -411,7 +421,7 @@ describe("Node Components", () => {
 					metadata: {},
 				} as MindFlowNodeData,
 			};
-			render(<AINode {...props} />);
+			renderWithTheme(<AINode {...props} />);
 			expect(screen.getByText("AI")).toBeInTheDocument();
 		});
 	});

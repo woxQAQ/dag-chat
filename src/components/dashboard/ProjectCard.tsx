@@ -42,7 +42,8 @@ export function ProjectCard({
 	const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
 		// Don't close if focus is moving to save or cancel button
 		const relatedTarget = e.relatedTarget as HTMLElement | null;
-		const isButton = relatedTarget?.tagName === "BUTTON" || relatedTarget?.role === "button";
+		const isButton =
+			relatedTarget?.tagName === "BUTTON" || relatedTarget?.role === "button";
 		if (
 			isButton &&
 			relatedTarget?.closest("form") === e.target.closest("form")
