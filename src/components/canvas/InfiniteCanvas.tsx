@@ -213,13 +213,8 @@ export function InfiniteCanvas({
 			onMoveStart={onMoveStart as any}
 			// biome-ignore lint/suspicious/noExplicitAny: ReactFlow onMoveStart/onMoveEnd types not properly exported
 			onMoveEnd={onMoveEnd as any}
-			onClick={(event) => {
-				// Call the onPaneClick prop if provided and click is on pane (not on a node)
-				if (restProps.onPaneClick && event.target === event.currentTarget) {
-					restProps.onPaneClick(event);
-				}
-			}}
 			{...restProps}
+			onPaneClick={restProps.onPaneClick}
 		>
 			{shouldShowBackground && (
 				<Background
