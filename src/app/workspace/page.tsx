@@ -101,6 +101,7 @@ function CanvasWithEditHandler({
 	const { stopEditing } = useNodeEditingContext();
 
 	// Handle pane click to exit edit mode and save changes
+	// Note: Inspector is closed by onSelectionCleared callback
 	const handlePaneClick = useCallback(() => {
 		// Save changes when exiting edit mode by clicking outside
 		stopEditing(true);
@@ -546,8 +547,8 @@ function WorkspaceContent() {
 		onSelectionCleared: () => {
 			// Clear selected node ID
 			setSelectedNodeId(null);
-			// Optional: close inspector when selection is cleared
-			// setInspectorOpen(false);
+			// Close inspector when selection is cleared
+			setInspectorOpen(false);
 		},
 	});
 
