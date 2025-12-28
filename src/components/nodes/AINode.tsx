@@ -61,10 +61,10 @@ export function AINode({
 	return (
 		<>
 			{/* Wrapper to extend hover area for buttons outside the node */}
-			<div className="relative pt-10 pb-8 -mt-10 -mb-8">
+			<div className="relative pt-10 pb-8">
 				{/* Action Bar - Only visible when hovered, positioned above node */}
 				{isHovered && (
-					<div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-[var(--color-surface)] rounded-lg shadow-lg border border-[var(--color-border)] p-1 z-10">
+					<div className="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-[var(--color-surface)] rounded-lg shadow-lg border border-[var(--color-border)] p-1 z-10">
 						<button
 							type="button"
 							onClick={handleCopy}
@@ -124,6 +124,12 @@ export function AINode({
 					onDoubleClick={handleDoubleClick}
 					role="button"
 					tabIndex={0}
+					onKeyDown={(e) => {
+						if (e.key === "Enter" && onCreateChild) {
+							e.stopPropagation();
+							onCreateChild();
+						}
+					}}
 				>
 					{/* Input Handle (Top) - Hidden, no manual connections */}
 					<Handle
@@ -209,7 +215,7 @@ export function AINode({
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
-								strokeWidth={2.5}
+								strokeWidth={2}
 								d="M12 4.5v15m7.5-7.5h-15"
 							/>
 						</svg>

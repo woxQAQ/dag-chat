@@ -36,7 +36,7 @@ export function UserNode({
 	return (
 		<>
 			{/* Wrapper to extend hover area for buttons outside the node */}
-			<div className="relative pr-10 -mr-10">
+			<div className="relative pr-8">
 				{/* Branch Button (+) - Only visible when hovered, positioned to the right */}
 				{isHovered && onCreateChild && (
 					<button
@@ -45,7 +45,7 @@ export function UserNode({
 							e.stopPropagation();
 							onCreateChild();
 						}}
-						className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-full shadow-md transition-all duration-200 hover:scale-110 active:scale-95 z-10"
+						className="absolute -right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-full shadow-md transition-all duration-200 hover:scale-110 active:scale-95 z-10"
 						title="Create child node"
 						aria-label="Create child node"
 					>
@@ -59,7 +59,7 @@ export function UserNode({
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
-								strokeWidth={2.5}
+								strokeWidth={2}
 								d="M12 4.5v15m7.5-7.5h-15"
 							/>
 						</svg>
@@ -75,6 +75,12 @@ export function UserNode({
 					} ${isHovered ? "shadow-[var(--shadow-node-hover)]" : ""}`}
 					role="button"
 					tabIndex={0}
+					onKeyDown={(e) => {
+						if (e.key === "Enter" && onCreateChild) {
+							e.stopPropagation();
+							onCreateChild();
+						}
+					}}
 				>
 					{/* Input Handle (Top) - Hidden, no manual connections */}
 					<Handle
