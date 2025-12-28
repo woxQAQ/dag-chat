@@ -86,7 +86,6 @@ function CanvasWithEditHandler({
 	onNodeMouseEnter,
 	onNodeMouseLeave,
 	onInit,
-	onInspectorClose,
 }: {
 	nodes: MindFlowNode[];
 	edges: Edge[];
@@ -98,19 +97,15 @@ function CanvasWithEditHandler({
 	onNodeMouseEnter?: (event: React.MouseEvent, node: Node) => void;
 	onNodeMouseLeave?: () => void;
 	onInit: (instance: ReactFlowInstance | null) => void;
-	onInspectorClose?: () => void;
 }) {
 	const { stopEditing } = useNodeEditingContext();
 
-	// Handle pane click to exit edit mode, save changes, and close inspector
+	// Handle pane click to exit edit mode and save changes
+	// Note: Inspector is closed by onSelectionCleared callback
 	const handlePaneClick = useCallback(() => {
 		// Save changes when exiting edit mode by clicking outside
 		stopEditing(true);
-		// Close inspector when clicking on canvas
-		if (onInspectorClose) {
-			onInspectorClose();
-		}
-	}, [stopEditing, onInspectorClose]);
+	}, [stopEditing]);
 
 	return (
 		<InfiniteCanvas
@@ -1104,7 +1099,6 @@ function WorkspaceContent() {
 						onNodeMouseEnter={onNodeMouseEnter}
 						onNodeMouseLeave={onNodeMouseLeave}
 						onInit={setReactFlowInstance}
-						onInspectorClose={() => setInspectorOpen(false)}
 					/>
 				</NodeEditingProvider>
 			</CanvasLayout>
