@@ -30,7 +30,10 @@ function renderEditableUserNode(
 	isHovered = false,
 ) {
 	return render(
-		<NodeEditingProvider onCreateChild={onCreateChild}>
+		<NodeEditingProvider
+			onUpdateContent={vi.fn()}
+			onCreateChild={onCreateChild}
+		>
 			<EditableUserNode node={node} isHovered={isHovered} />
 		</NodeEditingProvider>,
 	);
@@ -113,7 +116,10 @@ describe("EditableNode", () => {
 
 			expect(() => {
 				render(
-					<NodeEditingProvider onCreateChild={onCreateChild}>
+					<NodeEditingProvider
+						onUpdateContent={vi.fn()}
+						onCreateChild={onCreateChild}
+					>
 						<EditableComponent {...props} />
 					</NodeEditingProvider>,
 				);
@@ -132,7 +138,10 @@ describe("EditableNode", () => {
 			};
 
 			render(
-				<NodeEditingProvider onCreateChild={onCreateChild}>
+				<NodeEditingProvider
+					onUpdateContent={vi.fn()}
+					onCreateChild={onCreateChild}
+				>
 					<EditableComponent {...props} />
 				</NodeEditingProvider>,
 			);

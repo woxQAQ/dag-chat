@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useTheme } from "@/contexts/ThemeContext";
 import { getHighlighter } from "@/lib/shiki-singleton";
 
 /**
@@ -193,6 +194,8 @@ export function MarkdownRenderer({
 	content,
 	className = "",
 }: MarkdownRendererProps) {
+	const { theme } = useTheme();
+
 	const [components, setComponents] = useState<Components>({
 		...baseComponents,
 		// Default pre/code before shiki loads
@@ -235,11 +238,9 @@ export function MarkdownRenderer({
 				// Use singleton highlighter instead of creating new instance
 				const highlighter = await getHighlighter();
 
-				// Detect current theme from data attribute
-				const isDark =
-					document.documentElement.getAttribute("data-theme") === "dark";
 				// Use catppuccin-mocha for dark theme, catppuccin-latte for light theme
-				const shikiTheme = isDark ? "catppuccin-mocha" : "catppuccin-latte";
+				const shikiTheme =
+					theme === "dark" ? "catppuccin-mocha" : "catppuccin-latte";
 
 				setComponents({
 					...baseComponents,
@@ -274,7 +275,7 @@ export function MarkdownRenderer({
 		}
 
 		loadShiki();
-	}, []);
+	}, [theme]);
 
 	return (
 		<div className={className}>

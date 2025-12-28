@@ -2,7 +2,7 @@
  * UI-007: Dashboard - Tests
  */
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CreateProjectDialog } from "./CreateProjectDialog";
@@ -154,11 +154,9 @@ describe("ProjectCard", () => {
 		await user.clear(input);
 		await user.type(input, "New Project Name");
 
-		// Submit form directly to avoid blur removing the form first
-		const form = input.closest("form");
-		if (form) {
-			fireEvent.submit(form);
-		}
+		// Click save button to submit form
+		const saveButton = screen.getByRole("button", { name: "Save" });
+		await user.click(saveButton);
 
 		expect(mockOnRename).toHaveBeenCalledWith(
 			"project-123",

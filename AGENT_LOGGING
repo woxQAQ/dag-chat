@@ -389,20 +389,27 @@ Removed "Add Node" button to prevent rootless node creation. Node creation now o
 
 ## 2024-12-29
 
-### [PR-006] User Node Branch Button - COMMENT FIXES
-**Branch:** feat/user-node-branch-button
-**PR:** #6
-**Comment ID:** IC_kwDOQt886M7cPLZ-
+### [PR-007] Shiki Theme Sync Fix - APPROVED
+**Branch:** fix/shiki-theme-sync
+**PR:** #7
+**Status:** Approved
 
 #### Summary
-- Fixed icon stroke width consistency (AINode: 2.5 → 2)
-- Verified keyboard navigation support (Enter key) already implemented
-- All 338 tests passing
+Fixed Shiki syntax highlighting not updating when toggling between light/dark themes.
+Changed from DOM-based theme detection to React's `useTheme()` hook for reactive updates.
 
 #### Files
-- `src/components/nodes/AINode.tsx` - Standardized icon strokeWidth to 2
+- `src/components/markdown/MarkdownRenderer.tsx` - Added useTheme() hook, updated useEffect dependency
 
-#### Responded Comments
-- IC_kwDOQt886M7cPLZ- (Minor suggestion: Icon Stroke Width Consistency)
+#### Review Comments
+- **Comment ID:** IC_kwDOQt886M7cPNUb (Code Review - Approved)
+  - Verdict: LGTM with minor optional suggestions
+  - No blocking issues - PR can be merged as-is
+  - Optional suggestions documented for future consideration if needed
+
+#### Test Fixes Included
+- Fixed TypeScript errors in `EditableNode.test.tsx` (missing onUpdateContent prop)
+- Fixed React act() warnings in `Dashboard.test.tsx`
+- Fixed blur behavior in `ProjectCard.tsx`
 
 ---
