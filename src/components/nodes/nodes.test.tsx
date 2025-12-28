@@ -56,72 +56,54 @@ describe("Node Components", () => {
 			expect(screen.getByText("You")).toBeInTheDocument();
 		});
 
-		it("should show editing indicator when isEditing is true", () => {
-			render(
-				<UserNode
-					{...defaultProps}
-					data={{ ...defaultProps.data, isEditing: true }}
-				/>,
-			);
-			expect(screen.getByText("Editing")).toBeInTheDocument();
-		});
-
-		it("should render textarea when isEditing is true", () => {
-			render(
-				<UserNode
-					{...defaultProps}
-					data={{ ...defaultProps.data, isEditing: true }}
-				/>,
-			);
-			const textarea = screen.getByPlaceholderText("Enter your message...");
-			expect(textarea).toBeInTheDocument();
-		});
-
-		it("should call onEditToggle when double-clicked", () => {
-			const onEditToggle = vi.fn();
-			const { container } = render(
-				<UserNode {...defaultProps} onEditToggle={onEditToggle} />,
-			);
-			const nodeContainer = container.firstChild as HTMLElement;
-			nodeContainer.dispatchEvent(
-				new MouseEvent("dblclick", { bubbles: true }),
-			);
-			// Note: In actual usage, React Flow handles the double-click event
-			// This test verifies the callback prop is present
-			expect(onEditToggle).toBeDefined();
-		});
-
 		it("should apply selected styles when selected is true", () => {
 			const { container } = render(<UserNode {...defaultProps} selected />);
-			const nodeContainer = container.firstChild as HTMLElement;
+			// Find the actual node container (inside the wrapper div)
+			const nodeContainer = container.querySelector('[role="button"]');
 			expect(nodeContainer).toHaveClass("border-[var(--color-primary)]");
 		});
 
-		it("should render edit hint when hovered", () => {
-			render(<UserNode {...defaultProps} isHovered />);
-			expect(screen.getByText("Double-click to edit")).toBeInTheDocument();
-		});
-
-		it("should not render edit hint when not hovered", () => {
-			render(<UserNode {...defaultProps} isHovered={false} />);
+		it("should render branch button when hovered and onCreateChild is provided", () => {
+			const onCreateChild = vi.fn();
+			render(
+				<UserNode {...defaultProps} isHovered onCreateChild={onCreateChild} />,
+			);
 			expect(
-				screen.queryByText("Double-click to edit"),
-			).not.toBeInTheDocument();
+				screen.getByRole("button", { name: /create child node/i }),
+			).toBeInTheDocument();
 		});
 
-		it("should call onContentChange when textarea value changes", () => {
-			const onContentChange = vi.fn();
+		it("should not render branch button when not hovered", () => {
+			const onCreateChild = vi.fn();
 			render(
 				<UserNode
 					{...defaultProps}
-					data={{ ...defaultProps.data, isEditing: true }}
-					onContentChange={onContentChange}
+					isHovered={false}
+					onCreateChild={onCreateChild}
 				/>,
 			);
-			const textarea = screen.getByPlaceholderText("Enter your message...");
-			textarea.dispatchEvent(new Event("change", { bubbles: true }));
-			// Note: Actual event handling would require fireEvent from user-event
-			expect(onContentChange).toBeDefined();
+			expect(
+				screen.queryByRole("button", { name: /create child node/i }),
+			).not.toBeInTheDocument();
+		});
+
+		it("should not render branch button when onCreateChild is not provided", () => {
+			render(<UserNode {...defaultProps} isHovered />);
+			expect(
+				screen.queryByRole("button", { name: /create child node/i }),
+			).not.toBeInTheDocument();
+		});
+
+		it("should call onCreateChild when branch button is clicked", () => {
+			const onCreateChild = vi.fn();
+			render(
+				<UserNode {...defaultProps} isHovered onCreateChild={onCreateChild} />,
+			);
+			const branchButton = screen.getByRole("button", {
+				name: /create child node/i,
+			});
+			branchButton.click();
+			expect(onCreateChild).toHaveBeenCalledTimes(1);
 		});
 	});
 
@@ -299,7 +281,15 @@ describe("Node Components", () => {
 			expect(onCopy).toHaveBeenCalledTimes(1);
 		});
 
-		it("should show action hint when hovered", () => {
+		it("should not show action hint when onCreateChild is provided", () => {
+			const onCreateChild = vi.fn();
+			render(<AINode {...defaultProps} isHovered onCreateChild={onCreateChild} />);
+			expect(
+				screen.queryByText("Double-click to regenerate"),
+			).not.toBeInTheDocument();
+		});
+
+		it("should show action hint when onCreateChild is not provided", () => {
 			render(<AINode {...defaultProps} isHovered />);
 			expect(
 				screen.getByText("Double-click to regenerate"),

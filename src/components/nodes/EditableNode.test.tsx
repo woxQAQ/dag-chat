@@ -2,7 +2,7 @@
  * Tests for EditableNode component (UI-NEW-004)
  */
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { NodeEditingProvider } from "@/contexts/NodeEditingContext";
 import { createEditableNode, EditableUserNode } from "./EditableNode";
@@ -26,15 +26,11 @@ vi.mock("@xyflow/react", async () => {
 // Helper function to render EditableUserNode with required context
 function renderEditableUserNode(
 	node: MindFlowNode,
-	onUpdateContent = vi.fn(),
-	onNodeFork = vi.fn(),
+	onCreateChild = vi.fn(),
 	isHovered = false,
 ) {
 	return render(
-		<NodeEditingProvider
-			onUpdateContent={onUpdateContent}
-			onNodeFork={onNodeFork}
-		>
+		<NodeEditingProvider onCreateChild={onCreateChild}>
 			<EditableUserNode node={node} isHovered={isHovered} />
 		</NodeEditingProvider>,
 	);
@@ -59,103 +55,44 @@ describe("EditableNode", () => {
 
 	describe("EditableUserNode", () => {
 		it("should render UserNode with correct props", () => {
-			const onUpdateContent = vi.fn();
-
-			renderEditableUserNode(mockNode, onUpdateContent);
+			renderEditableUserNode(mockNode);
 
 			expect(screen.getByText("Initial content")).toBeInTheDocument();
 			expect(screen.getByText("You")).toBeInTheDocument();
 		});
 
-		it("should not call onUpdateContent on initial render", () => {
-			const onUpdateContent = vi.fn();
+		it("should not render branch button when not hovered", () => {
+			const onCreateChild = vi.fn();
+			renderEditableUserNode(mockNode, onCreateChild, false);
 
-			renderEditableUserNode(mockNode, onUpdateContent);
-
-			expect(onUpdateContent).not.toHaveBeenCalled();
+			expect(
+				screen.queryByRole("button", { name: /create child node/i }),
+			).not.toBeInTheDocument();
 		});
 
-		it("should call onNodeFork when exiting edit mode with changed content", async () => {
-			const onUpdateContent = vi.fn();
-			const onNodeFork = vi.fn();
+		it("should render branch button when hovered", () => {
+			const onCreateChild = vi.fn();
+			renderEditableUserNode(mockNode, onCreateChild, true);
 
-			renderEditableUserNode(mockNode, onUpdateContent, onNodeFork);
+			expect(
+				screen.getByRole("button", { name: /create child node/i }),
+			).toBeInTheDocument();
+		});
 
-			// Double-click to enter edit mode
-			const nodeDiv = screen.getByText("Initial content").closest("div");
-			if (nodeDiv) {
-				fireEvent.doubleClick(nodeDiv);
-			}
+		it("should call onCreateChild when branch button is clicked", () => {
+			const onCreateChild = vi.fn();
+			renderEditableUserNode(mockNode, onCreateChild, true);
 
-			// Find the textarea
-			const textarea = screen.getByRole("textbox");
-			expect(textarea).toBeInTheDocument();
-
-			// Change content
-			fireEvent.change(textarea, {
-				target: { value: "Updated content" },
+			const branchButton = screen.getByRole("button", {
+				name: /create child node/i,
 			});
+			branchButton.click();
 
-			// Press Cmd+Enter to save
-			fireEvent.keyDown(textarea, {
-				key: "Enter",
-				metaKey: true,
-				ctrlKey: true,
-			});
-
-			// onNodeFork should be called for USER nodes (non-destructive editing)
-			expect(onNodeFork).toHaveBeenCalledWith(
-				"node-123",
-				"Updated content",
-				expect.any(Number),
-				expect.any(Number),
-			);
-			// onUpdateContent should NOT be called for USER nodes
-			expect(onUpdateContent).not.toHaveBeenCalled();
+			expect(onCreateChild).toHaveBeenCalledTimes(1);
+			expect(onCreateChild).toHaveBeenCalledWith("node-123");
 		});
 
-		it("should not call onUpdateContent when content hasn't changed", async () => {
-			const onUpdateContent = vi.fn();
-
-			renderEditableUserNode(mockNode, onUpdateContent);
-
-			// Double-click to enter edit mode
-			const nodeDiv = screen.getByText("Initial content").closest("div");
-			if (nodeDiv) {
-				fireEvent.doubleClick(nodeDiv);
-			}
-
-			// Find the textarea
-			const textarea = screen.getByRole("textbox");
-
-			// Press Cmd+Enter without changing content
-			fireEvent.keyDown(textarea, {
-				key: "Enter",
-				metaKey: true,
-				ctrlKey: true,
-			});
-
-			// onUpdateContent should not be called
-			expect(onUpdateContent).not.toHaveBeenCalled();
-		});
-
-		it("should show editing badge when in edit mode", () => {
-			renderEditableUserNode(mockNode, vi.fn());
-
-			// Initially not in edit mode
-			expect(screen.queryByText("Editing")).not.toBeInTheDocument();
-
-			// Double-click to enter edit mode
-			const nodeDiv = screen.getByText("Initial content").closest("div");
-			if (nodeDiv) {
-				fireEvent.doubleClick(nodeDiv);
-			}
-
-			// Should show editing badge
-			expect(screen.getByText("Editing")).toBeInTheDocument();
-		});
-
-		it("should work without onUpdateContent callback", () => {
+		it("should work without onCreateChild callback", () => {
 			expect(() => {
 				renderEditableUserNode(mockNode);
 			}).not.toThrow();
@@ -163,8 +100,8 @@ describe("EditableNode", () => {
 	});
 
 	describe("createEditableNode", () => {
-		it("should create a node component with editing support", () => {
-			const onUpdateContent = vi.fn();
+		it("should create a node component", () => {
+			const onCreateChild = vi.fn();
 			const EditableComponent = createEditableNode();
 
 			const props = {
@@ -176,16 +113,15 @@ describe("EditableNode", () => {
 
 			expect(() => {
 				render(
-					<NodeEditingProvider onUpdateContent={onUpdateContent}>
+					<NodeEditingProvider onCreateChild={onCreateChild}>
 						<EditableComponent {...props} />
 					</NodeEditingProvider>,
 				);
 			}).not.toThrow();
 		});
 
-		it("should pass onUpdateContent to the wrapped component", async () => {
-			const onUpdateContent = vi.fn();
-			const onNodeFork = vi.fn();
+		it("should render UserNode for USER role", () => {
+			const onCreateChild = vi.fn();
 			const EditableComponent = createEditableNode();
 
 			const props = {
@@ -196,73 +132,13 @@ describe("EditableNode", () => {
 			};
 
 			render(
-				<NodeEditingProvider
-					onUpdateContent={onUpdateContent}
-					onNodeFork={onNodeFork}
-				>
+				<NodeEditingProvider onCreateChild={onCreateChild}>
 					<EditableComponent {...props} />
 				</NodeEditingProvider>,
 			);
 
-			// Double-click to enter edit mode
-			const nodeDiv = screen.getByText("Initial content").closest("div");
-			if (nodeDiv) {
-				fireEvent.doubleClick(nodeDiv);
-			}
-
-			// Find the textarea
-			const textarea = screen.getByRole("textbox");
-
-			// Change content
-			fireEvent.change(textarea, {
-				target: { value: "Updated content" },
-			});
-
-			// Press Cmd+Enter to save
-			fireEvent.keyDown(textarea, {
-				key: "Enter",
-				metaKey: true,
-				ctrlKey: true,
-			});
-
-			// onNodeFork should be called for USER nodes (non-destructive editing)
-			expect(onNodeFork).toHaveBeenCalledWith(
-				"node-123",
-				"Updated content",
-				expect.any(Number),
-				expect.any(Number),
-			);
-		});
-	});
-
-	describe("keyboard shortcuts", () => {
-		it("should exit edit mode on Escape without saving", () => {
-			const onUpdateContent = vi.fn();
-
-			renderEditableUserNode(mockNode, onUpdateContent);
-
-			// Double-click to enter edit mode
-			const nodeDiv = screen.getByText("Initial content").closest("div");
-			if (nodeDiv) {
-				fireEvent.doubleClick(nodeDiv);
-			}
-
-			// Find the textarea
-			const textarea = screen.getByRole("textbox");
-
-			// Change content
-			fireEvent.change(textarea, {
-				target: { value: "Updated content" },
-			});
-
-			// Press Escape to cancel
-			fireEvent.keyDown(textarea, { key: "Escape" });
-
-			// onUpdateContent should not be called on Escape
-			expect(onUpdateContent).not.toHaveBeenCalled();
-
-			// Should show original content
 			expect(screen.getByText("Initial content")).toBeInTheDocument();
+			expect(screen.getByText("You")).toBeInTheDocument();
 		});
 	});
 });

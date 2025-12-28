@@ -48,23 +48,8 @@ export interface BaseNodeProps {
  * Props for UserNode component
  */
 export interface UserNodeProps extends BaseNodeProps {
-	/** Callback when node content is edited */
-	onContentChange?: (content: string) => void;
-	/** Callback when edit mode is toggled */
-	onEditToggle?: (isEditing: boolean) => void;
-	/** Callback when edit is saved (Cmd/Ctrl+Enter) */
-	onEditSave?: () => void;
-	/** Callback when edit is cancelled (Escape) */
-	onEditCancel?: () => void;
 	/** Callback to create a child node from this node (branching interaction) */
 	onCreateChild?: () => void;
-	/** Callback to fork this node (non-destructive editing - creates parallel branch) */
-	onNodeFork?: (
-		nodeId: string,
-		newContent: string,
-		x: number,
-		y: number,
-	) => Promise<void>;
 }
 
 /**
