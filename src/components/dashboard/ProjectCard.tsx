@@ -39,6 +39,19 @@ export function ProjectCard({
 		setIsRenaming(false);
 	};
 
+	const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+		// Don't close if focus is moving to save or cancel button
+		const relatedTarget = e.relatedTarget as HTMLElement | null;
+		const isButton = relatedTarget?.tagName === "BUTTON" || relatedTarget?.role === "button";
+		if (
+			isButton &&
+			relatedTarget?.closest("form") === e.target.closest("form")
+		) {
+			return;
+		}
+		setIsRenaming(false);
+	};
+
 	const handleDelete = async () => {
 		await onDelete(project.id);
 		setShowDeleteConfirm(false);
@@ -54,7 +67,7 @@ export function ProjectCard({
 							type="text"
 							value={newName}
 							onChange={(e) => setNewName(e.target.value)}
-							onBlur={() => setIsRenaming(false)}
+							onBlur={handleInputBlur}
 							className="flex-1 px-2 py-1 text-lg font-semibold text-[var(--color-text-primary)] border border-[var(--color-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
 							maxLength={100}
 						/>

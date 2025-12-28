@@ -283,7 +283,9 @@ describe("Node Components", () => {
 
 		it("should not show action hint when onCreateChild is provided", () => {
 			const onCreateChild = vi.fn();
-			render(<AINode {...defaultProps} isHovered onCreateChild={onCreateChild} />);
+			render(
+				<AINode {...defaultProps} isHovered onCreateChild={onCreateChild} />,
+			);
 			expect(
 				screen.queryByText("Double-click to regenerate"),
 			).not.toBeInTheDocument();
