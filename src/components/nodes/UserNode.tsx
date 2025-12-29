@@ -36,7 +36,7 @@ export function UserNode({
 	return (
 		<>
 			{/* Wrapper to extend hover area for buttons outside the node */}
-			<div className="relative pr-8">
+			<div className="relative pr-8 -mr-8">
 				{/* Branch Button (+) - Only visible when hovered, positioned to the right */}
 				{isHovered && onCreateChild && (
 					<button

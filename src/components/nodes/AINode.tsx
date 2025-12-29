@@ -61,7 +61,7 @@ export function AINode({
 	return (
 		<>
 			{/* Wrapper to extend hover area for buttons outside the node */}
-			<div className="relative pt-10 pb-8">
+			<div className="relative pt-10 pb-8 -mt-10 -mb-8">
 				{/* Action Bar - Only visible when hovered, positioned above node */}
 				{isHovered && (
 					<div className="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-[var(--color-surface)] rounded-lg shadow-lg border border-[var(--color-border)] p-1 z-10">
