@@ -389,6 +389,32 @@ Removed "Add Node" button to prevent rootless node creation. Node creation now o
 
 ## 2024-12-29
 
+### [PR-008] Layout Algorithm Fix - COMMENT RESPONDED
+**Branch:** fix/layout-algo
+**PR:** #8
+**Status:** Comment Addressed
+
+#### Summary
+Fixed node overlap issue caused by commit ab6c7fc63b10 removing negative margins from node wrappers.
+Added negative margins back and increased vertical spacing from 150px to 220px.
+
+#### Files
+- `src/components/nodes/AINode.tsx` - Restored `-mt-10 -mb-8` with documentation comment
+- `src/components/nodes/UserNode.tsx` - Added `-mr-8` with documentation comment
+- `src/lib/tree-layout.ts` - Increased `PARENT_CHILD_VERTICAL_OFFSET` from 150 to 220
+- `src/lib/position-calculator.ts` - Increased `PARENT_CHILD_VERTICAL_OFFSET` from 150 to 220
+- `src/lib/tree-layout.test.ts` - Updated all Y position assertions
+
+#### Review Comments Responded
+- **Comment ID:** IC_kwDOQt886M7cSHuU (Code Review - LGTM with suggestions)
+  - Suggestion: Add comments explaining negative margin values
+  - Response: Added documentation comments explaining that negative margins compensate for padding to keep node dimensions consistent for ReactFlow
+
+#### Tests
+- All 338 tests passing
+
+---
+
 ### [PR-007] Shiki Theme Sync Fix - APPROVED
 **Branch:** fix/shiki-theme-sync
 **PR:** #7

@@ -36,7 +36,8 @@ export function UserNode({
 	return (
 		<>
 			{/* Wrapper to extend hover area for buttons outside the node */}
-			<div className="relative pr-8">
+			{/* Note: Negative margin (-mr-8) compensates for padding to keep node dimensions consistent */}
+			<div className="relative pr-8 -mr-8">
 				{/* Branch Button (+) - Only visible when hovered, positioned to the right */}
 				{isHovered && onCreateChild && (
 					<button
