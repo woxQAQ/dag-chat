@@ -19,7 +19,7 @@
  * Vertical spacing between parent and child nodes
  * Reused from position-calculator.ts for consistency
  */
-const PARENT_CHILD_VERTICAL_OFFSET = 150;
+const PARENT_CHILD_VERTICAL_OFFSET = 220;
 
 /**
  * Estimated width of a node on the canvas

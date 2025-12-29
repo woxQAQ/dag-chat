@@ -75,11 +75,11 @@ describe("Tree Layout Algorithm", () => {
 		expect(child2.positionX).toBeCloseTo(centerX, 0);
 		expect(child3.positionX).toBeCloseTo(centerX, 0);
 
-		// Y should increase by 150 for each level
+		// Y should increase by 220 for each level
 		expect(root.positionY).toBe(0);
-		expect(child1.positionY).toBe(150);
-		expect(child2.positionY).toBe(300);
-		expect(child3.positionY).toBe(450);
+		expect(child1.positionY).toBe(220);
+		expect(child2.positionY).toBe(440);
+		expect(child3.positionY).toBe(660);
 	});
 
 	/**
@@ -111,8 +111,8 @@ describe("Tree Layout Algorithm", () => {
 		expect(root.positionX).toBeCloseTo(expectedRootX, 0);
 
 		// Both children at same Y level
-		expect(child1.positionY).toBe(150);
-		expect(child2.positionY).toBe(150);
+		expect(child1.positionY).toBe(220);
+		expect(child2.positionY).toBe(220);
 	});
 
 	/**
@@ -134,9 +134,9 @@ describe("Tree Layout Algorithm", () => {
 		const child3 = findNodeById(result, "child3");
 
 		// All children at same Y level
-		expect(child1.positionY).toBe(150);
-		expect(child2.positionY).toBe(150);
-		expect(child3.positionY).toBe(150);
+		expect(child1.positionY).toBe(220);
+		expect(child2.positionY).toBe(220);
+		expect(child3.positionY).toBe(220);
 
 		// Children should be evenly spaced
 		const gap = child2.positionX - child1.positionX;
@@ -166,10 +166,10 @@ describe("Tree Layout Algorithm", () => {
 		const greatgreatgrandchild1 = findNodeById(result, "greatgreatgrandchild1");
 
 		expect(root.positionY).toBe(0);
-		expect(child1.positionY).toBe(150);
-		expect(grandchild1.positionY).toBe(300);
-		expect(greatgrandchild1.positionY).toBe(450);
-		expect(greatgreatgrandchild1.positionY).toBe(600);
+		expect(child1.positionY).toBe(220);
+		expect(grandchild1.positionY).toBe(440);
+		expect(greatgrandchild1.positionY).toBe(660);
+		expect(greatgreatgrandchild1.positionY).toBe(880);
 	});
 
 	/**
@@ -197,7 +197,7 @@ describe("Tree Layout Algorithm", () => {
 
 		// All children at same Y level
 		for (const child of children) {
-			expect(child.positionY).toBe(150);
+			expect(child.positionY).toBe(220);
 		}
 	});
 
@@ -332,7 +332,7 @@ describe("Tree Layout Algorithm", () => {
 		// All children should be at same level
 		const children = result.filter((n) => n.nodeId.startsWith("child"));
 		for (const child of children) {
-			expect(child.positionY).toBe(150);
+			expect(child.positionY).toBe(220);
 		}
 
 		// No two children should have same X position
@@ -395,9 +395,9 @@ describe("Tree Layout Algorithm", () => {
 		expect(a1.positionY).toBeLessThan(a1_1.positionY);
 
 		// All nodes at same level should have same Y
-		const level1 = result.filter((n) => n.positionY === 150);
-		const level2 = result.filter((n) => n.positionY === 300);
-		const level3 = result.filter((n) => n.positionY === 450);
+		const level1 = result.filter((n) => n.positionY === 220);
+		const level2 = result.filter((n) => n.positionY === 440);
+		const level3 = result.filter((n) => n.positionY === 660);
 
 		expect(level1.length).toBe(2); // a, b
 		expect(level2.length).toBe(4); // a1, a2, b1, b2

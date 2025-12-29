@@ -22,7 +22,7 @@ export interface Position {
 export const FORK_HORIZONTAL_OFFSET = 350;
 
 /** Vertical spacing between parent and child nodes */
-export const PARENT_CHILD_VERTICAL_OFFSET = 150;
+export const PARENT_CHILD_VERTICAL_OFFSET = 220;
 
 /** Maximum horizontal offset before wrapping to new row */
 export const MAX_HORIZONTAL_OFFSET = 1200;
