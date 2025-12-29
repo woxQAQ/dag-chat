@@ -61,6 +61,7 @@ export function AINode({
 	return (
 		<>
 			{/* Wrapper to extend hover area for buttons outside the node */}
+			{/* Note: Negative margins (-mt-10 -mb-8) compensate for padding to keep node dimensions consistent */}
 			<div className="relative pt-10 pb-8 -mt-10 -mb-8">
 				{/* Action Bar - Only visible when hovered, positioned above node */}
 				{isHovered && (
